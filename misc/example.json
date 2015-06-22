@@ -1,0 +1,131 @@
+{
+  "expand": "changes,metadata,plan,master,vcsRevisions,artifacts,comments,labels,jiraIssues,stages",
+  "link": {
+    "href": "https://bamboo-corp.dev.medibank.com.au/rest/api/latest/result/MEDIBANKCORP-RCWAT4-242",
+    "rel": "self"
+  },
+  "plan": {
+    "master": {
+      "shortName": "Retail and Corporate Web Acceptance Tests",
+      "shortKey": "RCWAT",
+      "type": "chain",
+      "enabled": true,
+      "link": {
+        "href": "https://bamboo-corp.dev.medibank.com.au/rest/api/latest/plan/MEDIBANKCORP-RCWAT",
+        "rel": "self"
+      },
+      "key": "MEDIBANKCORP-RCWAT",
+      "name": "Medibank Corporate Web - Retail and Corporate Web Acceptance Tests",
+      "planKey": {
+        "key": "MEDIBANKCORP-RCWAT"
+      }
+    },
+    "shortName": "sit-retail",
+    "shortKey": "RCWAT4",
+    "type": "chain_branch",
+    "enabled": true,
+    "link": {
+      "href": "https://bamboo-corp.dev.medibank.com.au/rest/api/latest/plan/MEDIBANKCORP-RCWAT4",
+      "rel": "self"
+    },
+    "key": "MEDIBANKCORP-RCWAT4",
+    "name": "Medibank Corporate Web - Retail and Corporate Web Acceptance Tests - sit-retail",
+    "planKey": {
+      "key": "MEDIBANKCORP-RCWAT4"
+    }
+  },
+  "master": {
+    "shortName": "Retail and Corporate Web Acceptance Tests",
+    "shortKey": "RCWAT",
+    "type": "chain",
+    "enabled": true,
+    "link": {
+      "href": "https://bamboo-corp.dev.medibank.com.au/rest/api/latest/plan/MEDIBANKCORP-RCWAT",
+      "rel": "self"
+    },
+    "key": "MEDIBANKCORP-RCWAT",
+    "name": "Medibank Corporate Web - Retail and Corporate Web Acceptance Tests",
+    "planKey": {
+      "key": "MEDIBANKCORP-RCWAT"
+    }
+  },
+  "planName": "sit-retail",
+  "projectName": "Medibank Corporate Web",
+  "buildResultKey": "MEDIBANKCORP-RCWAT4-242",
+  "lifeCycleState": "Finished",
+  "id": 21250584,
+  "buildStartedTime": "2015-06-03T10:43:14.000+10:00",
+  "prettyBuildStartedTime": "Wed, 3 Jun, 10:43 AM",
+  "buildCompletedTime": "2015-06-03T14:40:38.000+10:00",
+  "buildCompletedDate": "2015-06-03T14:40:38.000+10:00",
+  "prettyBuildCompletedTime": "Wed, 3 Jun, 02:40 PM",
+  "buildDurationInSeconds": 14244,
+  "buildDuration": 14244904,
+  "buildDurationDescription": "237 minutes",
+  "buildRelativeTime": "1 week ago",
+  "vcsRevisionKey": "797c4ad825f5667ca5af362d1aef7641f1c76a6a",
+  "vcsRevisions": {
+    "size": 1,
+    "start-index": 0,
+    "max-result": 1
+  },
+  "buildTestSummary": "No tests found",
+  "successfulTestCount": 0,
+  "failedTestCount": 0,
+  "quarantinedTestCount": 0,
+  "continuable": false,
+  "onceOff": false,
+  "restartable": false,
+  "notRunYet": false,
+  "finished": true,
+  "successful": true,
+  "buildReason": "Changes by <a href=\"https://bamboo-corp.dev.medibank.com.au/browse/author/Mila K <mila.koscialkowska@Medibank.com.au>\">Mila K &lt;mila.koscialkowska@Medibank.com.au&gt;</a>",
+  "reasonSummary": "Changes by <a href=\"https://bamboo-corp.dev.medibank.com.au/browse/author/Mila K <mila.koscialkowska@Medibank.com.au>\">Mila K &lt;mila.koscialkowska@Medibank.com.au&gt;</a>",
+  "artifacts": {
+    "size": 0,
+    "start-index": 0,
+    "max-result": 0
+  },
+  "comments": {
+    "size": 0,
+    "start-index": 0,
+    "max-result": 0
+  },
+  "labels": {
+    "size": 0,
+    "start-index": 0,
+    "max-result": 0
+  },
+  "jiraIssues": {
+    "size": 0,
+    "start-index": 0,
+    "max-result": 0
+  },
+  "stages": {
+    "size": 1,
+    "start-index": 0,
+    "max-result": 1
+  },
+  "changes": {
+    "size": 1,
+    "start-index": 0,
+    "max-result": 1
+  },
+  "metadata": {
+    "size": 0,
+    "start-index": 0,
+    "max-result": 0
+  },
+  "key": "MEDIBANKCORP-RCWAT4-242",
+  "planResultKey": {
+    "key": "MEDIBANKCORP-RCWAT4-242",
+    "entityKey": {
+      "key": "MEDIBANKCORP-RCWAT4"
+    },
+    "resultNumber": 242
+  },
+  "state": "Successful",
+  "buildState": "Successful",
+  "number": 242,
+  "buildNumber": 242
+}
