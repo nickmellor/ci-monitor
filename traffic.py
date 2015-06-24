@@ -1,7 +1,7 @@
 import random
 import os
 import sound
-
+from logger import logger
 
 class TrafficLight:
     """
@@ -29,7 +29,7 @@ class TrafficLight:
             if new_colour != self.old_colour:
                 # draw some attention to change
                 self.christmas_lights()
-                print('Light changing from {0} to {1}!'.format(self.old_colour, new_colour))
+                logger.info('Light changing from {0} to {1}!'.format(self.old_colour, new_colour))
                 self.old_colour = new_colour
                 sound.play_sound(self.old_colour, new_colour)
             self.set_lights(new_colour)

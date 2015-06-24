@@ -1,6 +1,7 @@
 import requests
 import json
 from proxies import proxies
+from logger import logger
 
 class Geckoboard:
 
@@ -26,15 +27,14 @@ class Geckoboard:
             }
 
             push_url = "https://push.geckoboard.com/v1/send/" + WIDGET_KEYS[env]
-            print('sending to geckoboard for environment {0} at {1}'.format(env, push_url))
+            logger.info('sending to geckoboard for environment {0} at {1}'.format(env, push_url))
             try:
                 r = requests.post(push_url, headers=headers, data=json.dumps(payload), proxies=proxies)
                 if r.status_code == 200:
-                    print('success!')
+                    logger.info('success!')
                 else:
-                    print('fail!')
+                    logger.warning('Did not succeed sending to Geckoboard (env={0})'.format(env))
             except Exception as e:  # TODO: narrow this exception filter
-                print("Couldn't write to geckoboard")
-                # raise e
+                logger.error("Couldn't write to geckoboard. Exception follows: \n{0}".format(e))
 
 
