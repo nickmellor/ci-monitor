@@ -34,7 +34,7 @@ class TrafficLight:
 
     def blink(self):
         self.blank()
-        sleep(conf['traffic']['blinktimesecs'])
+        sleep(conf['trafficlight']['blinktimesecs'])
 
     def change_lights(self, new_colour):
         # ignore requests to change lights if last run had an unhandled exception

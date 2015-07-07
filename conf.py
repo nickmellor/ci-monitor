@@ -1,3 +1,3 @@
-from yaml import load, dump
-with open('conf.yaml') as conf:
-    print(dump(load(conf)))
+from yaml import load
+with open('conf.yaml') as config_file:
+    conf = load(config_file)

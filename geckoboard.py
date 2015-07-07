@@ -6,8 +6,8 @@ from conf import conf
 
 class Geckoboard:
 
-    def __init__(self, monitored):
-        self.monitored_environments = monitored
+    def __init__(self):
+        self.monitored_environments = conf['geckoboard']['bamboo_environments']
 
     def show_results(self, results):
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
@@ -22,7 +22,7 @@ class Geckoboard:
                     "responseTime": "instant"
                 }
             }
-            push_url = "https://push.geckoboard.com/v1/send/" + conf['geckoboard']['widgetkeys'][env]
+            push_url = "https://push.geckoboard.com/v1/send/" + conf['geckoboard']['bamboo_widgets'][env]
             logger.info('sending to geckoboard for environment {0} at {1}'.format(env, push_url))
             try:
                 r = requests.post(push_url, headers=headers, data=json.dumps(payload), proxies=proxies)
