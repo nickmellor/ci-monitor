@@ -2,6 +2,8 @@ import random
 import os
 import sound
 from logger import logger
+from conf import conf
+from time import sleep
 
 
 traffic_light_lamp_configs = {
@@ -19,9 +21,9 @@ class TrafficLight:
     use one class instance per traffic light device
     """
 
-    def __init__(self, monitored_environments):
+    def __init__(self):
         self.old_colour = None
-        self.monitored_environments = monitored_environments
+        self.monitored_environments = conf['trafficlight']['environments']
         self.finished_without_unhandled_exceptions = True
 
     def signal_unhandled_exception(self):
@@ -30,13 +32,17 @@ class TrafficLight:
     def clear_unhandled_exception(self):
         self.finished_without_unhandled_exceptions = True
 
+    def blink(self):
+        self.blank()
+        sleep(conf['traffic']['blinktimesecs'])
+
     def change_lights(self, new_colour):
         # ignore requests to change lights if last run had an unhandled exception
         # lights quietly stay all on rather than doing the Christmas Tree lights thing
         # every few seconds
         # TODO: unhandled_exceptions check belongs in ci_monitor.py and bamboo.py
         if self.finished_without_unhandled_exceptions:
-            self.blank()  # Blink health check
+            self.blink() # check traffic app hasn't crashed
             if new_colour != self.old_colour:
                 # draw some attention to change
                 self.christmas_lights()

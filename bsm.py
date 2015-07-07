@@ -1,12 +1,11 @@
+from conf import conf
 import xml.etree.ElementTree as ET
 tree = ET.parse('bsm_example.xml')
 root = tree.getroot()
 
-interesting = ['AWS/AEM',
-               'Customer Loyality',  # sic
-                'OMS', 'Sales Site']
+interesting = conf['bsm']['interesting']
 
-ok_statuses = ['20']
+ok_statuses = conf['bsm']['okstatuses']
 
 def nodeget():
     faults = set()

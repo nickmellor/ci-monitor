@@ -1,10 +1,8 @@
-import datetime
 from logger import logger
 from conf import conf
 from proxies import proxies
 import requests
 import json
-import warnings
 
 ci_environments = conf['bamboo']['environments']
 

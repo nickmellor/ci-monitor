@@ -1,5 +1,6 @@
+from conf import conf
 proxies = {
-    "http": "http://ausydisa02.au.imckesson.com:8080",
-    "https": "http://ausydisa02.au.imckesson.com:8080",
+    "http": conf['proxies']['http'],
+    "http": conf['proxies']['https']
 }
 

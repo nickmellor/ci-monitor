@@ -5,7 +5,6 @@ import sys
 import bamboo
 from traffic import TrafficLight
 from geckoboard import Geckoboard
-
 from logger import logger
 
 # show warnings first time (for security certificate) then suppress
@@ -13,8 +12,8 @@ warnings.simplefilter('default')
 
 logger.info('Started')
 
-our_first_traffic_light = TrafficLight(monitored_environments=conf['trafficlight']['environments'])
-our_first_geckoboard = Geckoboard(monitored_environments=conf['geckoboard']['environments'])
+our_first_traffic_light = TrafficLight()
+our_first_geckoboard = Geckoboard(monitored=conf['geckoboard']['environments'])
 
 while True:
     try:
