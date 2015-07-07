@@ -3,6 +3,17 @@ import os
 import sound
 from logger import logger
 
+
+traffic_light_lamp_configs = {
+    'green': (0, 0, 1),
+    'yellow': (0, 1, 0),
+    'red': (1, 0, 0),
+    'off': (0, 0, 0),
+    'all': (1, 1, 1),
+    'redyellow': (1, 1, 0)
+}
+
+
 class TrafficLight:
     """
     use one class instance per traffic light device
@@ -41,17 +52,8 @@ class TrafficLight:
         for i in range(20):
             self.set_lights(random.choice(['red', 'yellow', 'green']))
 
-    def set_lights(self, colour_or_colours):
-        traffic_light_lamp_configs = {
-            'green': (0, 0, 1),
-            'yellow': (0, 1, 0),
-            'red': (1, 0, 0),
-            'off': (0, 0, 0),
-            'all': (1, 1, 1),
-            'redyellow': (1, 1, 0)
-        }
-        lamp_settings = dict(zip(['red', 'yellow', 'green'], traffic_light_lamp_configs[colour_or_colours]))
-        # TODO: make able to run separate traffic light devices from same box
+    def set_lights(self, colour_or_colours_name):
+        lamp_settings = dict(zip(['red', 'yellow', 'green'], traffic_light_lamp_configs[colour_or_colours_name]))
         os.system("./clewarecontrol -d 901880 -c 1 -as 0 {red} -as 1 {yellow} -as 2 {green}".format(**lamp_settings))
 
     def big_trouble(self):

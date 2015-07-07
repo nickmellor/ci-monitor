@@ -1,0 +1,31 @@
+trafficlight:
+  environments: [SIT]
+geckoboard:
+  environments: [SIT]
+heartbeatseconds: 30
+bamboo:
+  uri: https://bamboo-corp.dev.medibank.com.au/rest/api/latest/result/{tag}/latest.json
+  environments:
+    DEV:
+      Smoke: MEDIBANKCORP-RCWAT
+      Retail: MEDIBANKCORP-RCWAT3
+      Corp: MEDIBANKCORP-RCWAT0
+      Elevate: MEDIBANKCORP-RCWAT17
+      Inc: MEDIBANKCORP-RCWAT21
+    TEST:
+      Corporate: MEDIBANKCORP-RCWAT9
+      Elevate: MEDIBANKCORP-RCWAT18
+      Inc: MEDIBANKCORP-RCWAT22
+      Retail: MEDIBANKCORP-RCWAT8
+    SIT:
+      Retail: MEDIBANKCORP-RCWAT4
+      Corp: MEDIBANKCORP-RCWAT5
+      Inc: MEDIBANKCORP-RCWAT23
+      Elevate: MEDIBANKCORP-RCWAT19
+logs:
+  logdir: logs
+  rotator:
+    logfile: logs/log
+    backupcount: 14
+    when: D
+    interval: 1

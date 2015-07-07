@@ -1,4 +1,5 @@
 from time import sleep
+from conf import conf
 import warnings
 import sys
 import bamboo
@@ -7,17 +8,13 @@ from geckoboard import Geckoboard
 
 from logger import logger
 
-# show warnings first time (e.g. security certificate) then suppress
-warnings.simplefilter('default', Warning)
+# show warnings first time (for security certificate) then suppress
+warnings.simplefilter('default')
 
 logger.info('Started')
 
-traffic_light_environments = ['SIT']
-geckoboard_environments = ['SIT']
-HEARTBEAT_SECONDS = 30
-
-our_first_traffic_light = TrafficLight(monitored_environments=traffic_light_environments)
-our_first_geckoboard = Geckoboard(monitored_environments=geckoboard_environments)
+our_first_traffic_light = TrafficLight(monitored_environments=conf['trafficlight']['environments'])
+our_first_geckoboard = Geckoboard(monitored_environments=conf['geckoboard']['environments'])
 
 while True:
     try:
@@ -26,7 +23,7 @@ while True:
         our_first_traffic_light.show_results(results)
         our_first_geckoboard.show_results(results)
         our_first_traffic_light.clear_unhandled_exception()
-        sleep(HEARTBEAT_SECONDS)
+        sleep(conf['heartbeatseconds'])
     except KeyboardInterrupt as e:
         logger.error('Interrupted by Ctrl+C: exiting...')
         sys.exit()
@@ -42,3 +39,4 @@ while True:
 # TODO: git on Raspberry Pi, SSL to Raspberry Pi
 # TODO: git repo public
 # TODO: improve Raspberry Pi security-- don't login as root
+# TODO: remove warning messages
