@@ -1,8 +1,6 @@
 CI Monitor
 ==========
 
-Author as at 19/06/2015: Nick Mellor
-
 Monitors the latest CI builds and reflects the results on a traffic light
 and Geckoboard.
 
@@ -10,34 +8,21 @@ and Geckoboard.
 Environment
 ===========
 
-- Currently runs on a Raspberry Pi Linux box as a Python 3 script
+- Runs on a Raspberry Pi Linux box as a Python 3 script
 - ci_monitor.py auto-run from /etc/rc.local at bootup
 - Will also run on Windows or Linux PC (Mac not tried), though the cleware traffic light software may not.
 
 External libraries used
 -----------------------
 
-- Python "requests" library
+- requests
 - cleware traffic light control program (included in this repo)
+- PyYAML
 
 
 IMPLEMENTATION NOTES
 --------------------
 
-This is a port to Python 3 of lights.rb, the original traffic light program written by James Barker.
-
-Changes (May-June 2015):
-- ported to Python 3
-- added multi-environment monitoring
-- added geckoboard push updates
-- added TEST tags (thanks to Manish Nigade)
-- clarified code
-- separated concerns
-- Christmas tree lights: draw attention to change of state on traffic light
-- red-yellow light shows mix of comms errors and test failures
-- red-yellow-green light means some kind of big problem, e.g. proxy down or an unhandled exception
-- prepares for operating multiple traffic lights and geckoboard widgets
-
-Would like to see:
-
-- various data put in config file so that only config changes are usually necessary
+This is a port to Python 3 of lights.rb, the original traffic light program written by James Barker. The
+ original program only controlled the traffic light. Extensions to the original include logging, on-the-fly
+ configuration and Geckoboard push updates
