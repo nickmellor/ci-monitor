@@ -1,3 +1,7 @@
 from yaml import load
-with open('conf.yaml') as config_file:
-    conf = load(config_file)
+
+def reload_config():
+    with open('conf.yaml') as config_file:
+        return load(config_file)
+
+conf = reload_config()

@@ -5,16 +5,16 @@ root = tree.getroot()
 
 interesting = conf['bsm']['interesting']
 
-ok_statuses = conf['bsm']['okstatuses']
+okstatus = conf['bsm']['okstatus']
 
 def nodeget():
     faults = set()
     for node in root.iter('node'):
-        for machine in node.iter("dimension"):
-            mattr = machine.attrib
-            if mattr['name'] == 'Software Availability' and mattr['status'] not in ok_statuses:
+        for resource in node.iter("dimension"):
+            bsm_feedback = resource.attrib
+            if bsm_feedback['name'] == 'Software Availability' and bsm_feedback['status'] not in okstatus:
                 faults.add(node.attrib['name'])
-                print(node.attrib['name'], mattr['status'])
+                print(node.attrib['name'], bsm_feedback['status'])
     print('\n\n')
     print('\n'.join(sorted(list(faults))))
 

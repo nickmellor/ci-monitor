@@ -27,7 +27,7 @@ class Geckoboard:
             try:
                 r = requests.post(push_url, headers=headers, data=json.dumps(payload), proxies=proxies)
                 if r.status_code == 200:
-                    logger.info('success!')
+                    logger.info('Push to Geckoboard succeeded!')
                 else:
                     logger.warning('Did not succeed sending to Geckoboard (env={0})'.format(env))
             except Exception as e:  # TODO: narrow this exception filter

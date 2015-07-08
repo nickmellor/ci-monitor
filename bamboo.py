@@ -11,7 +11,7 @@ def get_bamboo_result(uri):
         response = requests.get(uri, verify=False, proxies=proxies)
         return json.loads(response.text)["successful"]
     except Exception as e:
-        log.error("Can't get info from Bamboo:\n{0}".format(e))
+        logger.error("Can't get info from Bamboo:\n{0}".format(e))
         return None
 
 
@@ -22,8 +22,7 @@ def collect_bamboo_data():
         for project, ci_tag in ci_environments[env].items():
             uri = conf['bamboo']['uri'].format(tag=ci_tag)
             env_results.update({project: get_bamboo_result(uri)})
-            logger.info("env: {1} tag: {2} success: {3}"
-                  .format(project, ci_tag, env_results))
+            logger.info("env: {0} tag: {1} success: {2}".format(project, ci_tag, env_results))
         results[env] = env_results
     return results
 
