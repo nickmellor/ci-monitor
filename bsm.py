@@ -1,14 +1,19 @@
 from conf import conf
+from proxies import proxies
+import requests
 import xml.etree.ElementTree as ET
-tree = ET.parse('bsm_example.xml')
-root = tree.getroot()
+import json
+from logger import logger
 
 interesting = conf['bsm']['interesting']
 
 okstatus = conf['bsm']['okstatus']
 
-def nodeget():
+def bsm_results():
     faults = set()
+    bsm_response = get_bsm_data()
+    tree = ET.parse(bsm_response)
+    root = tree.getroot()
     for node in root.iter('node'):
         for resource in node.iter("dimension"):
             bsm_feedback = resource.attrib
@@ -19,4 +24,12 @@ def nodeget():
     print('\n'.join(sorted(list(faults))))
 
 
-nodeget()
+def get_bsm_data():
+    try:
+        uri = conf['bsm']['uri']
+        response = requests.get(uri, verify=False, proxies=proxies)
+        return json.loads(response.text)["successful"]
+    except Exception as e:
+        logger.error("Can't get info from Bamboo:\n{0}".format(e))
+        return None
+

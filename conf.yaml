@@ -9,7 +9,7 @@ bsm:
   okstatus: ['20', '-2']
 
 trafficlight:
-  blinktimesecs: 0.5
+  blinktimesecs: 2.0
   environments: [SIT]
 
 geckoboard:
@@ -19,21 +19,22 @@ geckoboard:
     SIT: 146729-b35320bb-c355-405f-a228-71c5656a0709
 
 bamboo:
-  uri: https://bamboo-corp.dev.medibank.com.au/rest/api/latest/result/{tag}/latest.json
+  #uri: https://bamboo-corp-dev.aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+  uri: https://10.239.8.99/rest/api/latest/result/{tag}/latest.json
   environments:
     DEV:
       Smoke: MEDIBANKCORP-RCWAT
       Retail: MEDIBANKCORP-RCWAT3
       Corp: MEDIBANKCORP-RCWAT0
-      Elevate: MEDIBANKCORP-RCWAT17
+      #Elevate: MEDIBANKCORP-RCWAT17
       Inc: MEDIBANKCORP-RCWAT21
-    TEST:
-      Corporate: MEDIBANKCORP-RCWAT9
-      Elevate: MEDIBANKCORP-RCWAT18
-      Inc: MEDIBANKCORP-RCWAT22
-      Retail: MEDIBANKCORP-RCWAT8
+    #TEST:
+      #Corporate: MEDIBANKCORP-RCWAT9
+      #Elevate: MEDIBANKCORP-RCWAT18
+      #Inc: MEDIBANKCORP-RCWAT22
+      #Retail: MEDIBANKCORP-RCWAT8
     SIT:
       Retail: MEDIBANKCORP-RCWAT4
       Corp: MEDIBANKCORP-RCWAT5
       Inc: MEDIBANKCORP-RCWAT23
-      Elevate: MEDIBANKCORP-RCWAT19
+      #Elevate: MEDIBANKCORP-RCWAT19
