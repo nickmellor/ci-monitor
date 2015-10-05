@@ -53,14 +53,14 @@ class TrafficLight:
 
     def set_lights(self, pattern_name):
         pattern = conf['trafficlight']['lamppatterns'][pattern_name]
-        lamps = 'R' if pattern[0] else ''
-        lamps += 'Y' if pattern[1] else ''
-        lamps += 'G' if pattern[2] else ''
-        if lamps:
-            lamps = ' '.join(lamps)
+        lamps_on = 'R' if pattern[0] else ''
+        lamps_on += 'Y' if pattern[1] else ''
+        lamps_on += 'G' if pattern[2] else ''
+        if lamps_on:
+            lamps_on = ' '.join(lamps_on)
         else:
-            lamps = 'O'
-        os.system(".\\usbswitchcmd -n 901880 {lamps}".format(lamps=lamps))
+            lamps_on = 'O'
+        os.system(".\\usbswitchcmd -n 901880 {switches}".format(switches=lamps_on))
 
     def big_trouble(self):
         self.change_lights('all')
