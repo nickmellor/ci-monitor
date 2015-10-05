@@ -12,7 +12,9 @@ traffic_light_lamp_configs = {
     'red': (1, 0, 0),
     'off': (0, 0, 0),
     'all': (1, 1, 1),
-    'redyellow': (1, 1, 0)
+    'redyellow': (1, 1, 0),
+    'commserror': (1, 1, 0),
+    'changestate': (1, 0, 1),
 }
 
 
@@ -45,7 +47,7 @@ class TrafficLight:
             self.blink() # check traffic app hasn't crashed
             if new_colour != self.old_colour:
                 # draw some attention to change
-                self.christmas_lights()
+                self.draw_attention_to_state_change()
                 logger.info('Light changing from {0} to {1}!'.format(self.old_colour, new_colour))
                 self.old_colour = new_colour
                 sound.play_sound(self.old_colour, new_colour)
@@ -54,13 +56,25 @@ class TrafficLight:
     def blank(self):
         self.set_lights('off')
 
-    def christmas_lights(self):
-        for i in range(20):
-            self.set_lights(random.choice(['red', 'yellow', 'green']))
+    def draw_attention_to_state_change(self):
+        for i in range(3):
+            self.set_lights('changestate')
+            self.set_lights('off')
 
-    def set_lights(self, colour_or_colours_name):
+    def set_lights_RPi(self, colour_or_colours_name):
         lamp_settings = dict(zip(['red', 'yellow', 'green'], traffic_light_lamp_configs[colour_or_colours_name]))
         os.system("./clewarecontrol -d 901880 -c 1 -as 0 {red} -as 1 {yellow} -as 2 {green}".format(**lamp_settings))
+
+    def set_lights(self, pattern_name):
+        pattern = traffic_light_lamp_configs[pattern_name]
+        lamps = 'R' if pattern[0] else ''
+        lamps += 'Y' if pattern[1] else ''
+        lamps += 'G' if pattern[2] else ''
+        if lamps:
+            lamps = ' '.join(lamps)
+        else:
+            lamps = 'O'
+        os.system(".\\usbswitchcmd -n 901880 {lamps}".format(lamps=lamps))
 
     def big_trouble(self):
         self.change_lights('all')
@@ -75,5 +89,5 @@ class TrafficLight:
             if any(passed is None for passed in env_results):
                 comms_failure = True
         colours = 'green' if all_passed else "yellow" if comms_failure else "red"
-        colours = 'redyellow' if comms_failure and not all_passed else colours
+        colours = 'commserror' if comms_failure and not all_passed else colours
         self.change_lights(colours)

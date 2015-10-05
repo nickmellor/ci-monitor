@@ -11,6 +11,15 @@ bsm:
 trafficlight:
   blinktimesecs: 2.0
   environments: [SIT]
+  lamppatterns:
+    'green': 0, 0, 1
+    'yellow': 0 1 0
+    'red': 1 0 0
+    'off': 0 0 0
+    'all': 1 1 1
+    'redyellow': 1 1 0
+    'commserror': 1 1 0
+    'changestate': 1 0 1
 
 geckoboard:
   bamboo_environments: [SIT]
