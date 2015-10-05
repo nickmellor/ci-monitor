@@ -46,9 +46,10 @@ class TrafficLight:
             self.set_lights('changestate')
             self.set_lights('alloff')
 
-    # def set_lights_RPi(self, colour_or_colours_name):
-    #     lamp_settings = dict(zip(['red', 'yellow', 'green'], traffic_light_lamp_configs[colour_or_colours_name]))
-    #     os.system("./clewarecontrol -d 901880 -c 1 -as 0 {red} -as 1 {yellow} -as 2 {green}".format(**lamp_settings))
+    def set_lights_RPi(self, pattern_name):
+        lamp_pattern = conf['trafficlight']['lamppatterns'][pattern_name]
+        settings = dict(zip(['red', 'yellow', 'green'], lamp_pattern))
+        os.system("./clewarecontrol -d 901880 -c 1 -as 0 {red} -as 1 {yellow} -as 2 {green}".format(**settings))
 
     def set_lights(self, pattern_name):
         pattern = conf['trafficlight']['lamppatterns'][pattern_name]

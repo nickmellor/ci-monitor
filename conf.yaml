@@ -17,7 +17,6 @@ trafficlight:
     red: [1, 0, 0]
     alloff: [0, 0, 0]
     all: [1, 1, 1]
-    redyellow: [1, 1, 0]
     commserror: [0, 1, 0]
     commserrorandfailures: [1, 1, 0]
     changestate: [1, 0, 1]
