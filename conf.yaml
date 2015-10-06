@@ -10,40 +10,43 @@ bsm:
 
 trafficlight:
   blinktimesecs: 0.5
-  environments: [SIT]
+  environments: [OMSDEV01]
   lamppatterns:
     green: [0, 0, 1]
     yellow: [0, 1, 0]
     red: [1, 0, 0]
     alloff: [0, 0, 0]
-    all: [1, 1, 1]
+    internalexception: [1, 1, 1]
     commserror: [0, 1, 0]
     commserrorandfailures: [1, 1, 0]
     changestate: [1, 0, 1]
 
-geckoboard:
-  bamboo_environments: [SIT]
-  apikey: 1cc8d5ca020cbd02b239f66389f1fefd
-  bamboo_widgets:
-    SIT: 146729-b35320bb-c355-405f-a228-71c5656a0709
+#geckoboard:
+#  bamboo_environments: [OMSDEV01]
+#  apikey: 1cc8d5ca020cbd02b239f66389f1fefd
+#  bamboo_widgets:
+#    OMSDEV01: 146729-b35320bb-c355-405f-a228-71c5656a0709
 
 bamboo:
   #uri: https://bamboo-corp-dev.aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-  uri: https://10.239.8.99/rest/api/latest/result/{tag}/latest.json
+#  uri: https://10.239.8.99/rest/api/latest/result/{tag}/latest.json
+  uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
   environments:
-    DEV:
-      Smoke: MEDIBANKCORP-RCWAT
-      Retail: MEDIBANKCORP-RCWAT3
-      Corp: MEDIBANKCORP-RCWAT0
-      #Elevate: MEDIBANKCORP-RCWAT17
-      Inc: MEDIBANKCORP-RCWAT21
-    #TEST:
-      #Corporate: MEDIBANKCORP-RCWAT9
-      #Elevate: MEDIBANKCORP-RCWAT18
-      #Inc: MEDIBANKCORP-RCWAT22
-      #Retail: MEDIBANKCORP-RCWAT8
-    SIT:
-      Retail: MEDIBANKCORP-RCWAT4
-      Corp: MEDIBANKCORP-RCWAT5
-      Inc: MEDIBANKCORP-RCWAT23
-      #Elevate: MEDIBANKCORP-RCWAT19
+    OMSDEV01:
+      All: MDAL-AGAT0-JOB1
+#    DEV:
+#      Smoke: MEDIBANKCORP-RCWAT
+#      #Retail: MEDIBANKCORP-RCWAT3
+#      Corp: MEDIBANKCORP-RCWAT0
+#      #Elevate: MEDIBANKCORP-RCWAT17
+#      Inc: MEDIBANKCORP-RCWAT21
+#    #TEST:
+#      #Corporate: MEDIBANKCORP-RCWAT9
+#      #Elevate: MEDIBANKCORP-RCWAT18
+#      #Inc: MEDIBANKCORP-RCWAT22
+#      #Retail: MEDIBANKCORP-RCWAT8
+#    SIT:
+#      #Retail: MEDIBANKCORP-RCWAT4
+#      Corp: MEDIBANKCORP-RCWAT5
+#      #Inc: MEDIBANKCORP-RCWAT23
+#      #Elevate: MEDIBANKCORP-RCWAT19

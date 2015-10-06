@@ -57,13 +57,15 @@ class TrafficLight:
         lamps_on += 'Y' if pattern[1] else ''
         lamps_on += 'G' if pattern[2] else ''
         if lamps_on:
+            # space between lamp switches on command line
             lamps_on = ' '.join(lamps_on)
         else:
+            # all lamps off
             lamps_on = 'O'
         os.system(".\\usbswitchcmd -n 901880 {switches}".format(switches=lamps_on))
 
-    def big_trouble(self):
-        self.change_lights('all')
+    def internal_exception(self):
+        self.change_lights('internalexception')
 
     def show_results(self, results):
         all_passed = True

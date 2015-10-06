@@ -1,6 +1,9 @@
 from conf import conf
-proxies = {
-    "http": conf['proxies']['http'],
-    "http": conf['proxies']['https']
-}
+try:
+    proxies = {
+        "http": conf['proxies']['http'],
+        "https": conf['proxies']['https']
+    }
+except Exception as e:
+    proxies = None
 
