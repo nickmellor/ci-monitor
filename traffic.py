@@ -24,7 +24,7 @@ class TrafficLight:
 
     def blink(self):
         self.blank()
-        sleep(conf['trafficlight']['blinktimesecs'])
+        sleep(conf['trafficlight']['blinktime_secs'])
 
     def change_lights(self, new_colour):
         # ignore requests to change lights if last run had an unhandled exception
@@ -62,7 +62,12 @@ class TrafficLight:
         else:
             # all lamps off
             lamps_on = 'O'
-        os.system(".\\usbswitchcmd -n 901880 {switches}".format(switches=lamps_on))
+        try:
+            # os.system(".\\usbswitchcmd -n 901880 {switches}".format(switches=lamps_on))
+            pass
+        except Exception as e:
+            logger.error('Could not find traffic light')
+
 
     def internal_exception(self):
         self.change_lights('internalexception')

@@ -6,14 +6,12 @@ import json
 import time
 
 def get_bamboo_result(uri):
-    # try:
+    try:
         if proxies:
             response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
         else:
             response = requests.get(uri, verify=False, timeout=10.0)
         logger.info("response from {0}".format(uri))
-        logger.info("Response content:\n")
-        logger.info(response.content)
         logger.info(response.status_code)
         results = json.loads(response.text)['testResults']
         logger.info("Tests passing: {0}".format(results['successful']))
@@ -26,9 +24,9 @@ def get_bamboo_result(uri):
             logger.info("*** All active tests passed ({0}) ***".format(results['successful']))
         logger.info("Skipped tests: {0}".format(results['skipped']))
         return results['failed'] == 0
-    # except Exception as e:
-    #     logger.error("Can't get info from Bamboo {0}:\n{1}".format(uri, e))
-    #     return None
+    except Exception as e:
+        logger.error("Can't get info from Bamboo {0}:\n{1}".format(uri, e))
+        return None
 
 
 def collect_bamboo_data():

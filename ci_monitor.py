@@ -22,12 +22,12 @@ while True:
     except KeyboardInterrupt as e:
         logger.error('Interrupted by Ctrl+C: exiting...')
         sys.exit()
-    # except Exception as e:
-    #     logger.error('Unhandled internal exception. Could be configuration problem or bug.\n{0}'.format(e))
-    #     traffic_light.internal_exception()
-    #     traffic_light.signal_unhandled_exception()
-    #     # NB traffic light update not shown until unhandled exception clear for one complete pass
-    #     sleep(conf['errorheartbeat_secs'])
+    except Exception as e:
+        logger.error('Unhandled internal exception. Could be configuration problem or bug.\n{0}'.format(e))
+        traffic_light.internal_exception()
+        traffic_light.signal_unhandled_exception()
+        # NB traffic light update not shown until unhandled exception clear for one complete pass
+        sleep(conf['errorheartbeat_secs'])
     oldconf = conf
     conf = reload_config()
     if oldconf != conf:
