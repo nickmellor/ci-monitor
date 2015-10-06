@@ -63,8 +63,7 @@ class TrafficLight:
             # all lamps off
             lamps_on = 'O'
         try:
-            # os.system(".\\usbswitchcmd -n 901880 {switches}".format(switches=lamps_on))
-            pass
+            os.system(".\\usbswitchcmd -n 901880 {switches}".format(switches=lamps_on))
         except Exception as e:
             logger.error('Could not find traffic light')
 

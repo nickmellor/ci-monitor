@@ -31,7 +31,7 @@ while True:
     oldconf = conf
     conf = reload_config()
     if oldconf != conf:
-        logger.info('Configuration file has changed. Reloaded config')
+        logger.warning('Configuration file has changed. Reloaded config')
     logger.info('thump')
 
 # TODO: factor out common code between Bamboo and BSM requests
