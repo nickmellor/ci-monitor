@@ -3,7 +3,6 @@ from conf import conf
 from proxies import proxies
 import requests
 import json
-import time
 
 def get_bamboo_result(uri):
     try:
@@ -11,21 +10,22 @@ def get_bamboo_result(uri):
             response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
         else:
             response = requests.get(uri, verify=False, timeout=10.0)
-        logger.info("response from {0}".format(uri))
-        logger.info(response.status_code)
-        results = json.loads(response.text)
-        logger.info("Tests passing: {0}".format(results['successfulTestCount']))
-        failures = results['failedTestCount']
-        if failures:
-            logger.info("Failed tests: {0}".format(failures))
-        else:
-            logger.info("*** All active tests passed ({0}) ***".format(results['successful']))
-        logger.info("Skipped tests: {0}".format(results['skippedTestCount']))
-        return results['successful']
-    except Exception as e:
+    except ConnectionError as e:
         # TODO: narrow this exception
         logger.error("Can't get info from Bamboo {0}:\n{1}".format(uri, e))
         return None
+    logger.info("response from {0}".format(uri))
+    logger.info(response.status_code)
+    results = json.loads(response.text)
+    logger.info("Tests passing: {0}".format(results['successfulTestCount']))
+    failures = results['failedTestCount']
+    if failures:
+        logger.info("Failed tests: {0}".format(failures))
+    else:
+        logger.info("*** All active tests passed ({0}) ***".format(results['successful']))
+    logger.info("Skipped tests: {0}".format(results['skippedTestCount']))
+    return results['successful']
+
 
 
 def collect_bamboo_data():

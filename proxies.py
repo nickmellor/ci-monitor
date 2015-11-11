@@ -4,6 +4,6 @@ try:
         "http": conf['proxies']['http'],
         "https": conf['proxies']['https']
     }
-except Exception as e:
+except KeyError as e:
     proxies = None
 

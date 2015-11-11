@@ -26,7 +26,7 @@ class Geckoboard:
                         "responseTime": "instant"
                     }
                 }
-            except Exception as e:
+            except KeyError as e:
                 logger.info('Problem with Geckoboard config. Exception follows: \n{0}'.format(e))
             push_url = "https://push.geckoboard.com/v1/send/" + conf['geckoboard']['bamboo_widgets'][env]
             logger.info('sending to geckoboard for environment {0} at {1}'.format(env, push_url))
@@ -39,5 +39,5 @@ class Geckoboard:
                     logger.info('Push to Geckoboard succeeded!')
                 else:
                     logger.warning('Did not succeed sending to Geckoboard (env={0})'.format(env))
-            except Exception as e:  # TODO: narrow this exception filter
+            except ConnectionError as e:
                 logger.error("Couldn't write to geckoboard. Exception follows: \n{0}".format(e))
