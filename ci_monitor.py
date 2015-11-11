@@ -6,7 +6,7 @@ from traffic import TrafficLight
 from geckoboard import Geckoboard
 from logger import logger
 
-logger.info('Started')
+logger.info('CI Monitor started')
 
 traffic_light = TrafficLight()
 geckoboard = Geckoboard()
