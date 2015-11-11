@@ -32,7 +32,7 @@ bamboo:
   uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
   environments:
     OMSDEV01:
-      All: MDAL-AGAT
+      All: MDAL-AGAT0 # Environment (dev01) branch of OMS
 #    DEV:
 #      Smoke: MEDIBANKCORP-RCWAT
 #      #Retail: MEDIBANKCORP-RCWAT3
