@@ -1,51 +1,42 @@
-import datetime
 from logger import logger
+from conf import conf
 from proxies import proxies
 import requests
 import json
-import warnings
-
-ci_environments = {
-    'DEV': {
-        "Smoke": "MEDIBANKCORP-RCWAT",
-        "Retail": "MEDIBANKCORP-RCWAT3",
-        "Corp": "MEDIBANKCORP-RCWAT0",
-        "Elevate": "MEDIBANKCORP-RCWAT17",
-        "Inc": "MEDIBANKCORP-RCWAT21",
-    },
-    'TEST': {
-        "Corporate": "MEDIBANKCORP-RCWAT9",
-        "Elevate": "MEDIBANKCORP-RCWAT18",
-        "Inc": "MEDIBANKCORP-RCWAT22",
-        "Retail": "MEDIBANKCORP-RCWAT8"
-
-    },
-    'SIT': {
-        "Retail": "MEDIBANKCORP-RCWAT4",
-        "Corp": "MEDIBANKCORP-RCWAT5",
-        "Inc": "MEDIBANKCORP-RCWAT23",
-        "Elevate": "MEDIBANKCORP-RCWAT19"
-    }
-}
 
 def get_bamboo_result(uri):
     try:
-        response = requests.get(uri, verify=False, proxies=proxies)
-        return json.loads(response.text)["successful"]
-    except Exception as e:
-        log.error("Can't get info from Bamboo:\n{0}".format(e))
+        if proxies:
+            response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
+        else:
+            response = requests.get(uri, verify=False, timeout=10.0)
+    except ConnectionError as e:
+        # TODO: narrow this exception
+        logger.error("Can't get info from Bamboo {0}:\n{1}".format(uri, e))
         return None
+    logger.info("response from {0}".format(uri))
+    logger.info(response.status_code)
+    results = json.loads(response.text)
+    logger.info("Tests passing: {0}".format(results['successfulTestCount']))
+    failures = results['failedTestCount']
+    if failures:
+        logger.info("Failed tests: {0}".format(failures))
+    else:
+        logger.info("*** All active tests passed ({0}) ***".format(results['successful']))
+    logger.info("Skipped tests: {0}".format(results['skippedTestCount']))
+    return results['successful']
+
 
 
 def collect_bamboo_data():
+    ci_environments = conf['bamboo']['environments']
     results = {}
     for env in ci_environments:
         env_results = {}
         for project, ci_tag in ci_environments[env].items():
-            uri = "https://bamboo-corp.dev.medibank.com.au/rest/api/latest/result/{tag}/latest.json".format(tag=ci_tag)
+            uri = conf['bamboo']['uri'].format(tag=ci_tag)
             env_results.update({project: get_bamboo_result(uri)})
-            logger.info("env: {1} tag: {2} success: {3}"
-                  .format(project, ci_tag, env_results))
+            logger.info("env: {0} tag: {1} success: {2}".format(project, ci_tag, env_results))
         results[env] = env_results
     return results
 

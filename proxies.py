@@ -1,5 +1,9 @@
-proxies = {
-    "http": "http://ausydisa02.au.imckesson.com:8080",
-    "https": "http://ausydisa02.au.imckesson.com:8080",
-}
+from conf import conf
+try:
+    proxies = {
+        "http": conf['proxies']['http'],
+        "https": conf['proxies']['https']
+    }
+except KeyError as e:
+    proxies = None
 
