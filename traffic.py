@@ -33,7 +33,13 @@ class TrafficLight:
             self.blink()  # visual check to make sure ci-monitor hasn't crashed
             if new_colour != self.old_colour:
                 self.draw_attention_to_state_change()
-                logger.info('Light changing from {0} to {1}'.format(self.old_colour, new_colour))
+                message = 'Light changing from {0} to {1}'.format(self.old_colour, new_colour)
+                if new_colour in conf['trafficlight']['lamperror']:
+                    logger.error(message)
+                elif new_colour in conf['trafficlight']['lampwarn']:
+                    logger.warning(message)
+                else:
+                    logger.info(message)
                 self.old_colour = new_colour
                 sound.play_sound(self.old_colour, new_colour)
             self.set_lights(new_colour)

@@ -5,7 +5,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 logging.captureWarnings(True)
 logger = logging.getLogger('log')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.WARNING)
 formatter = logging.Formatter('%(asctime)s:%(levelname)s: %(message)s')
 handler = TimedRotatingFileHandler(when='H', interval=24,
                                    filename=os.path.join('logs', 'log'),
