@@ -11,15 +11,17 @@ trafficlight:
   blinktime_secs: 0.1
   environments: [OMSDEV01]
   lamppatterns:
-    green: [0, 0, 1]
-    yellow: [0, 1, 0]
-    red: [1, 0, 0]
+    #green: [0, 0, 1]
+    #yellow: [0, 1, 0]
+    #red: [1, 0, 0]
+    failures: [1, 0, 0]
+    allpassed: [0, 0, 1]
     alloff: [0, 0, 0]
     internalexception: [1, 1, 1]
     commserror: [0, 1, 0]
     commserrorandfailures: [1, 1, 0]
     changestate: [1, 0, 1]
-  lampwarn: [commserror, commserrorandfailures, red]
+  lampwarn: [commserror, commserrorandfailures, failures]
   lamperror: [internalexception]
 
 #geckoboard:
