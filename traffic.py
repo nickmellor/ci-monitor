@@ -12,7 +12,7 @@ class TrafficLight:
     """
 
     def __init__(self):
-        self.old_colour = None
+        self.old_state = None
         self.monitored_environments = conf['trafficlight']['environments']
         self.finished_without_unhandled_exceptions = True
 
@@ -26,23 +26,23 @@ class TrafficLight:
         self.blank()
         sleep(conf['trafficlight']['blinktime_secs'])
 
-    def change_lights(self, new_colour):
+    def change_lights(self, new_state):
         # ignore requests to change lights if last run had an unhandled exception
         # (wait for stable recovery)
         if self.finished_without_unhandled_exceptions:
             self.blink()  # visual check to make sure ci-monitor hasn't crashed
-            if new_colour != self.old_colour:
+            if new_state != self.old_state:
                 self.draw_attention_to_state_change()
-                message = 'Light changing from {0} to {1}'.format(self.old_colour, new_colour)
-                if new_colour in conf['trafficlight']['lamperror']:
+                message = 'Light changing from {0} to {1}'.format(self.old_state, new_state)
+                if new_state in conf['trafficlight']['lamperror']:
                     logger.error(message)
-                elif new_colour in conf['trafficlight']['lampwarn']:
+                elif new_state in conf['trafficlight']['lampwarn']:
                     logger.warning(message)
                 else:
                     logger.info(message)
-                self.old_colour = new_colour
-                sound.play_sound(self.old_colour, new_colour)
-            self.set_lights(new_colour)
+                self.old_state = new_state
+                sound.play_sound(self.old_state, new_state)
+            self.set_lights(new_state)
 
     def blank(self):
         self.set_lights('alloff')
@@ -86,6 +86,6 @@ class TrafficLight:
             # can be yellow if there is a comms failure and no failed tests up til now
             if any(passed is None for passed in env_results):
                 comms_failure = True
-        colours = 'green' if all_passed else "commserror" if comms_failure else "red"
-        colours = 'commserrorandfailures' if comms_failure and not all_passed else colours
-        self.change_lights(colours)
+        state = 'allpassed' if all_passed else "commserror" if comms_failure else "failures"
+        state = 'commserrorandfailures' if comms_failure and not all_passed else state
+        self.change_lights(state)
