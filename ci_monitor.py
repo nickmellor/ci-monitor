@@ -27,6 +27,7 @@ while True:
         traffic_light.internal_exception()
         traffic_light.signal_unhandled_exception()
         # NB traffic light update not shown until unhandled exception clear for one complete pass
+        logger.error('Waiting {0} secs\n'.format(conf['errorheartbeat_secs']))
         sleep(conf['errorheartbeat_secs'])
     oldconf = conf
     conf = reload_config()
@@ -36,7 +37,4 @@ while True:
 
 # TODO: factor out common code between Bamboo and BSM requests
 # TODO: BSM XML parsing and summarising
-# TODO: setup SSL to Raspberry Pi
-# TODO: improve Raspberry Pi security-- don't login as root
-# TODO: logger output to console
 # TODO: enable one Raspberry Pi to look after more than one Geckoboard widget
