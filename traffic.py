@@ -52,6 +52,7 @@ class TrafficLight:
             self.set_lights('changestate')
             self.set_lights('blank')
 
+
     def set_lights(self, pattern_name):
         lamp_config = conf['trafficlight']['lamppatterns'][pattern_name]
         lookup = {'red': 'R', 'yellow': 'Y', 'green': 'G', 'alloff': 'O'}
