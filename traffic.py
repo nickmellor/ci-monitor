@@ -45,34 +45,40 @@ class TrafficLight:
             self.set_lights(new_state)
 
     def blank(self):
-        self.set_lights('alloff')
+        self.set_lights('blank')
 
     def draw_attention_to_state_change(self):
         for i in range(3):
             self.set_lights('changestate')
-            self.set_lights('alloff')
+            self.set_lights('blank')
 
     def set_lights_RPi(self, pattern_name):
         lamp_pattern = conf['trafficlight']['lamppatterns'][pattern_name]
         settings = dict(zip(['red', 'yellow', 'green'], lamp_pattern))
         os.system("./clewarecontrol -d 901880 -c 1 -as 0 {red} -as 1 {yellow} -as 2 {green}".format(**settings))
 
-    def set_lights(self, pattern_name):
-        pattern = conf['trafficlight']['lamppatterns'][pattern_name]
-        lamps_on = 'R' if pattern[0] else ''
-        lamps_on += 'Y' if pattern[1] else ''
-        lamps_on += 'G' if pattern[2] else ''
-        if lamps_on:
-            # space between lamp switches on command line
-            lamps_on = ' '.join(lamps_on)
-        else:
-            # all lamps off
-            lamps_on = 'O'
+    def old_set_lights(self, pattern_name):
+        lamp_config = conf['trafficlight']['lamppatterns'][pattern_name]
+        # spaces between lamp switches on command line
+        lamp_switches = ' '.join('RYG'[n] if lamp_switch else '' for n, lamp_switch in enumerate(lamp_config))
+        if not lamp_switches:
+            lamp_switches = 'O'
         try:
-            os.system(os.path.join(".", "usbswitchcmd") + " -n 901880 {switches}".format(switches=lamps_on))
+            os.system(os.path.join(".", "usbswitchcmd") + " -n 901880 {switches}".format(switches=lamp_switches))
         except Exception as e:
             logger.error('Could not find traffic light')
 
+    def set_lights(self, pattern_name):
+        lamp_config = conf['trafficlight']['lamppatterns'][pattern_name]
+        lookup = {'red': 'R', 'yellow': 'Y', 'green': 'G', 'alloff': 'O'}
+        # spaces between lamp switches on command line
+        lamp_switches = ' '.join(lookup[lamp] for lamp in lamp_config)
+        if not lamp_switches:
+            lamp_switches = 'O'
+        try:
+            os.system(os.path.join(".", "usbswitchcmd") + " -n 901880 {switches}".format(switches=lamp_switches))
+        except Exception as e:
+            logger.error('Could not find traffic light')
 
     def internal_exception(self):
         self.change_lights('internalexception')
@@ -82,8 +88,7 @@ class TrafficLight:
         comms_failure = False
         for env in self.monitored_environments:
             env_results = results[env].values()
-            all_passed = all_passed and all(passed for passed in env_results)
-            # can be yellow if there is a comms failure and no failed tests up til now
+            all_passed = all_passed and all(env_results)
             if any(passed is None for passed in env_results):
                 comms_failure = True
         state = 'allpassed' if all_passed else "commserror" if comms_failure else "failures"
