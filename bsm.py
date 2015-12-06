@@ -30,6 +30,6 @@ def get_bsm_data():
         response = requests.get(uri, verify=False, proxies=proxies)
         return json.loads(response.text)["successful"]
     except ConnectionError as e:
-        logger.error("Can't get info from Bamboo:\n{0}".format(e))
+        logger.error("Can't get info from BSM:\n{0}".format(e))
         return None
 

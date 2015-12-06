@@ -34,9 +34,10 @@ class TrafficLight:
             if new_state != self.old_state:
                 self.draw_attention_to_state_change()
                 message = "Light changing from '{0}' to '{1}'".format(self.old_state, new_state)
-                if new_state in conf['trafficlight']['lamperror']:
+                # log warnings/errors when moving into *and* out of a warning/error state
+                if (new_state in conf['trafficlight']['lamperror']) != (self.old_state in conf['trafficlight']['lamperror']):
                     logger.error(message)
-                elif new_state in conf['trafficlight']['lampwarn']:
+                elif (new_state in conf['trafficlight']['lampwarn']) != (self.old_state in conf['trafficlight']['lampwarn']):
                     logger.warning(message)
                 else:
                     logger.info(message)
