@@ -1,6 +1,7 @@
 import random
 import os
 import sound
+from subprocess import Popen
 from logger import logger
 from conf import conf
 from time import sleep
@@ -61,8 +62,14 @@ class TrafficLight:
         lamp_switches = ' '.join(lookup[lamp] for lamp in lamp_config)
         if not lamp_switches:
             lamp_switches = 'O'
+        switches = "{switches}".format(switches=lamp_switches)
+        command = os.path.join(".", "usbswitchcmd")
+        device = "-n 901880"
+        shellCmd = "{command} {device} {switches}".format(command=command, device=device, switches=switches)
         try:
-            os.system(os.path.join(".", "usbswitchcmd") + " -n 901880 {switches}".format(switches=lamp_switches))
+            #os.system(shellCmd)
+            sts = Popen(shellCmd, shell=True).wait()
+            # TODO: handle error conditions better than can from os.system()
         except Exception as e:
             logger.error('Could not find traffic light')
 
