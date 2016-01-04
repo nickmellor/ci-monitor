@@ -33,26 +33,34 @@ class TrafficLight:
         if self.finished_without_unhandled_exceptions:
             self.blink()  # visual check to make sure ci-monitor hasn't crashed
             if new_state != self.old_state:
-                self.draw_attention_to_state_change()
-                message = "Light changing from '{0}' to '{1}'".format(self.old_state, new_state)
-                # log warnings/errors when moving into *and* out of a warning/error state
-                if (new_state in conf['trafficlight']['lamperror']) != (self.old_state in conf['trafficlight']['lamperror']):
-                    logger.error(message)
-                elif (new_state in conf['trafficlight']['lampwarn']) != (self.old_state in conf['trafficlight']['lampwarn']):
-                    logger.warning(message)
-                else:
-                    logger.info(message)
+                self.draw_attention_to_state_change(new_state, self.old_state)
                 self.old_state = new_state
-                sound.play_sound(self.old_state, new_state)
             self.set_lights(new_state)
 
     def blank(self):
         self.set_lights('blank')
 
-    def draw_attention_to_state_change(self):
+    def draw_attention_to_state_change(self, new_state, old_state):
         for i in range(3):
             self.set_lights('changestate')
             self.set_lights('blank')
+        message = "Light changing from '{0}' to '{1}'".format(old_state, new_state)
+        # log warnings/errors when moving into *and* out of a warning/error state
+        errors = conf['trafficlight']['lamperror']
+        warnings = conf['trafficlight']['lampwarn']
+        if (new_state in errors) != (old_state in errors):
+            logger.error(message)
+        elif (new_state in warnings) != (old_state in warnings):
+            logger.warning(message)
+        else:
+            logger.info(message)
+        if new_state in errors or new_state in warnings:
+            sound.playwav('alarm_beep.wav')
+        else:
+            sound.playwav('applause.wav')
+        # sound.play_sound(self.old_state, new_state)
+
+
 
 
     def set_lights(self, pattern_name):
