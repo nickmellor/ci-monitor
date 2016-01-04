@@ -61,8 +61,6 @@ class TrafficLight:
         # sound.play_sound(self.old_state, new_state)
 
 
-
-
     def set_lights(self, pattern_name):
         lamp_config = conf['trafficlight']['lamppatterns'][pattern_name]
         lookup = {'red': 'R', 'yellow': 'Y', 'green': 'G', 'alloff': 'O'}
