@@ -8,6 +8,7 @@ bsm:
   interesting: [AWS/AEM, Customer Loyality, OMS, Sales Site]
   okstatus: ['20', '-2']
 trafficlight:
+  id: 901880
   blinktime_secs: 0.1
   environments: [OMSDEV01]
   lamppatterns:

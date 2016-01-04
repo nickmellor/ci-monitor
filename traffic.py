@@ -70,7 +70,7 @@ class TrafficLight:
             lamp_switches = 'O'
         switches = "{switches}".format(switches=lamp_switches)
         command = os.path.join(".", "usbswitchcmd")
-        device = "-n 901880"
+        device = "-n {device}".format(device=str(conf['trafficlight']['id']))
         shellCmd = "{command} {device} {switches}".format(command=command, device=device, switches=switches)
         try:
             #os.system(shellCmd)
