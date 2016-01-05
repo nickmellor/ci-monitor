@@ -1,0 +1,1 @@
+C:\Users\m45914\ci-monitor\Scripts\python.exe ci_monitor.py
