@@ -49,9 +49,11 @@ class TrafficLight:
         # log warnings/errors when moving into *and* out of a warning/error state
         errors = conf['trafficlight']['lamperror']
         warnings = conf['trafficlight']['lampwarn']
-        if (new_state in errors) != (old_state in errors):
+        change_to_from_error = (new_state in errors) != (old_state in errors)
+        change_to_from_warning = (new_state in warnings) != (old_state in warnings)
+        if change_to_from_error:
             logger.error(message)
-        elif (new_state in warnings) != (old_state in warnings):
+        elif change_to_from_warning:
             logger.warning(message)
         else:
             logger.info(message)
