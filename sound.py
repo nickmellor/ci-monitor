@@ -14,7 +14,7 @@ def playwav(wav_filename):
                                 channels=wav_file.getnchannels(), rate=wav_file.getframerate(),
                                 output=True)
     data = wav_file.readframes(chunksize)
-    while data != '':
+    while data:
         stream.write(data)  
         data = wav_file.readframes(chunksize)
     stream.stop_stream()

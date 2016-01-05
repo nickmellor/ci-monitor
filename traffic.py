@@ -1,7 +1,7 @@
 import random
 import os
 import sound
-from subprocess import Popen
+import subprocess
 from logger import logger
 from conf import conf
 from time import sleep
@@ -16,6 +16,7 @@ class TrafficLight:
         self.old_state = None
         self.monitored_environments = conf['trafficlight']['environments']
         self.finished_without_unhandled_exceptions = True
+        self.device_present = True
 
     def signal_unhandled_exception(self):
         self.finished_without_unhandled_exceptions = False
@@ -72,12 +73,13 @@ class TrafficLight:
         command = os.path.join(".", "usbswitchcmd")
         device = "-n {device}".format(device=str(conf['trafficlight']['id']))
         shellCmd = "{command} {device} {switches}".format(command=command, device=device, switches=switches)
-        try:
-            #os.system(shellCmd)
-            sts = Popen(shellCmd, shell=True).wait()
-            # TODO: handle error conditions better than can from os.system()
-        except Exception as e:
-            logger.error('Could not find traffic light')
+        logger.info("Executing shell command for traffic light: '{0}'".format(shellCmd))
+        stdout, error = subprocess.Popen(shellCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()
+        if stdout and self.device_present:
+            logger.warning("Traffic light (device {0}) issue. Message: '{1}'. No further warnings will be issued"
+                               .format(conf['trafficlight']['id'], stdout.decode('UTF-8').strip()))
+            self.device_present = False
+
 
     def internal_exception(self):
         self.change_lights('internalexception')
