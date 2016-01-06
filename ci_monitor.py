@@ -2,13 +2,13 @@ from time import sleep
 from conf import conf, reload_config
 import sys
 import bamboo
-from traffic import TrafficLight
+from signaller import Signaller
 from geckoboard import Geckoboard
 from logger import logger
 
 logger.info('CI Monitor started')
 
-traffic_light = TrafficLight()
+traffic_light = Signaller('OMS')
 geckoboard = Geckoboard()
 
 while True:

@@ -1,10 +1,10 @@
-import random
 import os
-import sound
 import subprocess
 from logger import logger
 from conf import conf
 from time import sleep
+
+global_settings = conf['trafficlights'] # settings for all traffic lights
 
 
 class TrafficLight:
@@ -12,88 +12,51 @@ class TrafficLight:
     use one class instance per traffic light device
     """
 
-    def __init__(self):
-        self.old_state = None
-        self.monitored_environments = conf['trafficlight']['environments']
-        self.finished_without_unhandled_exceptions = True
-        self.device_present = True
-
-    def signal_unhandled_exception(self):
-        self.finished_without_unhandled_exceptions = False
-
-    def clear_unhandled_exception(self):
-        self.finished_without_unhandled_exceptions = True
+    def __init__(self, signaller, device):
+        self.signaller = signaller # just for logging
+        self.device = device
+        logger.info("Device '{device}' is monitoring environments for '{signaller}'".format(
+            device=device, signaller=', '.join(signaller)))
+        self.device_was_connected_last_time = True
 
     def blink(self):
         self.blank()
-        sleep(conf['trafficlight']['blinktime_secs'])
-
-    def change_lights(self, new_state):
-        # ignore requests to change lights if last run had an unhandled exception
-        # (wait for stable recovery)
-        if self.finished_without_unhandled_exceptions:
-            self.blink()  # visual check to make sure ci-monitor hasn't crashed
-            if new_state != self.old_state:
-                self.draw_attention_to_state_change(new_state, self.old_state)
-                self.old_state = new_state
-            self.set_lights(new_state)
+        sleep(global_settings['blinktime_secs'])
 
     def blank(self):
         self.set_lights('blank')
 
-    def draw_attention_to_state_change(self, new_state, old_state):
+    def state_change(self, new_state, old_state, errorlevel):
         for i in range(3):
             self.set_lights('changestate')
             self.set_lights('blank')
         message = "Light changing from '{0}' to '{1}'".format(old_state, new_state)
-        # log warnings/errors when moving into *and* out of a warning/error state
-        errors = conf['trafficlight']['lamperror']
-        warnings = conf['trafficlight']['lampwarn']
-        change_to_from_error = (new_state in errors) != (old_state in errors)
-        change_to_from_warning = (new_state in warnings) != (old_state in warnings)
-        if change_to_from_error:
-            logger.error(message)
-        elif change_to_from_warning:
-            logger.warning(message)
-        else:
-            logger.info(message)
-        if new_state in errors or new_state in warnings:
-            sound.playwav('alarm_beep.wav')
-        else:
-            sound.playwav('applause.wav')
-        # sound.play_sound(self.old_state, new_state)
-
+        {'ERROR': logger.error,
+         'WARN': logger.warn,
+         'NONE': logger.info}[errorlevel](message)
 
     def set_lights(self, pattern_name):
-        lamp_config = conf['trafficlight']['lamppatterns'][pattern_name]
-        lookup = {'red': 'R', 'yellow': 'Y', 'green': 'G', 'alloff': 'O'}
+        lamp_pattern = global_settings['lamppatterns'][pattern_name]
+        colour_to_switch = {'red': 'R', 'yellow': 'Y', 'green': 'G', 'alloff': 'O'}
         # spaces between lamp switches on command line
-        lamp_switches = ' '.join(lookup[lamp] for lamp in lamp_config)
+        lamp_switches = ' '.join(colour_to_switch[lamp] for lamp in lamp_pattern)
         if not lamp_switches:
             lamp_switches = 'O'
-        switches = "{switches}".format(switches=lamp_switches)
-        command = os.path.join(".", "usbswitchcmd")
-        device = "-n {device}".format(device=str(conf['trafficlight']['id']))
-        shellCmd = "{command} {device} {switches}".format(command=command, device=device, switches=switches)
+        cmd_switches = "{switches}".format(switches=lamp_switches)
+        cmd_verb = os.path.join(".", "usbswitchcmd")
+        cmd_device = "-n {device}".format(device=str(self.device))
+        shellCmd = "{verb} {device} {switches}".format(verb=cmd_verb, device=cmd_device, switches=cmd_switches)
         logger.info("Executing shell command for traffic light: '{0}'".format(shellCmd))
         stdout, error = subprocess.Popen(shellCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()
-        if stdout and self.device_present:
-            logger.warning("Traffic light (device {0}) issue. Message: '{1}'. No further warnings will be issued"
-                               .format(conf['trafficlight']['id'], stdout.decode('UTF-8').strip()))
-            self.device_present = False
-
-
-    def internal_exception(self):
-        self.change_lights('internalexception')
-
-    def show_results(self, results):
-        all_passed = True
-        comms_failure = False
-        for env in self.monitored_environments:
-            env_results = results[env].values()
-            all_passed = all_passed and all(env_results)
-            if any(passed is None for passed in env_results):
-                comms_failure = True
-        state = 'allpassed' if all_passed else "commserror" if comms_failure else "failures"
-        state = 'commserrorandfailures' if comms_failure and not all_passed else state
-        self.change_lights(state)
+        device_is_missing = True if stdout else False
+        if device_is_missing:
+            if self.device_was_connected_last_time:
+                message = "Signaller '{signaller}' traffic light '{device}' is not responding.\n" \
+                          "No further warnings for this traffic light will be given\n"
+                message += "Message: '{message}'\n"
+                message = message.format(signaller=self.signaller, device=self.device,
+                                         message=stdout.decode('UTF-8').strip())
+                logger.warning(message)
+                self.device_was_connected_last_time = False
+        else:
+            self.device_was_connected_last_time = True

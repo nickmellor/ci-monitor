@@ -7,10 +7,7 @@ bsm:
   uri: http://bsmwebprd/topaz/bam/BAMOpenApi?customerId=1&userName={username}&password={password}&viewName=eBusiness&command=getNodes&layout=hierarchical&depth=4
   interesting: [AWS/AEM, Customer Loyality, OMS, Sales Site]
   okstatus: ['20', '-2']
-trafficlight:
-  id: 901880
-  blinktime_secs: 0.1
-  environments: [OMSDEV01]
+trafficlights:
   lamppatterns:
     failures: [red]
     allpassed: [green]
@@ -21,6 +18,14 @@ trafficlight:
     changestate: [red, green]
   lampwarn: [commserror, commserrorandfailures, failures]
   lamperror: [internalexception]
+  blinktime_secs: 0.1
+signallers:
+  OMS:
+    trafficlightid: 901880
+    environments: [OMSDEV01]
+    sounds:
+      fail: alarm_beep.wav
+      greenbuild: applause.wav
 
 #geckoboard:
 #  bamboo_environments: [OMSDEV01]
