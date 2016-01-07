@@ -31,26 +31,24 @@ class Signaller:
         # ignore requests to change lights if last run had an unhandled exception
         # (wait for stable recovery)
         if not self.unhandled_exception:
-            self.trafficlight.blink()  # visual check to make sure ci-monitor hasn't crashed
             if new_state != self.old_state:
-                self.state_change(new_state, self.old_state)
+                self.state_change(new_state)
                 self.old_state = new_state
-            self.trafficlight.set_lights(new_state)
 
-    def state_change(self, new_state, old_state):
+    def state_change(self, new_state):
         errors = settings['lamperror']
         new_error = new_state in errors
         warnings = settings['lampwarn']
         new_warning = new_state in warnings
-        change_to_from_error = (new_error) != (old_state in errors)
-        change_to_from_warning = (new_warning) != (old_state in warnings)
+        change_to_from_error = (new_error) != (self.old_state in errors)
+        change_to_from_warning = (new_warning) != (self.old_state in warnings)
         if change_to_from_error:
             level = 'ERROR'
         elif change_to_from_warning:
             level = 'WARNING'
         else:
             level = 'NONE'
-        self.trafficlight.state_change(new_state, old_state, level)
+        self.trafficlight.change_lights(new_state, self.old_state, level)
         sound = self.signal_settings['sounds']
         if new_state in errors or new_state in warnings:
             wav = sound['fail']
@@ -61,7 +59,10 @@ class Signaller:
 
 
     def internal_exception(self):
-        self.change_lights('internalexception')
+        self.signal_unhandled_exception()
+        self.state_change('internalexception')
+
+    # TODO: internal exceptions are not signal-specific
 
     def show_results(self, results):
         all_passed = True

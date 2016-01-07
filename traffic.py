@@ -26,14 +26,15 @@ class TrafficLight:
     def blank(self):
         self.set_lights('blank')
 
-    def state_change(self, new_state, old_state, errorlevel):
+    def change_lights(self, new_state, old_state, errorlevel):
         for i in range(3):
             self.set_lights('changestate')
             self.set_lights('blank')
         message = "Light changing from '{0}' to '{1}'".format(old_state, new_state)
         {'ERROR': logger.error,
-         'WARN': logger.warn,
+         'WARNING': logger.warn,
          'NONE': logger.info}[errorlevel](message)
+        self.set_lights(new_state)
 
     def set_lights(self, pattern_name):
         lamp_pattern = global_settings['lamppatterns'][pattern_name]
