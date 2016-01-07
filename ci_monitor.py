@@ -37,4 +37,5 @@ while True:
 
 # TODO: factor out common code between Bamboo and BSM requests
 # TODO: BSM XML parsing and summarising
-# TODO: enable one Raspberry Pi to look after more than one Geckoboard widget
+# TODO: enable one server to look after more than one Geckoboard widget
+# TODO: geckoboard

@@ -32,7 +32,7 @@ class TrafficLight:
             self.set_lights('blank')
         message = "Light changing from '{0}' to '{1}'".format(old_state, new_state)
         {'ERROR': logger.error,
-         'WARN': logger.warn,
+         'WARNING': logger.warn,
          'NONE': logger.info}[errorlevel](message)
 
     def set_lights(self, pattern_name):
