@@ -1,44 +1,72 @@
+from time import sleep
+from requests.exceptions import RequestException
+from geckoboard import Geckoboard
+
 import soundplayer
 from logger import logger
 from conf import conf
 from traffic import TrafficLight
+import bamboo
 
-settings = conf['trafficlights']
-
+traffic_light_settings = conf['trafficlights']
 
 class Signaller:
     """
-    glues environments to methods of signalling (traffic lights, sounds)
+    couples Bamboo builds to methods of signalling (traffic lights, sounds)
     """
 
     def __init__(self, signal_name):
         self.old_state = None
-        self.name = signal_name
+        self.signal_name = signal_name
         self.signal_settings = conf['signallers'][signal_name]
         self.environments = self.signal_settings['environments']
         logger.info("'{signaller}' signal is monitoring environments '{environments}'".format(
             signaller=signal_name, environments=', '.join(self.environments)))
         self.unhandled_exception = False
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlightid'])
+        self.bamboo_results = None
+        self.geckoboard = Geckoboard()
+
+    def poll(self):
+        logger.info('Signaller {signaller}: polling...')
+        try:
+            results = bamboo.collect_bamboo_data()
+        except RequestException as e:
+            logger.error("Signaller {signaller}: can't get info from Bamboo:\n{exception}".format(signaller=self.signal_name, exception=e))
+        except Exception as e:
+            logger.error('Signaller {signaller}: Unhandled internal exception. Could be configuration problem or bug.\n{exception}'
+                         .format(signaller=self.signal_name, exception=e.args))
+            self.internal_exception()
+            # NB traffic light update not shown until unhandled exception clear for one complete pass
+            logger.error('Waiting {0} secs\n'.format(conf['errorheartbeat_secs']))
+            sleep(conf['errorheartbeat_secs'])
+        else:
+            self.show_results(results)
+            self.geckoboard.show_monitored_environments(results)
+            self.clear_unhandled_exception()
+
+    def unhandled_exception_raised(self):
+        return self.unhandled_exception
 
     def signal_unhandled_exception(self):
         self.unhandled_exception = True
 
     def clear_unhandled_exception(self):
+        logger.warning("Signal {signal}: internal exception cleared".format(signal=self.signal_name))
         self.unhandled_exception = False
 
-    def change_lights(self, new_state):
-        # ignore requests to change lights if last run had an unhandled exception
-        # (wait for stable recovery)
-        if not self.unhandled_exception:
-            if new_state != self.old_state:
-                self.state_change(new_state)
-                self.old_state = new_state
+    # def change_lights(self, new_state):
+    #     # ignore requests to change lights if last run had an unhandled exception
+    #     # (wait for stable recovery)
+    #     if not self.unhandled_exception:
+    #         if new_state != self.old_state:
+    #             self.state_change(new_state)
+    #             self.old_state = new_state
 
     def state_change(self, new_state):
-        errors = settings['lamperror']
+        errors = traffic_light_settings['lamperror']
         new_error = new_state in errors
-        warnings = settings['lampwarn']
+        warnings = traffic_light_settings['lampwarn']
         new_warning = new_state in warnings
         change_to_from_error = (new_error) != (self.old_state in errors)
         change_to_from_warning = (new_warning) != (self.old_state in warnings)
@@ -55,6 +83,7 @@ class Signaller:
         else:
             wav = sound['greenbuild']
         soundplayer.playwav(wav)
+        self.old_state = new_state
 
 
 
@@ -74,4 +103,9 @@ class Signaller:
                 comms_failure = True
         state = 'allpassed' if all_passed else "commserror" if comms_failure else "failures"
         state = 'commserrorandfailures' if comms_failure and not all_passed else state
-        self.change_lights(state)
+        if state != self.old_state:
+            self.state_change(state)
+        else:
+            # TODO: move to traffic light class. TL needs to remember last setting
+            self.trafficlight.blink()
+            self.trafficlight.set_lights(self.old_state)

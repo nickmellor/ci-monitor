@@ -1,3 +1,5 @@
+from requests.packages.urllib3.exceptions import MaxRetryError
+
 from logger import logger
 from conf import conf
 from proxies import proxies
@@ -5,15 +7,11 @@ import requests
 import json
 
 def get_bamboo_result(uri):
-    try:
-        if proxies:
-            response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
-        else:
-            response = requests.get(uri, verify=False, timeout=10.0)
-    except ConnectionError as e:
-        # TODO: narrow this exception
-        logger.error("Can't get info from Bamboo {0}:\n{1}".format(uri, e))
-        return None
+    # try:
+    if proxies:
+        response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
+    else:
+        response = requests.get(uri, verify=False, timeout=10.0)
     logger.info("response from {0}".format(uri))
     logger.info(response.status_code)
     results = json.loads(response.text)

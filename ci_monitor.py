@@ -3,39 +3,28 @@ from conf import conf, reload_config
 import sys
 import bamboo
 from signaller import Signaller
-from geckoboard import Geckoboard
 from logger import logger
 
 logger.info('CI Monitor started')
 
 signaller = Signaller('OMS')
-geckoboard = Geckoboard()
 
 while True:
     try:
-        logger.info('Polling')
-        results = bamboo.collect_bamboo_data()
-        signaller.show_results(results)
-        geckoboard.show_monitored_environments(results)
-        signaller.clear_unhandled_exception()
-        sleep(conf['heartbeat_secs'])
+        signaller.poll()
     except KeyboardInterrupt as e:
         logger.error('Interrupted by Ctrl+C: exiting...')
         sys.exit()
-    except Exception as e:
-        logger.error('Unhandled internal exception. Could be configuration problem or bug.\n{0}'.format(e.args))
-        signaller.internal_exception()
-        signaller.signal_unhandled_exception()
-        # NB traffic light update not shown until unhandled exception clear for one complete pass
-        logger.error('Waiting {0} secs\n'.format(conf['errorheartbeat_secs']))
-        sleep(conf['errorheartbeat_secs'])
+    else:
+        if not signaller.unhandled_exception_raised():
+            sleep(conf['heartbeat_secs'])
     oldconf = conf
     conf = reload_config()
     if oldconf != conf:
         logger.warning('Configuration file has changed. Reloaded config')
-    logger.info('thump')
 
-# TODO: factor out common code between Bamboo and BSM requests
 # TODO: BSM XML parsing and summarising
 # TODO: enable one server to look after more than one Geckoboard widget
-# TODO: geckoboard
+# TODO: decouple signals so they operate independently-- separate threads?
+# TODO: geckoboard: display a few failing tests (+ most recent committers?)
+# TODO: signaller does not attempt to use absent devices (traffic light, geckoboard etc)
