@@ -1,30 +1,27 @@
 from time import sleep
-from conf import conf, reload_config
+from conf import conf, config_changed
 import sys
-import bamboo
 from signaller import Signaller
 from logger import logger
+from conf import config_changed
 
 logger.info('CI Monitor started')
-
-signaller = Signaller('OMS')
-
 while True:
-    try:
-        signaller.poll()
-    except KeyboardInterrupt as e:
-        logger.error('Interrupted by Ctrl+C: exiting...')
-        sys.exit()
-    else:
-        if not signaller.unhandled_exception_raised():
-            sleep(conf['heartbeat_secs'])
-    oldconf = conf
-    conf = reload_config()
-    if oldconf != conf:
-        logger.warning('Configuration file has changed. Reloaded config')
+    signaller = Signaller('OMS')
+    while not config_changed():
+        try:
+            signaller.poll()
+        except KeyboardInterrupt as e:
+            logger.error('Interrupted by Ctrl+C: exiting...')
+            sys.exit()
+        else:
+            if not signaller.unhandled_exception_raised():
+                sleep(conf['heartbeat_secs'])
+
 
 # TODO: BSM XML parsing and summarising
 # TODO: enable one server to look after more than one Geckoboard widget
 # TODO: decouple signals so they operate independently-- separate threads?
 # TODO: geckoboard: display a few failing tests (+ most recent committers?)
 # TODO: signaller does not attempt to use absent devices (traffic light, geckoboard etc)
+# TODO: add last downtime facility for Geckoboard

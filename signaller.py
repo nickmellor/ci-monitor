@@ -31,8 +31,6 @@ class Signaller:
         logger.info('Signaller {signaller}: polling...')
         try:
             results = bamboo.collect_bamboo_data()
-        except RequestException as e:
-            logger.error("Signaller {signaller}: can't get info from Bamboo:\n{exception}".format(signaller=self.signal_name, exception=e))
         except Exception as e:
             logger.error('Signaller {signaller}: Unhandled internal exception. Could be configuration problem or bug.\n{exception}'
                          .format(signaller=self.signal_name, exception=e.args))
@@ -43,7 +41,8 @@ class Signaller:
         else:
             self.show_results(results)
             self.geckoboard.show_monitored_environments(results)
-            self.clear_unhandled_exception()
+            if self.unhandled_exception_raised():
+                self.clear_unhandled_exception()
 
     def unhandled_exception_raised(self):
         return self.unhandled_exception

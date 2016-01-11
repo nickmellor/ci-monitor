@@ -1,6 +1,5 @@
 import os
 import logging
-from conf import conf
 from logging.handlers import TimedRotatingFileHandler
 
 logging.captureWarnings(True)

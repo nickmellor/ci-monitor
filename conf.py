@@ -1,7 +1,20 @@
-from yaml import load
+import yaml
+from logger import logger
 
-def reload_config():
+conf = None
+
+def config_changed():
+    global conf
+    new_conf = get_config()
+    changed = new_conf != conf
+    if changed:
+        conf = new_conf
+        logger.warning('Config changed')
+    return changed
+
+
+def get_config():
     with open('conf.yaml') as config_file:
-        return load(config_file)
+        return yaml.load(config_file)
 
-conf = reload_config()
+conf = get_config()
