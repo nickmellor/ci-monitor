@@ -23,5 +23,7 @@ while True:
 # TODO: enable one server to look after more than one Geckoboard widget
 # TODO: decouple signals so they operate independently-- separate threads?
 # TODO: geckoboard: display a few failing tests (+ most recent committers?)
-# TODO: signaller does not attempt to use absent devices (traffic light, geckoboard etc)
 # TODO: add last downtime facility for Geckoboard
+# TODO: classize bamboo module
+# TODO: signaller does not attempt to use absent devices (traffic light, geckoboard etc)
+# TODO: Hipchat notification of build going red/green

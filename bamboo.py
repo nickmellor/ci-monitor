@@ -22,12 +22,12 @@ def get_bamboo_result(uri):
             response = requests.get(uri, verify=False, timeout=10.0)
     except (RequestException, ConnectionError, MaxRetryError) as e:
         if not previous_connection_problem:
-            message = "Signaller '{signaller}': Bamboo URI is not responding.\n" \
+            message = "Signaller '{signaller}': Bamboo URI '{uri}' is not responding.\n" \
                       "No further warnings will be given\n"
-            message += "Exception: '{exception}'\n"
-            message = message.format(signaller="OMS",  exception=e)
+            message += "Exception: {exception}\n"
+            message = message.format(signaller="OMS",  uri=uri, exception=e)
             logger.warning(message)
-            # logger.error("Signaller {signaller}: can't get info from Bamboo:\n{exception}".format(signaller=self.signal_name, exception=e))
+        previous_connection_problem = True
     else:
         previous_connection_problem = False
         logger.info("response from {0}".format(uri))
@@ -38,7 +38,7 @@ def get_bamboo_result(uri):
         if failures:
             logger.info("Failed tests: {0}".format(failures))
         else:
-            logger.info("*** All active tests passed ({0}) ***".format(results['successful']))
+            logger.info("*** All active tests passed ***".format(results['successful']))
         logger.info("Skipped tests: {0}".format(results['skippedTestCount']))
         return results['successful']
 

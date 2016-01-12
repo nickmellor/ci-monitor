@@ -28,7 +28,7 @@ class Signaller:
         self.geckoboard = Geckoboard()
 
     def poll(self):
-        logger.info('Signaller {signaller}: polling...')
+        logger.info('Signaller {signaller}: polling...'.format(signaller=self.signal_name))
         try:
             results = bamboo.collect_bamboo_data()
         except Exception as e:
@@ -54,41 +54,36 @@ class Signaller:
         logger.warning("Signal {signal}: internal exception cleared".format(signal=self.signal_name))
         self.unhandled_exception = False
 
-    # def change_lights(self, new_state):
-    #     # ignore requests to change lights if last run had an unhandled exception
-    #     # (wait for stable recovery)
-    #     if not self.unhandled_exception:
-    #         if new_state != self.old_state:
-    #             self.state_change(new_state)
-    #             self.old_state = new_state
-
-    def state_change(self, new_state):
+    def significant_state_change(self, new_state):
         errors = traffic_light_settings['lamperror']
         new_error = new_state in errors
         warnings = traffic_light_settings['lampwarn']
         new_warning = new_state in warnings
-        change_to_from_error = (new_error) != (self.old_state in errors)
-        change_to_from_warning = (new_warning) != (self.old_state in warnings)
+        change_to_from_error = new_error != (self.old_state in errors)
+        change_to_from_warning = new_warning != (self.old_state in warnings)
         if change_to_from_error:
             level = 'ERROR'
         elif change_to_from_warning:
             level = 'WARNING'
         else:
             level = 'NONE'
-        self.trafficlight.change_lights(new_state, self.old_state, level)
+        message = "State changing to '{level}'".format(level=level)
+        logger_method = {'ERROR': logger.error,
+                         'WARNING': logger.warn,
+                         'NONE': logger.info}
+        logger_method[level](message)
+        self.trafficlight.set_lights(new_state)
         sound = self.signal_settings['sounds']
         if new_state in errors or new_state in warnings:
             wav = sound['fail']
         else:
             wav = sound['greenbuild']
         soundplayer.playwav(wav)
-        self.old_state = new_state
-
-
 
     def internal_exception(self):
-        self.signal_unhandled_exception()
-        self.state_change('internalexception')
+        if not self.unhandled_exception_raised():
+            self.signal_unhandled_exception()
+            self.significant_state_change('internalexception')
 
     # TODO: internal exceptions are not signal-specific
 
@@ -102,4 +97,8 @@ class Signaller:
                 comms_failure = True
         state = 'allpassed' if all_passed else "commserror" if comms_failure else "failures"
         state = 'commserrorandfailures' if comms_failure and not all_passed else state
-        self.trafficlight.set_lights(state)
+        if self.old_state != state:
+            self.significant_state_change(state)
+            self.old_state = state
+        else:
+            self.trafficlight.set_lights(state)

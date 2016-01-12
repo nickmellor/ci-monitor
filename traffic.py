@@ -12,43 +12,38 @@ class TrafficLight:
     use one class instance per traffic light device
     """
 
-    def __init__(self, signaller, device):
+    def __init__(self, signaller, device_id):
         self.signaller = signaller  # just for logging
-        self.device = device
+        self.device_id = device_id
         logger.info("Device '{device}' is being used by signal '{signaller}'"
-            .format(device=device, signaller=signaller))
+                    .format(device=device_id, signaller=signaller))
         self.device_was_connected_last_time = True
         self.state = None
 
     def blink(self):
-        self.blank()
+        self.all_lamps_off()
         sleep(settings['blinktime_secs'])
         self._set_lamps(self.state)
 
-    def blank(self):
+    def all_lamps_off(self):
         self._set_lamps('blank')
 
     def change_lights(self, new_state, old_state, errorlevel):
-        self.show_lamp_change()
-        message = "Light changing from '{0}' to '{1}'".format(old_state, new_state)
-        logger_method = {'ERROR': logger.error,
-                     'WARNING': logger.warn,
-                     'NONE': logger.info}
-        logger_method[errorlevel](message)
+        self.lights_changing()
         self._set_lamps(new_state)
 
-    def show_lamp_change(self):
+    def lights_changing(self, new_state):
         for i in range(3):
             self._set_lamps('changestate', monitor=False)
             self._set_lamps('blank', monitor=False)
+        logger.info("Light changing from '{0}' to '{1}'".format(self.state, new_state))
+        self._set_lamps(new_state)
+        self.state = new_state
 
     def set_lights(self, new_state):
         if new_state != self.state:
-            self.show_lamp_change()
-            self._set_lamps(new_state)
-            self.state = new_state
+            self.lights_changing(new_state)
         else:
-            # off and on quickly to show process is still alive
             self.blink()
 
     def _set_lamps(self, state, monitor=True):
@@ -63,7 +58,7 @@ class TrafficLight:
                 message = "Signaller '{signaller}' traffic light '{device}' is not responding.\n" \
                           "No further warnings for this traffic light will be given\n"
                 message += "Message: '{message}'\n"
-                message = message.format(signaller=self.signaller, device=self.device,
+                message = message.format(signaller=self.signaller, device=self.device_id,
                                          message=stdout.decode('UTF-8').strip())
                 logger.warning(message)
                 self.device_was_connected_last_time = False
@@ -77,8 +72,8 @@ class TrafficLight:
         lamp_switches = ' '.join(colour_to_switch[lamp] for lamp in lamp_pattern)
         if not lamp_switches:
             lamp_switches = 'O'
-        cmd_switches = "{switches}".format(switches=lamp_switches)
+        cmd_lamps = "{switches}".format(switches=lamp_switches)
         cmd_verb = os.path.join(".", "usbswitchcmd")
-        cmd_device = "-n {device}".format(device=str(self.device))
-        shellCmd = "{verb} {device} {switches}".format(verb=cmd_verb, device=cmd_device, switches=cmd_switches)
-        return shellCmd
+        cmd_device = "-n {device}".format(device=str(self.device_id))
+        shell_command = "{verb} {device} {lamps}".format(verb=cmd_verb, device=cmd_device, lamps=cmd_lamps)
+        return shell_command
