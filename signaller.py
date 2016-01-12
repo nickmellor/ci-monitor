@@ -102,9 +102,4 @@ class Signaller:
                 comms_failure = True
         state = 'allpassed' if all_passed else "commserror" if comms_failure else "failures"
         state = 'commserrorandfailures' if comms_failure and not all_passed else state
-        if state != self.old_state:
-            self.state_change(state)
-        else:
-            # TODO: move to traffic light class. TL needs to remember last setting
-            self.trafficlight.blink()
-            self.trafficlight.set_lights(self.old_state)
+        self.trafficlight.set_lights(state)

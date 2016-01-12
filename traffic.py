@@ -23,10 +23,10 @@ class TrafficLight:
     def blink(self):
         self.blank()
         sleep(settings['blinktime_secs'])
-        self.set_lights(self.state)
+        self._set_lamps(self.state)
 
     def blank(self):
-        self.set_lights('blank')
+        self._set_lamps('blank')
 
     def change_lights(self, new_state, old_state, errorlevel):
         self.show_lamp_change()
@@ -35,18 +35,18 @@ class TrafficLight:
                      'WARNING': logger.warn,
                      'NONE': logger.info}
         logger_method[errorlevel](message)
-        self.set_lights(new_state)
+        self._set_lamps(new_state)
 
     def show_lamp_change(self):
         for i in range(3):
             self._set_lamps('changestate', monitor=False)
             self._set_lamps('blank', monitor=False)
 
-    def set_lights(self, state):
-        if state != self.state:
+    def set_lights(self, new_state):
+        if new_state != self.state:
             self.show_lamp_change()
-            self._set_lamps(state)
-            self.state = state
+            self._set_lamps(new_state)
+            self.state = new_state
         else:
             # off and on quickly to show process is still alive
             self.blink()
