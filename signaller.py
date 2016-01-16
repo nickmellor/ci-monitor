@@ -54,7 +54,7 @@ class Signaller:
         logger.warning("Signal {signal}: internal exception cleared".format(signal=self.signal_name))
         self.unhandled_exception = False
 
-    def significant_state_change(self, new_state):
+    def check_for_significant_state_change(self, new_state):
         errors = traffic_light_settings['lamperror']
         new_error = new_state in errors
         warnings = traffic_light_settings['lampwarn']
@@ -83,22 +83,22 @@ class Signaller:
     def internal_exception(self):
         if not self.unhandled_exception_raised():
             self.signal_unhandled_exception()
-            self.significant_state_change('internalexception')
+            self.check_for_significant_state_change('internalexception')
 
     # TODO: internal exceptions are not signal-specific
 
-    def show_results(self, results):
+    def show_results(self, bamboo_results):
         all_passed = True
         comms_failure = False
-        for env in self.environments:
-            env_results = results[env].values()
-            all_passed = all_passed and all(env_results)
-            if any(passed is None for passed in env_results):
+        for environment in self.environments:
+            test_results = bamboo_results[environment].values()
+            all_passed = all_passed and all(test_results)
+            if any(passed is None for passed in test_results):
                 comms_failure = True
-        state = 'allpassed' if all_passed else "commserror" if comms_failure else "failures"
+        state = 'alltestspassed' if all_passed else "commserror" if comms_failure else "failures"
         state = 'commserrorandfailures' if comms_failure and not all_passed else state
         if self.old_state != state:
-            self.significant_state_change(state)
+            self.check_for_significant_state_change(state)
             self.old_state = state
         else:
             self.trafficlight.set_lights(state)

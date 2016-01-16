@@ -51,6 +51,6 @@ def collect_bamboo_data():
         for project, ci_tag in ci_environments[env].items():
             uri = conf['bamboo']['uri'].format(tag=ci_tag)
             env_results.update({project: get_bamboo_result(uri)})
-            logger.info("env: {0} tag: {1} success: {2}".format(project, ci_tag, env_results))
+            logger.info("Project: '{0}' Bamboo tag: {1} success: {2}".format(project, ci_tag, env_results))
         results[env] = env_results
     return results

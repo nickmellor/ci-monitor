@@ -10,7 +10,7 @@ bsm:
 trafficlights:
   lamppatterns:
     failures: [red]
-    allpassed: [green]
+    alltestspassed: [green]
     blank: [alloff]
     internalexception: [red, yellow, green]
     commserror: [yellow]
@@ -40,7 +40,8 @@ bamboo:
   environments:
     OMSDEV01:
       #All: MDAL-AGAT0 # Environment (dev01) branch of OMS
-      All: MDAL-AGAT # develop branch of OMS
+      API tests: MDAL-AGAT
+      Jasmine: MDO-MSA
 #    DEV:
 #      Smoke: MEDIBANKCORP-RCWAT
 #      #Retail: MEDIBANKCORP-RCWAT3

@@ -18,7 +18,7 @@ while True:
             if not signaller.unhandled_exception_raised():
                 sleep(conf['heartbeat_secs'])
 
-
+# TODO: fix coming off warning/error-- currently not logging
 # TODO: BSM XML parsing and summarising
 # TODO: enable one server to look after more than one Geckoboard widget
 # TODO: decouple signals so they operate independently-- separate threads?
