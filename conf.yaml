@@ -1,5 +1,5 @@
-heartbeat_secs: 60
-errorheartbeat_secs: 60
+heartbeat_secs: 5
+errorheartbeat_secs: 5
 proxies:
     http: http://ausydisa02.au.imckesson.com:8080
     https: http://ausydisa02.au.imckesson.com:8080
@@ -22,7 +22,12 @@ trafficlights:
 signallers:
   OMS:
     trafficlightid: 901880
-    environments: [OMSDEV01]
+    bamboo:
+      environments:
+        OMSDEV01:
+          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          API tests: MDAL-AGAT
+          Jasmine: MDO-MSA
     sounds:
       fail: alarm_beep.wav
       greenbuild: applause.wav
@@ -33,15 +38,7 @@ signallers:
 #  bamboo_widgets:
 #    OMSDEV01: 146729-b35320bb-c355-405f-a228-71c5656a0709
 
-bamboo:
-  #uri: https://bamboo-corp-dev.aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-#  uri: https://10.239.8.99/rest/api/latest/result/{tag}/latest.json
-  uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-  environments:
-    OMSDEV01:
-      #All: MDAL-AGAT0 # Environment (dev01) branch of OMS
-      API tests: MDAL-AGAT
-      Jasmine: MDO-MSA
+
 #    DEV:
 #      Smoke: MEDIBANKCORP-RCWAT
 #      #Retail: MEDIBANKCORP-RCWAT3

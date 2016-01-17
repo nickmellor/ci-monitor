@@ -6,7 +6,7 @@ import soundplayer
 from logger import logger
 from conf import conf
 from traffic import TrafficLight
-import bamboo
+from bamboo import Bamboo
 
 traffic_light_settings = conf['trafficlights']
 
@@ -24,7 +24,7 @@ class Signaller:
             signaller=signal_name, environments=', '.join(self.environments)))
         self.unhandled_exception = False
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlightid'])
-        self.bamboo_results = None
+        self.bamboo = Bamboo(signal_name, self.signal_settings['bamboo'])
         self.geckoboard = Geckoboard()
 
     def poll(self):

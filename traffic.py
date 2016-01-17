@@ -23,10 +23,10 @@ class TrafficLight:
     def blink(self):
         self.all_lamps_off()
         sleep(settings['blinktime_secs'])
-        self._set_lamps(self.state)
+        self._set_lamps(self.state, monitor=False)
 
     def all_lamps_off(self):
-        self._set_lamps('blank')
+        self._set_lamps('blank', monitor=False)
 
     def change_lights(self, new_state, old_state, errorlevel):
         self.lights_changing()
