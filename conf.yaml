@@ -26,8 +26,9 @@ signallers:
       environments:
         OMSDEV01:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-          API tests: MDAL-AGAT
-          Jasmine: MDO-MSA
+          tasks:
+            API tests: MDAL-AGAT
+            Jasmine: MDO-MSA
     sounds:
       fail: alarm_beep.wav
       greenbuild: applause.wav

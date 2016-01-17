@@ -19,20 +19,22 @@ class Signaller:
         self.old_state = None
         self.signal_name = signal_name
         self.signal_settings = conf['signallers'][signal_name]
-        self.environments = self.signal_settings['environments']
-        logger.info("'{signaller}' signal is monitoring environments '{environments}'".format(
-            signaller=signal_name, environments=', '.join(self.environments)))
+        #self.environments = self.signal_settings['environments']
+        # logger.info("'{signaller}' signal is monitoring environments '{environments}'".format(
+        #     signaller=signal_name, environments=', '.join(self.environments)))
         self.unhandled_exception = False
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlightid'])
-        self.bamboo = Bamboo(signal_name, self.signal_settings['bamboo'])
+        self.bamboo_tasks = Bamboo(self.signal_settings['bamboo'])
+        #self.bamboo = Bamboo(signal_name, self.signal_settings['bamboo'])
         self.geckoboard = Geckoboard()
 
     def poll(self):
         logger.info('Signaller {signaller}: polling...'.format(signaller=self.signal_name))
         try:
-            results = bamboo.collect_bamboo_data()
+            results = self.bamboo_tasks.all_results()
         except Exception as e:
-            logger.error('Signaller {signaller}: Unhandled internal exception. Could be configuration problem or bug.\n{exception}'
+            logger.error('Signaller {signaller}: Unhandled internal exception. '
+                         'Could be configuration problem or bug.\n{exception}'
                          .format(signaller=self.signal_name, exception=e.args))
             self.internal_exception()
             # NB traffic light update not shown until unhandled exception clear for one complete pass
@@ -85,13 +87,11 @@ class Signaller:
             self.signal_unhandled_exception()
             self.check_for_significant_state_change('internalexception')
 
-    # TODO: internal exceptions are not signal-specific
-
     def show_results(self, bamboo_results):
         all_passed = True
         comms_failure = False
-        for environment in self.environments:
-            test_results = bamboo_results[environment].values()
+        for environment, env_results in bamboo_results:
+            test_results = env_results.values()
             all_passed = all_passed and all(test_results)
             if any(passed is None for passed in test_results):
                 comms_failure = True

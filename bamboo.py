@@ -10,14 +10,14 @@ import json
 
 class Bamboo:
     def __init__(self, settings):
+        self.settings = settings
         self.environments = settings['environments']
-        self.proxies = conf['proxies']
         self.previous_connection_problem = False
 
     def task_result(self, uri):
         global previous_connection_problem
         try:
-            if self.proxies:
+            if proxies:
                 response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
             else:
                 response = requests.get(uri, verify=False, timeout=10.0)
@@ -43,16 +43,17 @@ class Bamboo:
             logger.info("Skipped tests: {0}".format(results['skippedTestCount']))
             return results['successful']
 
-    def results_all_environments(self):
+    def all_results(self):
         results = {}
-        for env in self.environments:
-            results[env] = self.environment_results(env)
+        for env, detail in self.settings['environments'].items():
+            results[env] = self.environment_results(detail)
         return results
 
-    def environment_results(self, env):
+    def environment_results(self, bamboo_detail):
         results = {}
-        for ci_project, ci_tag in self.environments[env].items():
-            uri = self.settings['uri'].format(tag=ci_tag)
-            results.update({ci_project: self.task_result(uri)})
-            logger.info("Project '{0}', Bamboo tag: {1}, result: {2}".format(ci_project, ci_tag, results))
+        uri_template = bamboo_detail.get('uri')
+        for task, ci_tag in bamboo_detail['tasks'].items():
+            uri = uri_template.format(tag=ci_tag)
+            results.update({task: self.task_result(uri)})
+            logger.info("Project '{0}', Bamboo tag: {1}, result: {2}".format(task, ci_tag, results))
         return results
