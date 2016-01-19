@@ -90,7 +90,7 @@ class Signaller:
     def show_results(self, bamboo_results):
         all_passed = True
         comms_failure = False
-        for environment, env_results in bamboo_results:
+        for environment, env_results in bamboo_results.items():
             test_results = env_results.values()
             all_passed = all_passed and all(test_results)
             if any(passed is None for passed in test_results):
