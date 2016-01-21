@@ -1,12 +1,12 @@
 from time import sleep
-from requests.exceptions import RequestException
-from geckoboard import Geckoboard
 
 import soundplayer
-from logger import logger
-from conf import conf
-from traffic import TrafficLight
 from bamboo import Bamboo
+from conf import conf
+from geckoboard import Geckoboard
+from logger import logger
+from state import State
+from traffic import TrafficLight
 
 traffic_light_settings = conf['trafficlights']
 
@@ -16,8 +16,8 @@ class Signaller:
     """
 
     def __init__(self, signal_name):
-        self.old_state = None
         self.signal_name = signal_name
+        self.state = State.retrieve(self.state_id())
         self.signal_settings = conf['signallers'][signal_name]
         #self.environments = self.signal_settings['environments']
         # logger.info("'{signaller}' signal is monitoring environments '{environments}'".format(
@@ -27,6 +27,9 @@ class Signaller:
         self.bamboo_tasks = Bamboo(self.signal_settings['bamboo'])
         #self.bamboo = Bamboo(signal_name, self.signal_settings['bamboo'])
         self.geckoboard = Geckoboard()
+
+    def state_id(self):
+        return 'signaller:{signal}'.format(signal=self.signal_name)
 
     def poll(self):
         logger.info('Signaller {signaller}: polling...'.format(signaller=self.signal_name))
@@ -61,15 +64,15 @@ class Signaller:
         new_error = new_state in errors
         warnings = traffic_light_settings['lampwarn']
         new_warning = new_state in warnings
-        change_to_from_error = new_error != (self.old_state in errors)
-        change_to_from_warning = new_warning != (self.old_state in warnings)
+        change_to_from_error = new_error != (self.state in errors)
+        change_to_from_warning = new_warning != (self.state in warnings)
         if change_to_from_error:
             level = 'ERROR'
         elif change_to_from_warning:
             level = 'WARNING'
         else:
             level = 'NONE'
-        message = "State changing to '{level}'".format(level=level)
+        message = "State changing from '{old}' to '{new}'".format(old=self.state, new=new_state)
         logger_method = {'ERROR': logger.error,
                          'WARNING': logger.warn,
                          'NONE': logger.info}
@@ -97,8 +100,8 @@ class Signaller:
                 comms_failure = True
         state = 'alltestspassed' if all_passed else "commserror" if comms_failure else "failures"
         state = 'commserrorandfailures' if comms_failure and not all_passed else state
-        if self.old_state != state:
+        if self.state != state:
             self.check_for_significant_state_change(state)
-            self.old_state = state
+            State.store(self.state_id(), state)
         else:
             self.trafficlight.set_lights(state)

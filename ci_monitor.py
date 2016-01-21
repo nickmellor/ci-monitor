@@ -7,8 +7,8 @@ from conf import config_changed
 
 logger.info('CI Monitor started')
 while True:
-    signaller = Signaller('OMS')
     while not config_changed():
+        signaller = Signaller('OMS')
         try:
             signaller.poll()
         except KeyboardInterrupt as e:
