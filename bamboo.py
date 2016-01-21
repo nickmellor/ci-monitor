@@ -6,6 +6,7 @@ from conf import conf
 from proxies import proxies
 import requests
 import json
+from state import State
 
 
 class Bamboo:
@@ -13,6 +14,12 @@ class Bamboo:
         self.settings = settings
         self.environments = settings['environments']
         self.previous_connection_problem = False
+        # self.previous_connection_problem = State.retrieve(self.previous_connection_storage_id())
+        # TODO: wire Bamboo into the config for specific Bamboo tasks (currently hard-wired to OMS)
+
+    def previous_connection_storage_id(self):
+        pass
+
 
     def task_result(self, uri):
         global previous_connection_problem

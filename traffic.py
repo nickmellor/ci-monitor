@@ -3,6 +3,7 @@ import subprocess
 from logger import logger
 from conf import conf
 from time import sleep
+from state import State
 
 settings = conf['trafficlights']
 
@@ -17,8 +18,14 @@ class TrafficLight:
         self.device_id = device_id
         logger.info("Device '{device}' is being used by signal '{signaller}'"
                     .format(device=device_id, signaller=signaller))
-        self.device_was_connected_last_time = True
-        self.state = None
+        self.device_was_connected_last_time = State.retrieve(self.previously_connected_storage_key())
+        self.state = State.retrieve(self.previous_state_storage_key())
+
+    def previously_connected_storage_key(self):
+        return 'tlight:{device_id}:previouslyConnected'.format(device_id=self.device_id)
+
+    def previous_state_storage_key(self):
+        return 'tlight:{device_id}:previousState'.format(device_id=self.device_id)
 
     def blink(self):
         self.all_lamps_off()
@@ -39,6 +46,7 @@ class TrafficLight:
         logger.info("Light changing from '{0}' to '{1}'".format(self.state, new_state))
         self._set_lamps(new_state)
         self.state = new_state
+        State.store(self.previous_state_storage_key(), self.state)
 
     def set_lights(self, new_state):
         if new_state != self.state:
@@ -63,7 +71,8 @@ class TrafficLight:
                 logger.warning(message)
                 self.device_was_connected_last_time = False
         else:
-            self.device_was_connected_last_time = True
+            self.device_was_connected_last_time = False
+        State.store(self.previously_connected_storage_key(), self.device_was_connected_last_time)
 
     def _shell_command(self, state):
         lamp_pattern = settings['lamppatterns'][state]
