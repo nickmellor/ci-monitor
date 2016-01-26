@@ -4,10 +4,10 @@ class State:
     state = {}
 
     @classmethod
-    def store(self, item, state):
-        self.state.update({item: state})
+    def store(cls, item, state):
+        cls.state.update({item: state})
 
     @classmethod
-    def retrieve(self, item):
-        return self.state.get(item)
+    def retrieve(cls, item):
+        return cls.state.get(item)
 
