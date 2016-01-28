@@ -3,7 +3,6 @@ from conf import conf, config_changed
 import sys
 from signaller import Signaller
 from logger import logger
-from conf import config_changed
 
 logger.info('CI Monitor started')
 while True:

@@ -35,18 +35,14 @@ class TrafficLight:
     def all_lamps_off(self):
         self._set_lamps('blank', monitor=False)
 
-    def change_lights(self, new_state, old_state, errorlevel):
-        self.lights_changing()
-        self._set_lamps(new_state)
-
     def lights_changing(self, new_state):
         for i in range(3):
             self._set_lamps('changestate', monitor=False)
             self._set_lamps('blank', monitor=False)
-        logger.info("Light changing from '{0}' to '{1}'".format(self.state, new_state))
+        logger.info("Device '{device}': light changing from '{old}' to '{new}'"
+                    .format(device=self.device_id, old=self.state, new=new_state))
         self._set_lamps(new_state)
-        self.state = new_state
-        State.store(self.previous_state_storage_key(), self.state)
+        State.store(self.previous_state_storage_key(), new_state)
 
     def set_lights(self, new_state):
         if new_state != self.state:
@@ -71,7 +67,7 @@ class TrafficLight:
                 logger.warning(message)
                 self.device_was_connected_last_time = False
         else:
-            self.device_was_connected_last_time = False
+            self.device_was_connected_last_time = True
         State.store(self.previously_connected_storage_key(), self.device_was_connected_last_time)
 
     def _shell_command(self, state):
@@ -81,7 +77,7 @@ class TrafficLight:
         lamp_switches = ' '.join(colour_to_switch[lamp] for lamp in lamp_pattern)
         if not lamp_switches:
             lamp_switches = 'O'
-        cmd_lamps = "{switches}".format(switches=lamp_switches)
+        cmd_lamps = "{lamps}".format(lamps=lamp_switches)
         cmd_verb = os.path.join(".", "usbswitchcmd")
         cmd_device = "-n {device}".format(device=str(self.device_id))
         shell_command = "{verb} {device} {lamps}".format(verb=cmd_verb, device=cmd_device, lamps=cmd_lamps)

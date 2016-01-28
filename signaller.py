@@ -66,6 +66,14 @@ class Signaller:
         new_warning = new_state in warnings
         change_to_from_error = new_error != (self.state in errors)
         change_to_from_warning = new_warning != (self.state in warnings)
+        if change_to_from_error or change_to_from_warning:
+            sound = self.signal_settings['sounds']
+            if new_error or new_warning:
+                wav = sound['fail']
+            else:
+                wav = sound['greenbuild']
+            soundplayer.playwav(wav)
+
         if change_to_from_error:
             level = 'ERROR'
         elif change_to_from_warning:
@@ -78,12 +86,6 @@ class Signaller:
                          'NONE': logger.info}
         logger_method[level](message)
         self.trafficlight.set_lights(new_state)
-        sound = self.signal_settings['sounds']
-        if new_state in errors or new_state in warnings:
-            wav = sound['fail']
-        else:
-            wav = sound['greenbuild']
-        soundplayer.playwav(wav)
 
     def internal_exception(self):
         if not self.unhandled_exception_raised():
@@ -93,13 +95,22 @@ class Signaller:
     def show_results(self, bamboo_results):
         all_passed = True
         comms_failure = False
-        for environment, env_results in bamboo_results.items():
-            test_results = env_results.values()
-            all_passed = all_passed and all(test_results)
-            if any(passed is None for passed in test_results):
+        for env_results in bamboo_results.values():
+            project_results = env_results.values()
+            retrieved_results = [result for result in project_results if result is not None]
+            all_passed = all_passed and not retrieved_results and all(retrieved_results)
+            if any(passed is None for passed in project_results):
                 comms_failure = True
-        state = 'alltestspassed' if all_passed else "commserror" if comms_failure else "failures"
-        state = 'commserrorandfailures' if comms_failure and not all_passed else state
+        if comms_failure:
+            if all_passed:
+                state = 'commserror'
+            else:
+                state = 'commserrorandfailures'
+        else:
+            if all_passed:
+                state = 'alltestspassed'
+            else:
+                state = 'falures'
         if self.state != state:
             self.check_for_significant_state_change(state)
             State.store(self.state_id(), state)
