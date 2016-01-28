@@ -13,12 +13,10 @@ class Bamboo:
     def __init__(self, settings):
         self.settings = settings
         self.environments = settings['environments']
-        self.previous_connection_problem = False
-        # self.previous_connection_problem = State.retrieve(self.previous_connection_storage_id())
-        # TODO: wire Bamboo into the config for specific Bamboo tasks (currently hard-wired to OMS)
+        self.connected = State.retrieve(self.previous_connection_storage_id(), True)
 
     def previous_connection_storage_id(self):
-        pass
+        return 'Bamboo:{environments}'.format(environments=','.join(self.settings['environments'].keys()))
 
 
     def task_result(self, uri):
@@ -29,15 +27,15 @@ class Bamboo:
             else:
                 response = requests.get(uri, verify=False, timeout=10.0)
         except (RequestException, ConnectionError, MaxRetryError) as e:
-            if not self.previous_connection_problem:
+            if self.connected:
                 message = "Signaller '{signaller}': Bamboo URI '{uri}' is not responding.\n" \
-                          "No further warnings will be given\n"
+                          "No further warnings will be given until it reconnects.\n"
                 message += "Exception: {exception}\n"
                 message = message.format(signaller="OMS",  uri=uri, exception=e)
                 logger.warning(message)
-            previous_connection_problem = True
+                self.connected = False
         else:
-            self.previous_connection_problem = False
+            self.connected = True
             logger.info("response from {0}".format(uri))
             logger.info(response.status_code)
             results = json.loads(response.text)
@@ -49,6 +47,7 @@ class Bamboo:
                 logger.info("*** All active tests passed ***".format(results['successful']))
             logger.info("Skipped tests: {0}".format(results['skippedTestCount']))
             return results['successful']
+        State.store(self.previous_connection_storage_id(), self.connected)
 
     def all_results(self):
         results = {}

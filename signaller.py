@@ -19,13 +19,13 @@ class Signaller:
         self.signal_name = signal_name
         self.state = State.retrieve(self.state_id())
         self.signal_settings = conf['signallers'][signal_name]
-        #self.environments = self.signal_settings['environments']
+        # self.environments = self.signal_settings['environments']
         # logger.info("'{signaller}' signal is monitoring environments '{environments}'".format(
         #     signaller=signal_name, environments=', '.join(self.environments)))
         self.unhandled_exception = False
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlightid'])
         self.bamboo_tasks = Bamboo(self.signal_settings['bamboo'])
-        #self.bamboo = Bamboo(signal_name, self.signal_settings['bamboo'])
+        # self.bamboo = Bamboo(signal_name, self.signal_settings['bamboo'])
         self.geckoboard = Geckoboard()
 
     def state_id(self):
@@ -59,7 +59,7 @@ class Signaller:
         logger.warning("Signal {signal}: internal exception cleared".format(signal=self.signal_name))
         self.unhandled_exception = False
 
-    def check_for_significant_state_change(self, new_state):
+    def respond_to_error_level(self, new_state):
         errors = traffic_light_settings['lamperror']
         new_error = new_state in errors
         warnings = traffic_light_settings['lampwarn']
@@ -73,7 +73,6 @@ class Signaller:
             else:
                 wav = sound['greenbuild']
             soundplayer.playwav(wav)
-
         if change_to_from_error:
             level = 'ERROR'
         elif change_to_from_warning:
@@ -90,7 +89,7 @@ class Signaller:
     def internal_exception(self):
         if not self.unhandled_exception_raised():
             self.signal_unhandled_exception()
-            self.check_for_significant_state_change('internalexception')
+            self.respond_to_error_level('internalexception')
 
     def show_results(self, bamboo_results):
         all_passed = True
@@ -98,7 +97,9 @@ class Signaller:
         for env_results in bamboo_results.values():
             project_results = env_results.values()
             retrieved_results = [result for result in project_results if result is not None]
-            all_passed = all_passed and not retrieved_results and all(retrieved_results)
+            # all returns True for empty list
+            all_passed = all_passed and retrieved_results is not None
+            all_passed = all_passed and all(retrieved_results)
             if any(passed is None for passed in project_results):
                 comms_failure = True
         if comms_failure:
@@ -110,9 +111,9 @@ class Signaller:
             if all_passed:
                 state = 'alltestspassed'
             else:
-                state = 'falures'
+                state = 'failures'
         if self.state != state:
-            self.check_for_significant_state_change(state)
+            self.respond_to_error_level(state)
             State.store(self.state_id(), state)
         else:
             self.trafficlight.set_lights(state)

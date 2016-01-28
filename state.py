@@ -8,6 +8,6 @@ class State:
         cls.state.update({item: state})
 
     @classmethod
-    def retrieve(cls, item):
-        return cls.state.get(item)
+    def retrieve(cls, item, default=None):
+        return cls.state.get(item, default)
 
