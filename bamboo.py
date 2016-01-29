@@ -13,29 +13,27 @@ class Bamboo:
     def __init__(self, settings):
         self.settings = settings
         self.environments = settings['environments']
-        self.connected = State.retrieve(self.previous_connection_storage_id(), True)
+        self.was_connected = State.retrieve(self.previous_connection_storage_id(), True)
 
     def previous_connection_storage_id(self):
         return 'Bamboo:{environments}'.format(environments=','.join(self.settings['environments'].keys()))
 
-
     def task_result(self, uri):
-        global previous_connection_problem
         try:
             if proxies:
                 response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
             else:
                 response = requests.get(uri, verify=False, timeout=10.0)
         except (RequestException, ConnectionError, MaxRetryError) as e:
-            if self.connected:
+            if self.was_connected:
                 message = "Signaller '{signaller}': Bamboo URI '{uri}' is not responding.\n" \
                           "No further warnings will be given until it reconnects.\n"
                 message += "Exception: {exception}\n"
                 message = message.format(signaller="OMS",  uri=uri, exception=e)
                 logger.warning(message)
-                self.connected = False
+                self.was_connected = False
         else:
-            self.connected = True
+            self.was_connected = True
             logger.info("response from {0}".format(uri))
             logger.info(response.status_code)
             results = json.loads(response.text)
@@ -47,19 +45,22 @@ class Bamboo:
                 logger.info("*** All active tests passed ***".format(results['successful']))
             logger.info("Skipped tests: {0}".format(results['skippedTestCount']))
             return results['successful']
-        State.store(self.previous_connection_storage_id(), self.connected)
+        State.store(self.previous_connection_storage_id(), self.was_connected)
 
     def all_results(self):
         results = {}
         for env, detail in self.settings['environments'].items():
-            results[env] = self.environment_results(detail)
+            results[env] = self.environment_results(env, detail)
         return results
 
-    def environment_results(self, bamboo_detail):
+    def environment_results(self, environment, bamboo_detail):
         results = {}
         uri_template = bamboo_detail.get('uri')
-        for task, ci_tag in bamboo_detail['tasks'].items():
+        for job, ci_tag in bamboo_detail['tasks'].items():
             uri = uri_template.format(tag=ci_tag)
-            results.update({task: self.task_result(uri)})
-            logger.info("Project '{0}', Bamboo tag: {1}, result: {2}".format(task, ci_tag, results))
+            result = self.task_result(uri)
+            results.update({job: result})
+            if self.was_connected:
+                logger.info("{environment}:{job}, Bamboo tag {tag}, result is '{result}'"
+                            .format(environment=environment, job=job, tag=ci_tag, result=result))
         return results

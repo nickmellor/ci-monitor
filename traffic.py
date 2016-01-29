@@ -18,7 +18,8 @@ class TrafficLight:
         self.device_id = device_id
         logger.info("Device '{device}' is being used by signal '{signaller}'"
                     .format(device=device_id, signaller=signaller))
-        self.previously_connected = State.retrieve(self.connected_status_storage_key(), True)
+        # last time we knew, traffic light was connected
+        self.was_connected = State.retrieve(self.connected_status_storage_key(), True)
         self.state = State.retrieve(self.previous_state_key())
 
     def connected_status_storage_key(self):
@@ -39,9 +40,10 @@ class TrafficLight:
         for i in range(3):
             self._set_lamps('changestate', monitor=False)
             self._set_lamps('blank', monitor=False)
-        logger.info("{signaller}: device '{device}': light changing from '{old}' to '{new}'"
-                    .format(signaller=self.signaller, device=self.device_id,
-                            old=self.state, new=new_state))
+        if self.was_connected:
+            logger.info("{signaller}: device '{device}': light changing from '{old}' to '{new}'"
+                        .format(signaller=self.signaller, device=self.device_id,
+                                old=self.state, new=new_state))
         self._set_lamps(new_state)
         State.store(self.previous_state_key(), new_state)
 
@@ -53,20 +55,20 @@ class TrafficLight:
 
     def _set_lamps(self, state, monitor=True):
         shell_command = self._shell_command(state)
-        if monitor:
+        if monitor and self.was_connected:
             logger.info("Executing shell command for traffic light: '{0}'".format(shell_command))
         stdout, error = subprocess.Popen(shell_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                          shell=True).communicate()
         device_detected = not (stdout or error)
         if not device_detected:
-            if self.previously_connected:
+            if self.was_connected:
                 message = "Signaller '{signaller}' traffic light '{device}' is not responding.\n" \
                           "No further warnings for this traffic light will be given until it is connected.\n"
                 message += "Message: '{message}'\n"
                 message = message.format(signaller=self.signaller, device=self.device_id,
                                          message=stdout.decode('UTF-8').strip())
                 logger.warning(message)
-                self.previously_connected = False
+                self.was_connected = False
         State.store(self.connected_status_storage_key(), device_detected)
 
     def _shell_command(self, state):

@@ -1,5 +1,5 @@
-heartbeat_secs: 10
-errorheartbeat_secs: 10
+heartbeat_secs: 60
+errorheartbeat_secs: 180
 proxies:
     http: http://ausydisa02.au.imckesson.com:8080
     https: http://ausydisa02.au.imckesson.com:8080
@@ -27,6 +27,7 @@ signallers:
         OMSDEV01:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
           tasks:
+            ESB API tests: MDAL-ESS
             API tests: MDAL-AGAT
             Jasmine: MDO-MSA
     sounds:
