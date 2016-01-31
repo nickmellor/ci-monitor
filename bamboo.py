@@ -2,7 +2,6 @@ from requests.exceptions import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
 
 from logger import logger
-from conf import conf
 from proxies import proxies
 import requests
 import json
@@ -10,12 +9,17 @@ from state import State
 
 
 class Bamboo:
+    """
+    retrieve Bamboo results for a signaller's monitored environments
+    """
+
     def __init__(self, settings):
         self.settings = settings
         self.environments = settings['environments']
         self.was_connected = {}
 
-    def previous_connection_storage_id(self, uri):
+    @staticmethod
+    def previous_connection_storage_id(uri):
         return 'Bamboo:{uri}'.format(uri=uri)
 
     def task_result(self, environment, job, uri):
@@ -57,7 +61,7 @@ class Bamboo:
     def environment_results(self, environment, bamboo_detail):
         results = {}
         uri_template = bamboo_detail.get('uri')
-        for job, tag in bamboo_detail['tasks'].items():
+        for job, tag in bamboo_detail['jobs'].items():
             uri = uri_template.format(tag=tag)
             result = self.task_result(environment, job, uri)
             results.update({job: result})

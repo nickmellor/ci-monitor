@@ -27,12 +27,12 @@ signallers:
       environments:
         OMS_DEV01:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-          tasks:
+          jobs:
             API tests: MDAL-AGAT
             Jasmine unit tests: MDO-MSA
         OMS_SIT_WSDLs:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-          tasks:
+          jobs:
             ESB API tests: MDAL-ESS
     sounds:
       fail: alarm_beep.wav
