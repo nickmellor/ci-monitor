@@ -13,27 +13,28 @@ class Bamboo:
     def __init__(self, settings):
         self.settings = settings
         self.environments = settings['environments']
-        self.was_connected = State.retrieve(self.previous_connection_storage_id(), True)
+        self.was_connected = {}
 
-    def previous_connection_storage_id(self):
-        return 'Bamboo:{environments}'.format(environments=','.join(self.settings['environments'].keys()))
+    def previous_connection_storage_id(self, uri):
+        return 'Bamboo:{uri}'.format(uri=uri)
 
-    def task_result(self, uri):
+    def task_result(self, environment, uri):
+        self.was_connected[uri] = State.retrieve(self.previous_connection_storage_id(uri), True)
         try:
             if proxies:
                 response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
             else:
                 response = requests.get(uri, verify=False, timeout=10.0)
         except (RequestException, ConnectionError, MaxRetryError) as e:
-            if self.was_connected:
-                message = "Signaller '{signaller}': Bamboo URI not responding, URI: '{uri}'\n" \
+            if self.was_connected[uri]:
+                message = "Signaller '{signaller}': Bamboo environment '{env}' not responding, URI: '{uri}'\n" \
                           "No further warnings will be given unless/until it responds.\n"
                 message += "Exception: {exception}\n"
-                message = message.format(signaller="OMS",  uri=uri, exception=e)
+                message = message.format(signaller="OMS",  env=environment, uri=uri, exception=e)
                 logger.warning(message)
-                self.was_connected = False
+                self.was_connected[uri] = False
         else:
-            self.was_connected = True
+            self.was_connected[uri] = True
             logger.info("response from {0}".format(uri))
             logger.info(response.status_code)
             results = json.loads(response.text)
@@ -45,7 +46,7 @@ class Bamboo:
                 logger.info("*** All active tests passed ***".format(results['successful']))
             logger.info("Skipped tests: {0}".format(results['skippedTestCount']))
             return results['successful']
-        State.store(self.previous_connection_storage_id(), self.was_connected)
+        State.store(self.previous_connection_storage_id(uri), self.was_connected[uri])
 
     def all_results(self):
         results = {}
@@ -56,11 +57,11 @@ class Bamboo:
     def environment_results(self, environment, bamboo_detail):
         results = {}
         uri_template = bamboo_detail.get('uri')
-        for job, ci_tag in bamboo_detail['tasks'].items():
-            uri = uri_template.format(tag=ci_tag)
-            result = self.task_result(uri)
+        for job, tag in bamboo_detail['tasks'].items():
+            uri = uri_template.format(tag=tag)
+            result = self.task_result(environment, uri)
             results.update({job: result})
-            if self.was_connected:
+            if self.was_connected.get(uri):
                 logger.info("{environment}: '{job}', Bamboo tag {tag}, result is '{result}'"
-                            .format(environment=environment, job=job, tag=ci_tag, result=result))
+                            .format(environment=environment, job=job, tag=tag, result=result))
         return results

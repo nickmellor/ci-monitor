@@ -18,7 +18,8 @@ while True:
                 sleep(conf['heartbeat_secs'])
 
 # TODO: fix coming off warning/error-- currently not logging
-# TODO: BSM XML parsing and summarising
+# TODO: elegantly handle no config for traffic light
+# TODO: BSM XML parsing and summarising: wire to new signaller (sound only?)
 # TODO: enable one server to look after more than one Geckoboard widget
 # TODO: decouple signals so they operate independently-- separate threads?
 # TODO: geckoboard: display a few failing tests (+ most recent committers?)
