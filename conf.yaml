@@ -29,7 +29,7 @@ signallers:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
           tasks:
             API tests: MDAL-AGAT
-            Jasmine: MDO-MSA
+            Jasmine unit tests: MDO-MSA
         OMS_SIT_WSDLs:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
           tasks:

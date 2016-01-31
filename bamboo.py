@@ -18,7 +18,7 @@ class Bamboo:
     def previous_connection_storage_id(self, uri):
         return 'Bamboo:{uri}'.format(uri=uri)
 
-    def task_result(self, environment, uri):
+    def task_result(self, environment, job, uri):
         self.was_connected[uri] = State.retrieve(self.previous_connection_storage_id(uri), True)
         try:
             if proxies:
@@ -27,10 +27,10 @@ class Bamboo:
                 response = requests.get(uri, verify=False, timeout=10.0)
         except (RequestException, ConnectionError, MaxRetryError) as e:
             if self.was_connected[uri]:
-                message = "Signaller '{signaller}': Bamboo environment '{env}' not responding, URI: '{uri}'\n" \
+                message = "Signaller '{signaller}': '{env}' Bamboo job '{job}' not responding, URI: '{uri}'\n" \
                           "No further warnings will be given unless/until it responds.\n"
                 message += "Exception: {exception}\n"
-                message = message.format(signaller="OMS",  env=environment, uri=uri, exception=e)
+                message = message.format(signaller="OMS",  env=environment, job=job, uri=uri, exception=e)
                 logger.warning(message)
                 self.was_connected[uri] = False
         else:
@@ -59,7 +59,7 @@ class Bamboo:
         uri_template = bamboo_detail.get('uri')
         for job, tag in bamboo_detail['tasks'].items():
             uri = uri_template.format(tag=tag)
-            result = self.task_result(environment, uri)
+            result = self.task_result(environment, job, uri)
             results.update({job: result})
             if self.was_connected.get(uri):
                 logger.info("{environment}: '{job}', Bamboo tag {tag}, result is '{result}'"
