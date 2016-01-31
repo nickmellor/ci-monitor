@@ -21,7 +21,8 @@ trafficlights:
   blinktime_secs: 0.1
 signallers:
   OMS:
-    trafficlightid: 901880
+    trafficlight:
+      id: 901880
     bamboo:
       environments:
         OMSDEV01:

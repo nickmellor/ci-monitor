@@ -12,20 +12,17 @@ traffic_light_settings = conf['trafficlights']
 
 class Signaller:
     """
-    couples Bamboo builds to methods of signalling (traffic lights, sounds)
+    has a concept of 'state'-- Bamboo responsiveness, exceptions etc
+    connects builds/status of services with methods of signalling (traffic lights, sounds)
     """
 
     def __init__(self, signal_name):
         self.signal_name = signal_name
         self.state = State.retrieve(self.state_id())
         self.signal_settings = conf['signallers'][signal_name]
-        # self.environments = self.signal_settings['environments']
-        # logger.info("'{signaller}' signal is monitoring environments '{environments}'".format(
-        #     signaller=signal_name, environments=', '.join(self.environments)))
         self.unhandled_exception = False
-        self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlightid'])
+        self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight'])
         self.bamboo_tasks = Bamboo(self.signal_settings['bamboo'])
-        # self.bamboo = Bamboo(signal_name, self.signal_settings['bamboo'])
         self.geckoboard = Geckoboard()
 
     def state_id(self):

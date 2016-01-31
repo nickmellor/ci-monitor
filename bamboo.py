@@ -26,8 +26,8 @@ class Bamboo:
                 response = requests.get(uri, verify=False, timeout=10.0)
         except (RequestException, ConnectionError, MaxRetryError) as e:
             if self.was_connected:
-                message = "Signaller '{signaller}': Bamboo URI '{uri}' is not responding.\n" \
-                          "No further warnings will be given until it reconnects.\n"
+                message = "Signaller '{signaller}': Bamboo URI not responding, URI: '{uri}'\n" \
+                          "No further warnings will be given unless/until it responds.\n"
                 message += "Exception: {exception}\n"
                 message = message.format(signaller="OMS",  uri=uri, exception=e)
                 logger.warning(message)
@@ -61,6 +61,6 @@ class Bamboo:
             result = self.task_result(uri)
             results.update({job: result})
             if self.was_connected:
-                logger.info("{environment}:{job}, Bamboo tag {tag}, result is '{result}'"
+                logger.info("{environment}: '{job}', Bamboo tag {tag}, result is '{result}'"
                             .format(environment=environment, job=job, tag=ci_tag, result=result))
         return results

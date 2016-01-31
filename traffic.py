@@ -13,11 +13,11 @@ class TrafficLight:
     use one class instance per traffic light device
     """
 
-    def __init__(self, signaller, device_id):
+    def __init__(self, signaller, tlight_settings):
         self.signaller = signaller  # just for logging
-        self.device_id = device_id
-        logger.info("Device '{device}' is being used by signal '{signaller}'"
-                    .format(device=device_id, signaller=signaller))
+        self.device_id = tlight_settings['id']
+        logger.info("Traffic light device '{device}' is being used by signal '{signaller}'"
+                    .format(device=self.device_id, signaller=signaller))
         # last time we knew, traffic light was connected
         self.was_connected = State.retrieve(self.connected_status_storage_key(), True)
         self.state = State.retrieve(self.previous_state_key())

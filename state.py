@@ -9,5 +9,7 @@ class State:
 
     @classmethod
     def retrieve(cls, item, default=None):
-        return cls.state.get(item, default)
+        value = cls.state.get(item, default)
+        cls.store(item, value)
+        return value
 
