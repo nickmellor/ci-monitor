@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 import json
 from logger import logger
 
-interesting = conf['bsm']['interesting']
+polled_services = conf['bsm']['services']
 
 okstatus = conf['bsm']['okstatus']
 
