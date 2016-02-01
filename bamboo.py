@@ -39,8 +39,8 @@ class Bamboo:
                 self.was_connected[uri] = False
         else:
             self.was_connected[uri] = True
-            logger.info("response from {0}".format(uri))
-            logger.info(response.status_code)
+            logger.info("response {response} from {job} ({uri})"
+                        .format(response=response.status_code, job=job, uri=uri))
             results = json.loads(response.text)
             logger.info("Tests passing({job}): {results}"
                         .format(job=job, results=results['successfulTestCount']))
