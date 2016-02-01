@@ -42,13 +42,16 @@ class Bamboo:
             logger.info("response from {0}".format(uri))
             logger.info(response.status_code)
             results = json.loads(response.text)
-            logger.info("Tests passing: {0}".format(results['successfulTestCount']))
+            logger.info("Tests passing({job}): {results}"
+                        .format(job=job, results=results['successfulTestCount']))
             failures = results['failedTestCount']
             if failures:
-                logger.info("Tests failing: {0}".format(failures))
+                logger.info("Tests failing ({job}): {results}"
+                            .format(job=job, failures=failures))
             else:
-                logger.info("*** All active tests passed ***".format(results['successful']))
-            logger.info("Skipped tests: {0}".format(results['skippedTestCount']))
+                logger.info("*** All active tests passed ({job})***".format(job=job))
+            logger.info("Skipped tests ({job}): {skipped}"
+                        .format(job=job, skipped=results['skippedTestCount']))
             return results['successful']
         State.store(self.previous_connection_storage_id(uri), self.was_connected[uri])
 
