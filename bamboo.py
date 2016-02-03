@@ -46,7 +46,7 @@ class Bamboo:
                         .format(job=job, results=results['successfulTestCount']))
             failures = results['failedTestCount']
             if failures:
-                logger.info("Tests failing ({job}): {results}"
+                logger.info("Tests failing ({job}): {failures}"
                             .format(job=job, failures=failures))
             else:
                 logger.info("*** All active tests passed ({job})***".format(job=job))

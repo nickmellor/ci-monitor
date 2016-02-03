@@ -36,7 +36,7 @@ class Signaller:
             logger.error('Signaller {signaller}: Unhandled internal exception. '
                          'Could be configuration problem or bug.\n{exception}'
                          .format(signaller=self.signal_name, exception=e.args))
-            self.internal_exception()
+            self.internal_exception(e)
             # NB traffic light update not shown until unhandled exception clear for one complete pass
             logger.error('Waiting {0} secs\n'.format(conf['errorheartbeat_secs']))
             sleep(conf['errorheartbeat_secs'])
@@ -49,7 +49,8 @@ class Signaller:
     def unhandled_exception_raised(self):
         return self.unhandled_exception
 
-    def signal_unhandled_exception(self):
+    def signal_unhandled_exception(self, e):
+        logger.error("Signal {signal}: internal exception occurred:\n{exception}".format(signal=self.signal_name))
         self.unhandled_exception = True
 
     def clear_unhandled_exception(self):
@@ -83,9 +84,9 @@ class Signaller:
         logger_method[level](message)
         self.trafficlight.set_lights(new_state)
 
-    def internal_exception(self):
+    def internal_exception(self, e):
         if not self.unhandled_exception_raised():
-            self.signal_unhandled_exception()
+            self.signal_unhandled_exception(e)
             self.respond_to_error_level('internalexception')
 
     def show_results(self, bamboo_results):
