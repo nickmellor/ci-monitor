@@ -34,7 +34,7 @@ class Bamboo:
                 response = requests.get(uri, verify=False, timeout=10.0)
         except (RequestException, ConnectionError, MaxRetryError) as e:
             if successfully_connected:
-                message = "Signaller '{signaller}': '{env}' Bamboo job '{job}' not responding, URI: '{uri}'\n" \
+                message = "Signaller '{signaller}': {env}: {job} not responding, URI: '{uri}'\n" \
                           "No further warnings will be given unless/until it responds.\n"
                 message += "Exception: {exception}\n"
                 message = message.format(signaller="OMS",  env=environment, job=job, uri=uri, exception=e)
@@ -43,12 +43,14 @@ class Bamboo:
             return None
         else:
             self.store_connection_state(uri, True)
-            logger.info("response {response} from {job} ({uri})"
+            logger.info("{job}: response {response} from ({uri})"
                         .format(response=response.status_code, job=job, uri=uri))
             results = json.loads(response.text)
-            logger.info("Tests passing({job}): {results}"
+            logger.info("{job}: tests passing: {results}"
                         .format(job=job, results=results['successfulTestCount']))
             failures = results['failedTestCount']
+            if failures == 0:
+                logger.info("All active tests passed ({job})".format(job=job))
             if failures != self.previous_failure_count(uri):
                 if failures != 0:
                     logger.warning(
@@ -58,8 +60,6 @@ class Bamboo:
                 else:
                     logger.warning("*** NEW!! Tests all passing! ({job}) ***\n".format(job=job))
                 self.store_failure_count(uri, failures)
-            else:
-                logger.info("All active tests passed ({job})".format(job=job))
             logger.info("{job}: skipped tests: {skipped}"
                         .format(job=job, skipped=results['skippedTestCount']))
             return results['successful']
@@ -94,6 +94,6 @@ class Bamboo:
             result = self.bamboo_job_result(environment, job, uri)
             results.update({job: result})
             if self.get_connection_state(uri):
-                logger.info("{environment}: '{job}', Bamboo tag {tag}, result is '{result}'"
+                logger.info("{environment}: {job}: ({tag}), '{result}'"
                             .format(environment=environment, job=job, tag=tag, result='passed' if result else 'failed tests'))
         return results
