@@ -18,6 +18,7 @@ while True:
                 sleep(conf['heartbeat_secs'])
 
 # TODO: fix coming off warning/error-- currently not logging
+# TODO: run in background/as service?
 # TODO: elegantly handle no config for traffic light (e.g. for sound-only config)
 # TODO: refactor for ci-monitor.py for multiple signals
 # TODO: BSM XML parsing and summarising: wire to signaller architecture

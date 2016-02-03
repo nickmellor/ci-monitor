@@ -18,12 +18,15 @@ class Signaller:
 
     def __init__(self, signal_name):
         self.signal_name = signal_name
-        self.state = State.retrieve(self.state_id())
+        self.state = self.get_state()
         self.signal_settings = conf['signallers'][signal_name]
         self.unhandled_exception = False
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight'])
         self.bamboo_tasks = Bamboo(self.signal_settings['bamboo'])
         self.geckoboard = Geckoboard()
+
+    def get_state(self):
+        return State.retrieve(self.state_id())
 
     def state_id(self):
         return 'signaller:{signal}'.format(signal=self.signal_name)
@@ -59,14 +62,15 @@ class Signaller:
 
     def respond_to_error_level(self, new_state):
         errors = traffic_light_settings['lamperror']
-        new_error = new_state in errors
+        is_new_error = new_state in errors
         warnings = traffic_light_settings['lampwarn']
-        new_warning = new_state in warnings
-        change_to_from_error = new_error != (self.state in errors)
-        change_to_from_warning = new_warning != (self.state in warnings)
-        if change_to_from_error or change_to_from_warning:
+        is_new_warning = new_state in warnings
+        change_to_from_error = is_new_error != (self.get_state() in errors)
+        change_to_from_warning = is_new_warning != (self.get_state() in warnings)
+        change_of_error_level = change_to_from_error or change_to_from_warning
+        if change_of_error_level:
             sound = self.signal_settings['sounds']
-            if new_error or new_warning:
+            if is_new_error or is_new_warning:
                 wav = sound['fail']
             else:
                 wav = sound['greenbuild']
@@ -77,7 +81,8 @@ class Signaller:
             level = 'WARNING'
         else:
             level = 'NONE'
-        message = "State changing from '{old}' to '{new}'".format(old=self.state, new=new_state)
+        message = "State changing from '{previous}' to '{current}'"\
+            .format(previous=self.get_state(), current=new_state)
         logger_method = {'ERROR': logger.error,
                          'WARNING': logger.warn,
                          'NONE': logger.info}
@@ -110,8 +115,11 @@ class Signaller:
                 state = 'alltestspassed'
             else:
                 state = 'failures'
-        if self.state != state:
+        if self.get_state() != state:
             self.respond_to_error_level(state)
-            State.store(self.state_id(), state)
+            self.store_state(state)
         else:
             self.trafficlight.set_lights(state)
+
+    def store_state(self, state):
+        State.store(self.state_id(), state)
