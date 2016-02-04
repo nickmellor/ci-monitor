@@ -12,7 +12,7 @@ traffic_light_settings = conf['trafficlights']
 
 class Signaller:
     """
-    has a concept of 'state'-- Bamboo responsiveness, exceptions etc
+    has a concept of 'state'-- Bamboo responsiveness, test failures, exceptions are examples
     connects builds/status of services with methods of signalling (traffic lights, sounds)
     """
 
