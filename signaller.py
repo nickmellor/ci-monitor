@@ -44,7 +44,7 @@ class Signaller:
             logger.error('Waiting {0} secs\n'.format(conf['errorheartbeat_secs']))
             sleep(conf['errorheartbeat_secs'])
         else:
-            self.show_results(results)
+            self.communicate_results(results)
             self.geckoboard.show_monitored_environments(results)
             if self.unhandled_exception_raised():
                 self.clear_unhandled_exception()
@@ -94,7 +94,7 @@ class Signaller:
             self.signal_unhandled_exception(e)
             self.respond_to_error_level('internalexception')
 
-    def show_results(self, bamboo_results):
+    def communicate_results(self, bamboo_results):
         all_passed = True
         comms_failure = False
         for env_results in bamboo_results.values():
@@ -117,9 +117,9 @@ class Signaller:
                 state = 'failures'
         if self.get_state() != state:
             self.respond_to_error_level(state)
-            self.store_state(state)
+            self.store_signaller_state(state)
         else:
             self.trafficlight.set_lights(state)
 
-    def store_state(self, state):
+    def store_signaller_state(self, state):
         State.store(self.state_id(), state)
