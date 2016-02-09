@@ -10,10 +10,13 @@ from traffic import TrafficLight
 
 traffic_light_settings = conf['trafficlights']
 
+
 class Signaller:
     """
-    has a concept of 'state'-- Bamboo responsiveness, test failures, exceptions are examples
-    connects builds/status of services with methods of signalling (traffic lights, sounds)
+    each signaller has a concept of 'state'-- Bamboo responsiveness, test failures,
+    exceptions are examples of 'state'
+    signallers connect builds/status of services with output methods (traffic lights, sounds)
+    In the future Geckoboard, BSM and perhaps SMS messages can be added
     """
 
     def __init__(self, signal_name):
@@ -123,3 +126,9 @@ class Signaller:
 
     def store_signaller_state(self, state):
         State.store(self.state_id(), state)
+
+# TODO: bug: state goes through None where number of failures changes
+# 2016-02-08 08:13:56,276:WARNING: API tests: *** Tests failing: 47 ***
+# No further warnings will be given until number of failures changes
+# 2016-02-08 08:14:01,261:WARNING: State changing from 'None' to 'failures'
+# 2016-02-08 09:58:41,287:WARNING: API tests: *** Tests failing: 130 ***

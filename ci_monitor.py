@@ -4,7 +4,7 @@ import sys
 from signaller import Signaller
 from logger import logger
 
-logger.info('CI Monitor started')
+logger.warning('CI Monitor restarted')
 while True:
     while not config_changed():
         signaller = Signaller('OMS')
