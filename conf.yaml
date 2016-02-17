@@ -25,12 +25,15 @@ signallers:
       id: 901880
     bamboo:
       environments:
-        OMS_DEV01:
+        DEV01:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
           jobs:
             API tests: MDAL-AGAT
+        Jasmine:
+          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          jobs:
             Jasmine unit tests: MDO-MSA
-        OMS_SIT_WSDLs:
+        SIT_WSDLs:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
           jobs:
             ESB API tests: MDAL-ESS
