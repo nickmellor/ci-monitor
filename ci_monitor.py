@@ -16,6 +16,7 @@ while True:
         else:
             if not signaller.unhandled_exception_raised():
                 sleep(conf['heartbeat_secs'])
+    logger.warning('Config changed!')
 
 # TODO: fix coming off warning/error-- currently not logging
 # TODO: run in background/as service?
