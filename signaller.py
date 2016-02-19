@@ -56,7 +56,7 @@ class Signaller:
         return self.unhandled_exception
 
     def signal_unhandled_exception(self, e):
-        logger.error("Signal {signal}: internal exception occurred:\n{exception}".format(signal=self.signal_name))
+        logger.error("Signal {signal}: internal exception occurred:\n{exception}".format(signal=self.signal_name, exception=e))
         self.unhandled_exception = True
 
     def clear_unhandled_exception(self):
