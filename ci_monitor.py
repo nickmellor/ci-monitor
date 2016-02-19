@@ -2,7 +2,7 @@ from time import sleep
 from conf import conf, config_changed
 import sys
 from signaller import Signaller
-from logger import logger
+from logger import logger, configure_logging
 
 logger.warning('CI Monitor restarted')
 while True:
@@ -16,6 +16,7 @@ while True:
         else:
             if not signaller.unhandled_exception_raised():
                 sleep(conf['heartbeat_secs'])
+    configure_logging()
     logger.warning('Config changed!')
 
 # TODO: fix coming off warning/error-- currently not logging
