@@ -10,23 +10,31 @@ loglevel_lookup = {
     'info': logging.INFO
 }
 
-logger = logging.getLogger('log')
+# to keep PyCharm code inspection happy
+logger = None
+
 
 def configure_logging():
+    logconf = conf['logging']
     logging.captureWarnings(True)
     global logger
+    logger = logging.getLogger('log')
     logger.propagate = False
-    logger.setLevel(loglevel_lookup[conf['logging']['level']])
     formatter = logging.Formatter('%(asctime)s:%(levelname)s: %(message)s')
-    filehandler = TimedRotatingFileHandler(when='H', interval=24,
-                                           filename=os.path.join('logs', 'log'),
-                                           backupCount=14, delay=True)
-    filehandler.setFormatter(formatter)
-    if conf['logging'].get('console'):
+    if logconf['fileRotator']:
+        filehandler = TimedRotatingFileHandler(when='H', interval=24,
+                                               filename=os.path.join('logs', 'log'),
+                                               backupCount=14, delay=True)
+        filehandler.setLevel(loglevel_lookup[logconf['fileRotator']])
+        filehandler.setFormatter(formatter)
+        logger.addHandler(filehandler)
+    # NB console handler needs configuring after file handler
+    # otherwise logger doubles messages
+    if logconf['console']:
         conshandler = logging.StreamHandler()
+        conshandler.setLevel(loglevel_lookup[logconf['console']])
         conshandler.setFormatter(formatter)
         logger.addHandler(conshandler)
-    logger.addHandler(filehandler)
 
 
 configure_logging()

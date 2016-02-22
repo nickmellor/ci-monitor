@@ -8,7 +8,7 @@ from logger import logger
 from state import State
 from traffic import TrafficLight
 
-traffic_light_settings = conf['trafficlights']
+states = conf['states']
 
 
 class Signaller:
@@ -64,9 +64,9 @@ class Signaller:
         self.unhandled_exception = False
 
     def respond_to_error_level(self, new_state):
-        errors = traffic_light_settings['lamperror']
+        errors = states['lamperror']
         is_new_error = new_state in errors
-        warnings = traffic_light_settings['lampwarn']
+        warnings = states['lampwarn']
         is_new_warning = new_state in warnings
         change_to_from_error = is_new_error != (self.get_state() in errors)
         change_to_from_warning = is_new_warning != (self.get_state() in warnings)

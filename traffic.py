@@ -5,7 +5,7 @@ from conf import conf
 from time import sleep
 from state import State
 
-settings = conf['trafficlights']
+settings = conf['states']
 
 
 class TrafficLight:

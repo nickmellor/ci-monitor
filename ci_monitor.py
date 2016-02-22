@@ -7,20 +7,22 @@ from logger import logger, configure_logging
 logger.warning('CI Monitor restarted')
 while True:
     while not config_changed():
-        signaller = Signaller('OMS')
-        try:
-            signaller.poll()
-        except KeyboardInterrupt as e:
-            logger.error('Interrupted by Ctrl+C: exiting...')
-            sys.exit()
-        else:
-            if not signaller.unhandled_exception_raised():
-                sleep(conf['heartbeat_secs'])
+        unhandled_exceptions = []
+        for signaller_id in conf['signallers']:
+            signaller = Signaller(signaller_id)
+            try:
+                signaller.poll()
+            except KeyboardInterrupt as e:
+                logger.error('Interrupted by Ctrl+C: exiting...')
+                sys.exit()
+            else:
+                unhandled_exceptions.append(signaller.unhandled_exception_raised())
+        if any(unhandled_exceptions):
+            sleep(conf['heartbeat_secs'])
     configure_logging()
     logger.warning('Config changed!')
 
 # TODO: fix coming off warning/error-- currently not logging
-# TODO: run in background/as service?
 # TODO: elegantly handle no config for traffic light (e.g. for sound-only config)
 # TODO: refactor for ci-monitor.py for multiple signals
 # TODO: BSM XML parsing and summarising: wire to signaller architecture

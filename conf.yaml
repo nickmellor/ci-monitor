@@ -1,8 +1,8 @@
 heartbeat_secs: 60
-errorheartbeat_secs: 180
+errorheartbeat_secs: 60
 logging:
-    console: yes
-    level: info
+    console: warning
+    fileRotator: info
 proxies:
     http: http://ausydisa02.au.imckesson.com:8080
     https: http://ausydisa02.au.imckesson.com:8080
@@ -10,7 +10,7 @@ bsm:
   uri: http://bsmwebprd/topaz/bam/BAMOpenApi?customerId=1&userName={username}&password={password}&viewName=eBusiness&command=getNodes&layout=hierarchical&depth=4
   services: [AWS/AEM, Customer Loyality, OMS, Sales Site]
   okstatus: ['20', '-2']
-trafficlights:
+states:
   lamppatterns:
     failures: [red]
     alltestspassed: [green]
