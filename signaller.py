@@ -24,7 +24,8 @@ class Signaller:
         self.state = self.get_state()
         self.signal_settings = conf['signallers'][signal_name]
         self.unhandled_exception = False
-        self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight'])
+        traffic_light_present = self.signal_settings.get('trafficlight')
+        self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight']) if traffic_light_present else None
         self.bamboo_tasks = Bamboo(self.signal_settings['bamboo'])
         self.geckoboard = Geckoboard()
 
@@ -90,7 +91,8 @@ class Signaller:
                          'WARNING': logger.warn,
                          'NONE': logger.info}
         logger_method[level](message)
-        self.trafficlight.set_lights(new_state)
+        if self.trafficlight:
+            self.trafficlight.set_lights(new_state)
 
     def internal_exception(self, e):
         if not self.unhandled_exception_raised():
@@ -122,7 +124,8 @@ class Signaller:
             self.respond_to_error_level(state)
             self.store_signaller_state(state)
         else:
-            self.trafficlight.set_lights(state)
+            if self.trafficlight:
+                self.trafficlight.set_lights(state)
 
     def store_signaller_state(self, state):
         State.store(self.state_id(), state)
