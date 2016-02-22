@@ -17,13 +17,24 @@ class Bamboo:
         self.settings = settings
         self.environments = settings['environments']
 
-    @staticmethod
-    def previous_connection_cache_key(uri):
-        return 'BambooConnection:{uri}'.format(uri=uri)
+    def all_results(self):
+        results = {}
+        for env, detail in self.environments.items():
+            results[env] = self.environment_results(env, detail)
+        return results
 
-    @staticmethod
-    def previous_failure_count_cache_key(uri):
-        return 'BambooConnection:{uri}'.format(uri=uri)
+    def environment_results(self, environment, bamboo_detail):
+        results = {}
+        uri_template = bamboo_detail.get('uri')
+        for job, tag in bamboo_detail['jobs'].items():
+            uri = uri_template.format(tag=tag)
+            result = self.bamboo_job_result(environment, job, uri)
+            results.update({job: result})
+            if self.previously_connected(uri):
+                logger.info("{environment}: {job}: {tag}, '{result}'"
+                            .format(environment=environment, job=job, tag=tag,
+                                    result='passed' if result else 'some failed tests'))
+        return results
 
     def bamboo_job_result(self, environment, job, uri):
         try:
@@ -35,6 +46,9 @@ class Bamboo:
             return self.connection_failed(e, environment, job, uri)
         else:
             return self.process_bamboo_results(job, response, uri)
+
+    def previously_connected(self, uri):
+        return State.retrieve(self.previous_connection_cache_key(uri), True)
 
     def connection_failed(self, e, environment, job, uri):
         if self.previously_connected(uri):
@@ -71,8 +85,9 @@ class Bamboo:
                 logger.warning("*** NEW!! Tests all passing! ({job}) ***\n".format(job=job))
             self.store_failure_count(uri, failures)
 
-    def previously_connected(self, uri):
-        return State.retrieve(self.previous_connection_cache_key(uri), True)
+    @staticmethod
+    def previous_connection_cache_key(uri):
+        return 'BambooConnection:{uri}'.format(uri=uri)
 
     def store_connection_state(self, uri, was_connected):
         State.store(self.previous_connection_cache_key(uri), was_connected)
@@ -86,22 +101,3 @@ class Bamboo:
     @staticmethod
     def previous_failures_cache_key(uri):
         return 'BambooFailures:{uri}'.format(uri=uri)
-
-    def all_results(self):
-        results = {}
-        for env, detail in self.settings['environments'].items():
-            results[env] = self.environment_results(env, detail)
-        return results
-
-    def environment_results(self, environment, bamboo_detail):
-        results = {}
-        uri_template = bamboo_detail.get('uri')
-        for job, tag in bamboo_detail['jobs'].items():
-            uri = uri_template.format(tag=tag)
-            result = self.bamboo_job_result(environment, job, uri)
-            results.update({job: result})
-            if self.previously_connected(uri):
-                logger.info("{environment}: {job}: {tag}, '{result}'"
-                            .format(environment=environment, job=job, tag=tag,
-                                    result='passed' if result else 'some failed tests'))
-        return results

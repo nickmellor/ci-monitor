@@ -1,15 +1,3 @@
-heartbeat_secs: 60
-errorheartbeat_secs: 60
-logging:
-    console: warning
-    fileRotator: info
-proxies:
-    http: http://ausydisa02.au.imckesson.com:8080
-    https: http://ausydisa02.au.imckesson.com:8080
-bsm:
-  uri: http://bsmwebprd/topaz/bam/BAMOpenApi?customerId=1&userName={username}&password={password}&viewName=eBusiness&command=getNodes&layout=hierarchical&depth=4
-  services: [AWS/AEM, Customer Loyality, OMS, Sales Site]
-  okstatus: ['20', '-2']
 states:
   lamppatterns:
     failures: [red]
@@ -19,7 +7,7 @@ states:
     commserror: [yellow]
     commserrorandfailures: [red, yellow]
     changestate: [red, green]
-  lampwarn: [commserror, commserrorandfailures, failures]
+  lampwarn: [commserrorandfailures, failures]
   lamperror: [internalexception]
   blinktime_secs: 0.1
 signallers:
@@ -32,17 +20,25 @@ signallers:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
           jobs:
             API tests: MDAL-AGAT
-        Jasmine:
-          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-          jobs:
             Jasmine unit tests: MDO-MSA
-        SIT_WSDLs:
-          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-          jobs:
             ESB API tests: MDAL-ESS
     sounds:
-      fail: alarm_beep.wav
+      failures: alarm_beep.wav
       greenbuild: applause.wav
+
+logging:
+    console: warning
+    fileRotator: info
+proxies:
+    http: http://ausydisa02.au.imckesson.com:8080
+    https: http://ausydisa02.au.imckesson.com:8080
+heartbeat_secs: 60
+errorheartbeat_secs: 60
+
+bsm:
+  uri: http://bsmwebprd/topaz/bam/BAMOpenApi?customerId=1&userName={username}&password={password}&viewName=eBusiness&command=getNodes&layout=hierarchical&depth=4
+  services: [AWS/AEM, Customer Loyality, OMS, Sales Site]
+  okstatus: ['20', '-2']
 
 #geckoboard:
 #  bamboo_environments: [OMSDEV01]

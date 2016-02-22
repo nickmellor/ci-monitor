@@ -4,6 +4,7 @@ from proxies import proxies
 from logger import logger
 from conf import conf
 
+
 class Geckoboard:
 
     def __init__(self):

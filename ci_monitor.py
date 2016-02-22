@@ -16,7 +16,7 @@ while True:
                 logger.error('Interrupted by Ctrl+C: exiting...')
                 sys.exit()
             else:
-                unhandled_exceptions.append(signaller.unhandled_exception_raised())
+                unhandled_exceptions.append(signaller.unhandled_exception_raised)
         if any(unhandled_exceptions):
             sleep(conf['heartbeat_secs'])
     configure_logging()

@@ -13,17 +13,20 @@ states = conf['states']
 
 class Signaller:
     """
-    each signaller has a concept of 'state'-- Bamboo responsiveness, test failures,
-    exceptions are examples of 'state'
-    signallers connect builds/status of services with output methods (traffic lights, sounds)
-    In the future Geckoboard, BSM and perhaps SMS messages can be added
+    a signaller associates builds/status of services with output methods (traffic lights, sounds)
+    eg a signaller might read the API functional tests Bamboo build, play a sound if they fail, and display
+    the build status on a traffic light
+    each signaller has a 'state'-- that encompasses Bamboo responsiveness, test failures,
+    presence of configured traffic lights, internal exceptions
+    states are divided into ERROR, WARNING and NONE types that are configurable, and currently
+    affect the logging level
     """
 
     def __init__(self, signal_name):
         self.signal_name = signal_name
         self.state = self.get_state()
         self.signal_settings = conf['signallers'][signal_name]
-        self.unhandled_exception = False
+        self.unhandled_exception_raised = False
         traffic_light_present = self.signal_settings.get('trafficlight')
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight']) if traffic_light_present else None
         self.bamboo_tasks = Bamboo(self.signal_settings['bamboo'])
@@ -50,19 +53,12 @@ class Signaller:
         else:
             self.communicate_results(results)
             self.geckoboard.show_monitored_environments(results)
-            if self.unhandled_exception_raised():
-                self.clear_unhandled_exception()
-
-    def unhandled_exception_raised(self):
-        return self.unhandled_exception
+            if self.unhandled_exception_raised:
+                self.unhandled_exception_raised = False
 
     def signal_unhandled_exception(self, e):
         logger.error("Signal {signal}: internal exception occurred:\n{exception}".format(signal=self.signal_name, exception=e))
         self.unhandled_exception = True
-
-    def clear_unhandled_exception(self):
-        logger.warning("Signal {signal}: internal exception cleared".format(signal=self.signal_name))
-        self.unhandled_exception = False
 
     def respond_to_error_level(self, new_state):
         errors = states['lamperror']
@@ -75,7 +71,7 @@ class Signaller:
         if change_of_error_level:
             sound = self.signal_settings['sounds']
             if is_new_error or is_new_warning:
-                wav = sound['fail']
+                wav = sound['failures']
             else:
                 wav = sound['greenbuild']
             soundplayer.playwav(wav)
@@ -95,7 +91,7 @@ class Signaller:
             self.trafficlight.set_lights(new_state)
 
     def internal_exception(self, e):
-        if not self.unhandled_exception_raised():
+        if not self.unhandled_exception_raised:
             self.signal_unhandled_exception(e)
             self.respond_to_error_level('internalexception')
 
@@ -130,8 +126,6 @@ class Signaller:
     def store_signaller_state(self, state):
         State.store(self.state_id(), state)
 
-# TODO: bug: state goes through None where number of failures changes
-# 2016-02-08 08:13:56,276:WARNING: API tests: *** Tests failing: 47 ***
-# No further warnings will be given until number of failures changes
-# 2016-02-08 08:14:01,261:WARNING: State changing from 'None' to 'failures'
-# 2016-02-08 09:58:41,287:WARNING: API tests: *** Tests failing: 130 ***
+
+# TODO: BSM/New Relic
+# TODO: Geckoboard
