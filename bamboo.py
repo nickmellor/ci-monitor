@@ -79,8 +79,9 @@ class Bamboo:
             if failures != 0:
                 logger.warning(
                     "{job}: *** Tests failing: {failing} ***\n"
+                    "Is this useful? {reason}\n"
                     "No further warnings will be given until number of failures changes"
-                        .format(job=job, failing=failures))
+                        .format(job=job, failing=failures, reason=results['buildReason']))
             else:
                 logger.warning("*** NEW!! Tests all passing! ({job}) ***\n".format(job=job))
             self.store_failure_count(uri, failures)
