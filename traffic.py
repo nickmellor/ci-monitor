@@ -76,7 +76,7 @@ class TrafficLight:
                 message += "Message: '{message}'\n"
                 message = message.format(signaller=self.signaller, device=self.device_id,
                                          message=stdout.decode('UTF-8').strip())
-                logger.warning(message)
+                logger.info(message)
         self.store_connection_status(device_detected)
 
     def store_connection_status(self, device_detected):

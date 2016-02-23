@@ -1,3 +1,11 @@
+heartbeat_secs: 5
+errorheartbeat_secs: 5
+logging:
+    console: warning
+    fileRotator: info
+proxies:
+    http: http://ausydisa02.au.imckesson.com:8080
+    https: http://ausydisa02.au.imckesson.com:8080
 states:
   lamppatterns:
     failures: [red]
@@ -7,7 +15,7 @@ states:
     commserror: [yellow]
     commserrorandfailures: [red, yellow]
     changestate: [red, green]
-  lampwarn: [commserrorandfailures, failures]
+  lampwarn: [commserrorandfailures, failures, commserror]
   lamperror: [internalexception]
   blinktime_secs: 0.1
 signallers:
@@ -26,14 +34,6 @@ signallers:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 
-logging:
-    console: warning
-    fileRotator: info
-proxies:
-    http: http://ausydisa02.au.imckesson.com:8080
-    https: http://ausydisa02.au.imckesson.com:8080
-heartbeat_secs: 60
-errorheartbeat_secs: 60
 
 bsm:
   uri: http://bsmwebprd/topaz/bam/BAMOpenApi?customerId=1&userName={username}&password={password}&viewName=eBusiness&command=getNodes&layout=hierarchical&depth=4

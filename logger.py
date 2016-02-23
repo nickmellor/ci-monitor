@@ -10,31 +10,39 @@ loglevel_lookup = {
     'info': logging.INFO
 }
 
-# to keep PyCharm code inspection happy
-logger = None
+logging.captureWarnings(True)
+logger = logging.getLogger('log')
+logger.setLevel(logging.INFO)
+logger.propagate = False
+cons_handler = None
+file_handler = None
 
 
 def configure_logging():
+    global logger, cons_handler, file_handler
     logconf = conf['logging']
-    logging.captureWarnings(True)
-    global logger
-    logger = logging.getLogger('log')
-    logger.propagate = False
     formatter = logging.Formatter('%(asctime)s:%(levelname)s: %(message)s')
-    if logconf['fileRotator']:
-        filehandler = TimedRotatingFileHandler(when='H', interval=24,
+    if logger.hasHandlers():
+        logger.removeHandler(cons_handler)
+        cons_handler = None
+        logger.removeHandler(file_handler)
+        file_handler = None
+    file_loglevel = logconf['fileRotator']
+    if file_loglevel:
+        file_handler = TimedRotatingFileHandler(when='H', interval=24,
                                                filename=os.path.join('logs', 'log'),
                                                backupCount=14, delay=True)
-        filehandler.setLevel(loglevel_lookup[logconf['fileRotator']])
-        filehandler.setFormatter(formatter)
-        logger.addHandler(filehandler)
+        file_handler.setLevel(loglevel_lookup[file_loglevel])
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
     # NB console handler needs configuring after file handler
     # otherwise logger doubles messages
-    if logconf['console']:
-        conshandler = logging.StreamHandler()
-        conshandler.setLevel(loglevel_lookup[logconf['console']])
-        conshandler.setFormatter(formatter)
-        logger.addHandler(conshandler)
+    console_loglevel = logconf['console']
+    if console_loglevel:
+        cons_handler = logging.StreamHandler()
+        cons_handler.setLevel(loglevel_lookup[console_loglevel])
+        cons_handler.setFormatter(formatter)
+        logger.addHandler(cons_handler)
 
 
 configure_logging()

@@ -102,8 +102,9 @@ class Signaller:
             project_results = env_results.values()
             retrieved_results = [result for result in project_results if result is not None]
             # all returns True for empty list
-            all_passed = all_passed and retrieved_results is not None
-            all_passed = all_passed and all(retrieved_results)
+            all_passed = all_passed and not retrieved_results
+            if all_passed:
+                all_passed = all_passed and all(retrieved_results)
             if any(passed is None for passed in project_results):
                 comms_failure = True
         if comms_failure:

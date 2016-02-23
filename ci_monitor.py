@@ -1,14 +1,14 @@
 from time import sleep
-from conf import conf, config_changed
+import conf
 import sys
 from signaller import Signaller
 from logger import logger, configure_logging
 
 logger.warning('CI Monitor restarted')
 while True:
-    while not config_changed():
+    while not conf.config_changed():
         unhandled_exceptions = []
-        for signaller_id in conf['signallers']:
+        for signaller_id in conf.conf['signallers']:
             signaller = Signaller(signaller_id)
             try:
                 signaller.poll()
@@ -18,7 +18,9 @@ while True:
             else:
                 unhandled_exceptions.append(signaller.unhandled_exception_raised)
         if any(unhandled_exceptions):
-            sleep(conf['heartbeat_secs'])
+            sleep(conf.conf['errorheartbeat_secs'])
+        else:
+            sleep(conf.conf['heartbeat_secs'])
     configure_logging()
     logger.warning('Config changed!')
 
