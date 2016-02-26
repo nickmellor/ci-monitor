@@ -1,11 +1,11 @@
 import os
 import subprocess
 from logger import logger
-from conf import conf
+from conf import configuration
 from time import sleep
 from state import State
 
-settings = conf['states']
+settings = configuration['states']
 
 
 class TrafficLight:

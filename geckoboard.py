@@ -2,13 +2,13 @@ import requests
 import json
 from proxies import proxies
 from logger import logger
-from conf import conf
+from conf import configuration
 
 
 class Geckoboard:
 
     def __init__(self):
-        self.monitored_environments = conf['geckoboard']['bamboo_environments'] if conf.get('geckoboard') else None
+        self.monitored_environments = configuration['geckoboard']['bamboo_environments'] if configuration.get('geckoboard') else None
 
     def show_monitored_environments(self, results):
         if self.monitored_environments:
@@ -20,7 +20,7 @@ class Geckoboard:
             env_status = all(result for result in results[env].values())
             try:
                 payload = {
-                    "api_key": conf['geckoboard']['apikey'],
+                    "api_key": configuration['geckoboard']['apikey'],
                     "data": {
                         "status": {None: 'down', False: 'down', True: 'up'}[env_status],
                         "downTime": "n/a",
@@ -29,7 +29,7 @@ class Geckoboard:
                 }
             except KeyError as e:
                 logger.info('Problem with Geckoboard config. Exception follows: \n{0}'.format(e))
-            push_url = "https://push.geckoboard.com/v1/send/" + conf['geckoboard']['bamboo_widgets'][env]
+            push_url = "https://push.geckoboard.com/v1/send/" + configuration['geckoboard']['bamboo_widgets'][env]
             logger.info('sending to geckoboard for environment {0} at {1}'.format(env, push_url))
             try:
                 if proxies:

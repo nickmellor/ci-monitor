@@ -2,13 +2,13 @@ from time import sleep
 
 import soundplayer
 from bamboo import Bamboo
-from conf import conf
+from conf import configuration
 from geckoboard import Geckoboard
 from logger import logger
 from state import State
 from traffic import TrafficLight
 
-states = conf['states']
+states = configuration['states']
 
 
 class Signaller:
@@ -25,7 +25,7 @@ class Signaller:
     def __init__(self, signal_name):
         self.signal_name = signal_name
         self.state = self.get_state()
-        self.signal_settings = conf['signallers'][signal_name]
+        self.signal_settings = configuration['signallers'][signal_name]
         self.unhandled_exception_raised = False
         traffic_light_present = self.signal_settings.get('trafficlight')
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight']) if traffic_light_present else None
@@ -48,8 +48,8 @@ class Signaller:
                          .format(signaller=self.signal_name, exception=e.args))
             self.internal_exception(e)
             # NB traffic light update not shown until unhandled exception clear for one complete pass
-            logger.error('Waiting {0} secs\n'.format(conf['errorheartbeat_secs']))
-            sleep(conf['errorheartbeat_secs'])
+            logger.error('Waiting {0} secs\n'.format(configuration['errorheartbeat_secs']))
+            sleep(configuration['errorheartbeat_secs'])
         else:
             self.communicate_results(results)
             self.geckoboard.show_monitored_environments(results)

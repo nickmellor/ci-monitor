@@ -1,6 +1,6 @@
 import os
 import logging
-from conf import conf
+from conf import configuration
 from logging.handlers import TimedRotatingFileHandler
 
 loglevel_lookup = {
@@ -13,14 +13,14 @@ loglevel_lookup = {
 logging.captureWarnings(True)
 logger = logging.getLogger('log')
 logger.setLevel(logging.INFO)
-logger.propagate = False
+logger.propagate = True
 cons_handler = None
 file_handler = None
 
 
 def configure_logging():
     global logger, cons_handler, file_handler
-    logconf = conf['logging']
+    logconf = configuration['logging']
     formatter = logging.Formatter('%(asctime)s:%(levelname)s: %(message)s')
     if logger.hasHandlers():
         logger.removeHandler(cons_handler)

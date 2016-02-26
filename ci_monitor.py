@@ -8,7 +8,7 @@ logger.warning('CI Monitor restarted')
 while True:
     while not conf.config_changed():
         unhandled_exceptions = []
-        for signaller_id in conf.conf['signallers']:
+        for signaller_id in conf.configuration['signallers']:
             signaller = Signaller(signaller_id)
             try:
                 signaller.poll()
@@ -18,13 +18,13 @@ while True:
             else:
                 unhandled_exceptions.append(signaller.unhandled_exception_raised)
         if any(unhandled_exceptions):
-            sleep(conf.conf['errorheartbeat_secs'])
+            sleep(conf.configuration['errorheartbeat_secs'])
         else:
-            sleep(conf.conf['heartbeat_secs'])
+            sleep(conf.configuration['heartbeat_secs'])
     configure_logging()
     logger.warning('Config changed!')
 
-# TODO: fix coming off warning/error-- currently not logging
+# TODO: fix logging level when config changes (conf being shadowed locally?)
 # TODO: elegantly handle no config for traffic light (e.g. for sound-only config)
 # TODO: refactor for ci-monitor.py for multiple signals
 # TODO: BSM XML parsing and summarising: wire to signaller architecture

@@ -1,8 +1,8 @@
-from conf import conf
+from conf import configuration
 try:
     proxies = {
-        "http": conf['proxies']['http'],
-        "https": conf['proxies']['https']
+        "http": configuration['proxies']['http'],
+        "https": configuration['proxies']['https']
     }
 except KeyError as e:
     proxies = None

@@ -1,13 +1,13 @@
-from conf import conf
+from conf import configuration
 from proxies import proxies
 import requests
 import xml.etree.ElementTree as ET
 import json
 from logger import logger
 
-polled_services = conf['bsm']['services']
+polled_services = configuration['bsm']['services']
 
-okstatus = conf['bsm']['okstatus']
+okstatus = configuration['bsm']['okstatus']
 
 def bsm_results():
     faults = set()
@@ -26,7 +26,7 @@ def bsm_results():
 
 def get_bsm_data():
     try:
-        uri = conf['bsm']['uri']
+        uri = configuration['bsm']['uri']
         response = requests.get(uri, verify=False, proxies=proxies)
         return json.loads(response.text)["successful"]
     except ConnectionError as e:
