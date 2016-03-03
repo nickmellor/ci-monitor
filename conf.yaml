@@ -29,6 +29,9 @@ signallers:
           jobs:
             API tests: MDAL-AGAT
             Jasmine unit tests: MDO-MSA
+        SIT01:
+          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          jobs:
             ESB API tests: MDAL-ESS
     sounds:
       failures: alarm_beep.wav
