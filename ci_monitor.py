@@ -25,8 +25,6 @@ while True:
     logger.warning('Config changed!')
 
 # TODO: fix logging level when config changes (conf being shadowed locally?)
-# TODO: elegantly handle no config for traffic light (e.g. for sound-only config)
-# TODO: refactor for ci-monitor.py for multiple signals
 # TODO: BSM XML parsing and summarising: wire to signaller architecture
 # TODO: enable one CI-monitor to look after more than one Geckoboard widget
 # TODO: decouple signals so they operate independently-- separate threads?
