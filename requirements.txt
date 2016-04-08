@@ -3,3 +3,6 @@ PyYAML>=3.0
 requests>=2.7.0
 py2exe
 ostruct
+urllib3
+auth
+GitPython

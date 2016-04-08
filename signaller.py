@@ -3,6 +3,7 @@ from time import sleep
 import soundplayer
 from bamboo import Bamboo
 from conf import configuration
+from merge import Merge
 from geckoboard import Geckoboard
 from logger import logger
 from state import State
@@ -13,7 +14,7 @@ states = configuration['states']
 
 class Signaller:
     """
-    a signaller associates builds/status of services with signals (traffic lights, sounds etc)
+    a signaller binds services to signals (traffic lights, sounds etc)
     a signaller might read the API functional tests Bamboo build, play a sound if they have
     failing test(s), and display the build status on a traffic light
     or it might simply make a sound, or simply write to a log
@@ -30,7 +31,8 @@ class Signaller:
         self.unhandled_exception_raised = False
         traffic_light_present = self.signal_settings.get('trafficlight')
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight']) if traffic_light_present else None
-        self.bamboo_tasks = Bamboo(self.signal_settings['bamboo'])
+        self.merge = Merge(self.signal_settings['merge']) if self.signal_settings['merge'] else None
+        self.bamboo_tasks = Bamboo(self.signal_settings['bamboo']) if self.signal_settings['bamboo'] else None
         self.geckoboard = Geckoboard()
 
     def get_state(self):
@@ -41,6 +43,12 @@ class Signaller:
 
     def poll(self):
         logger.info('Signaller {signaller}: polling...'.format(signaller=self.signal_name))
+        if self.bamboo_tasks:
+            self.poll_bamboo()
+        if self.merge:
+            self.poll_merges()
+
+    def poll_bamboo(self):
         try:
             results = self.bamboo_tasks.all_results()
         except Exception as e:

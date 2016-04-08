@@ -19,6 +19,12 @@ External libraries used
 - cleware traffic light control program (included in this repo)
 - PyYAML
 
+pip install-- for some libraries use:
+
+python -m pip install <library>
+
+from the command line. Works better!
+
 
 IMPLEMENTATION NOTES
 --------------------
