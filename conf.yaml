@@ -40,19 +40,20 @@ signallers:
     trafficlight:
       id: 901880
     merge:
-      repos:
-        api-gateway
-        integration-services
-        member-services-aem
-        aem-core
-      endpoints:
-        develop
-        master
       start: 01/04/2016
+      location: scratch/repos
+      repos:
+        - api-gateway
+        - integration-services
+        - member-services-aem
+        - aem-core
+      deployments:
+        - develop
+        - master
       max_days: 3
       name_patterns:
-        RELEASE
-        HOTFIX
+        - release/.+
+        - hotfix/.+
 
 
 bsm:

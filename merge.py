@@ -1,59 +1,69 @@
 from logger import logger
 import re
-from time import strptime
-from mcmaster_utils import stash
+import os
+import time
+from mcmaster_utils import gitclient
 import datetime
+import yaml
+from git import Repo
 
 
 class Merge:
     """
-    check for unmerged branches
+    check stash/git branches for
     """
 
     def __init__(self, settings):
         self.settings = settings
+        self.projects = [gitclient.GitClient(os.path.join(self.settings['location'], project))
+                       for project
+                       in settings['repos']]
 
     def poll(self):
-        self.refresh_repos()
+        self.refresh_projects()
         unmerged_branches = []
-        for repo in self.settings['repos']:
-            for branch in self.branches(repo):
-                if not self.merged(branch):
-                    unmerged_branches.append(branch)
+        for deploy_branch_name in ['develop']:
+            for project in self.projects:
+                # project.repo.remotes.origin.fetch() -- has timeout at present
+                deploy_branch = project.repo.commit(deploy_branch_name)
+                for branch in self.branches(project):
+                    release_branch = project.repo.commit(branch.name).hexsha
+                    if not project.repo.is_ancestor(release_branch, deploy_branch):
+                        unmerged_branches.append(branch.name)
+        print(unmerged_branches)
 
-    def merged(self, branch, master):
-        if self.fits(branch):
-            return self.tim_merge_check(branch, master)
-        else:
-            return True
+    def merged(self, project, branch, master):
+        branch_changeset = project.latest_changeset(branch)
+        shared_changeset = project.shared_changeset(branch, master)
+        return branch_changeset == shared_changeset[0].hexsha
 
-    def tim_merge_check(self, branch, master):
-        gitClient = GitClient('../scratch/integration-services')
-        for branch in gitClient.getFilteredRemoteBranchList():
-            branchChangeset = gitClient.getBranchLatestChangeset(branch)
-            #resultList = ["%s: [%s]" % (branch, branchChangeset)]
-            resultList = ["%s" % (branch)]
-            for refBranch in refBranches:
-                refBranchChangeset = gitClient.getBranchLatestChangeset(refBranch)
-                sharedChangeset = gitClient.getSharedChangeset(branch,refBranch)
-                #merged = ("Merged" if (branchChangeset == sharedChangeset[0].hexsha) else "Not Merged")
-                #result = "[%s=%s|%s]" % (branchChangeset, sharedChangeset[0].hexsha,(branchChangeset == sharedChangeset[0].hexsha))
-                result = "Merged" if (branchChangeset == sharedChangeset[0].hexsha) else "Not Merged"
-                resultList.append("%s" % result)
-            print(",".join(resultList))
+    def branches(self, project):
+        yield from (branch for branch in project.remote_branches(project.repo) if self.fits_criteria(branch))
 
-    def branches(self, repo):
+    def refresh_projects(self):
+        for project in self.settings['repos']:
+            self.gitfetchall(project)
+
+    def gitfetchall(self, project):
+        # location config
         pass
 
-    def refresh_repos(self):
-        for repo in self.settings['repos']:
-            self.gitfetchall(repo)
+    def fits_criteria(self, branch):
+        commit_date = datetime.datetime.fromtimestamp(branch.commit.committed_date)
+        too_old_to_bother = commit_date < datetime.datetime.strptime(self.settings['start'], '%d/%m/%Y')
+        stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['max_days'])
+        branch_name_matches = any(re.match(pattern, branch.name)
+                                  for pattern
+                                  in self.settings['name_patterns'])
+        return True
+        # return stale and branch_name_matches and not too_old_to_bother
 
-    def gitfetchall(self, repo):
-        pass
 
-    def fits(self, branch):
-        in_date_range = branch.created > strptime(self.settings['start'], '%d/%m/%y')
-        old = branch.created < datetime.date.today() - self.settings['max_days']
-        branch_name_matches = any(re.match(pattern, branch) for pattern in self.settings['name_patterns'])
-        return in_date_range and old and branch_name_matches
+if __name__ == '__main__':
+    with open('conf.yaml') as config_file:
+        settings = yaml.load(config_file)['signallers']['MERGETEST']['merge']
+    m = Merge(settings)
+    m.poll()
+    # repo = Repo('scratch/repos/integration-services')
+    # d = repo.heads['develop'].commit.committed_date
+    # print(time.gmtime(d))
