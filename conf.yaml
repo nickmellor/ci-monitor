@@ -33,6 +33,9 @@ signallers:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
           jobs:
             ESB API tests: MDAL-ESS
+    sitemap:
+      legacy: https://www.medibank.com.au/sitemap-retail.xml
+      aem: https://www.medibank.com.au/sitemap-legacy.xml
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav
