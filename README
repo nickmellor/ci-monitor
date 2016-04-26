@@ -28,7 +28,7 @@ External libraries used
 -----------------------
 
 - requests
-- cleware traffic light control program (included in this repo)
+- cleware traffic light control program (included in the repo)
 - PyYAML
 
 
