@@ -24,13 +24,15 @@ class Sitemap:
             message.extend(faults)
             message.append('*' * 40)
             logger.error('\n'.join(message))
+        else:
+            logger.info('Sitemap ok')
         return not faults
 
     def extracted_urls(self, uri):
         sitemap_as_string = self.sitemap_xml(uri)
         if sitemap_as_string:
             sitemap = ET.fromstring(sitemap_as_string)
-            for url in sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
+            for url in list(sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'))[:3]:
                 yield url.text
 
     @staticmethod

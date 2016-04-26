@@ -15,7 +15,7 @@ while True:
             except KeyboardInterrupt as e:
                 logger.error('Interrupted by Ctrl+C: exiting...')
                 sys.exit()
-            else:
+            except Exception as e:
                 unhandled_exceptions.append(signaller.unhandled_exception_raised)
         if any(unhandled_exceptions):
             sleep(conf.configuration['errorheartbeat_secs'])
