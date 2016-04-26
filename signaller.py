@@ -17,10 +17,10 @@ class Signaller:
     a signaller associates builds/status of services with signals (traffic lights, sounds etc)
     a signaller might read the API functional tests Bamboo build, play a sound if they have
     failing test(s), and display the build status on a traffic light
-    or it might simply make a sound, or simply write to a log
+    or make a sound, or write to a log
     each signaller has a 'state'-- that encompasses Bamboo responsiveness, test failures,
     presence of configured traffic lights, internal exceptions
-    states are divided into ERROR, WARNING and NONE categories that are configurable, and currently
+    states are divided into ERROR, WARNING and NONE that are configurable, and currently
     affect the logging level
     """
 
