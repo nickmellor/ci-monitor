@@ -25,7 +25,6 @@ while True:
     logger.warning('Config changed!')
 
 # TODO: fix logging level when config changes (conf being shadowed locally?)
-# TODO: BSM XML parsing and summarising: wire to signaller architecture
 # TODO: enable one CI-monitor to look after more than one Geckoboard widget
 # TODO: decouple signals so they operate independently-- separate threads?
 # TODO: geckoboard: display a few failing tests (+ most recent committers?)

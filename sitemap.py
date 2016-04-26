@@ -12,7 +12,7 @@ class Sitemap:
     def __init__(self, settings):
         self.sitemaps = settings
 
-    def poll(self):
+    def urls_all_available(self):
         faults = []
         for sitemap_name, sitemap in self.sitemaps.items():
             for url in self.extracted_urls(sitemap):
@@ -24,6 +24,7 @@ class Sitemap:
             message.extend(faults)
             message.append('*' * 40)
             logger.error('\n'.join(message))
+        return not faults
 
     def extracted_urls(self, uri):
         sitemap_as_string = self.sitemap_xml(uri)
@@ -77,4 +78,4 @@ if __name__ == '__main__':
     with open('conf.yaml') as config_file:
         settings = yaml.load(config_file)['signallers']['SITEMAP_TEST']['sitemap']
     s = Sitemap(settings)
-    s.poll()
+    s.urls_not_available()

@@ -7,6 +7,7 @@ from geckoboard import Geckoboard
 from logger import logger
 from state import State
 from traffic import TrafficLight
+from sitemap import Sitemap
 
 states = configuration['states']
 
@@ -30,6 +31,7 @@ class Signaller:
         self.unhandled_exception_raised = False
         traffic_light_present = self.signal_settings.get('trafficlight')
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight']) if traffic_light_present else None
+        self.sitemap = Sitemap(self.signal_settings['sitemap']) if self.signal_settings.get('sitemap') else None
         self.bamboo_tasks = Bamboo(self.signal_settings['bamboo'])
         self.geckoboard = Geckoboard()
 
@@ -42,7 +44,8 @@ class Signaller:
     def poll(self):
         logger.info('Signaller {signaller}: polling...'.format(signaller=self.signal_name))
         try:
-            results = self.bamboo_tasks.all_results()
+            bamboo_results = self.bamboo_tasks.all_results()
+            sitemap_ok = self.sitemap.urls_all_available()
         except Exception as e:
             logger.error('Signaller {signaller}: Unhandled internal exception. '
                          'Could be configuration problem or bug.\n{exception}'
@@ -52,8 +55,8 @@ class Signaller:
             logger.error('Waiting {0} secs\n'.format(configuration['errorheartbeat_secs']))
             sleep(configuration['errorheartbeat_secs'])
         else:
-            self.communicate_results(results)
-            self.geckoboard.show_monitored_environments(results)
+            self.communicate_results(bamboo_results, sitemap_ok)
+            self.geckoboard.show_monitored_environments(bamboo_results)
             if self.unhandled_exception_raised:
                 self.unhandled_exception_raised = False
 
@@ -96,7 +99,7 @@ class Signaller:
             self.signal_unhandled_exception(e)
             self.respond_to_error_level('internalexception')
 
-    def communicate_results(self, bamboo_results):
+    def communicate_results(self, bamboo_results, sitemap_ok):
         all_passed = True
         comms_failure = False
         for env_results in bamboo_results.values():
@@ -108,6 +111,7 @@ class Signaller:
                 all_passed = all_passed and all(retrieved_results)
             if any(passed is None for passed in project_results):
                 comms_failure = True
+        all_passed = all_passed and sitemap_ok
         if comms_failure:
             if all_passed:
                 state = 'commserror'
