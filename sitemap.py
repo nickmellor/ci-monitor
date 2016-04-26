@@ -32,7 +32,7 @@ class Sitemap:
         sitemap_as_string = self.sitemap_xml(uri)
         if sitemap_as_string:
             sitemap = ET.fromstring(sitemap_as_string)
-            for url in list(sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'))[:3]:
+            for url in sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
                 yield url.text
 
     @staticmethod
@@ -51,6 +51,7 @@ def errorpage(response):
     text = tidy(strip_tags(response.text))
     res = res and not('page not found' in text)
     res = res and not('could not process request' in text)
+    res = res and not("we've encountered a problem." in text)
     return res
 
 
