@@ -45,7 +45,7 @@ class Signaller:
         logger.info('Signaller {signaller}: polling...'.format(signaller=self.signal_name))
         try:
             bamboo_results = self.bamboo_tasks.all_results()
-            sitemap_ok = self.sitemap.urls_all_available() if self.sitemap else True
+            sitemap_ok = self.sitemap.urls_ok() if self.sitemap else True
         except Exception as e:
             logger.error('Signaller {signaller}: Unhandled internal exception. '
                          'Could be configuration problem or bug.\n{exception}'

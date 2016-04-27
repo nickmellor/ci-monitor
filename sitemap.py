@@ -1,3 +1,6 @@
+from requests.packages.urllib3.exceptions import MaxRetryError
+from requests.exceptions import RequestException
+
 from proxies import proxies
 import requests
 import xml.etree.ElementTree as ET
@@ -12,27 +15,38 @@ class Sitemap:
     def __init__(self, settings):
         self.sitemaps = settings
 
-    def urls_all_available(self):
+    def urls_ok(self):
         faults = []
-        for sitemap_name, sitemap in self.sitemaps.items():
-            for url in self.extracted_urls(sitemap):
-                response = requests.get(url, verify=False, proxies=proxies)
-                if errorpage(response):
-                    faults += (sitemap_name, url, response.status_code)
+        for sitemap_name, sitemap_uri in self.sitemaps.items():
+            extracted_urls = list(self.extracted_urls(sitemap_uri))
+            if extracted_urls:
+                for url in self.extracted_urls(sitemap_uri):
+                    url = 'http://www.medibank.com.au/kjhdsagfbvosjdhf'
+                    try:
+                        response = requests.get(url, verify=False, proxies=proxies)
+                    except (RequestException, ConnectionError, MaxRetryError) as e:
+                        faults.append((sitemap_name, url, repr(e)))
+                    else:
+                        if page_error(response):
+                            faults.append((sitemap_name, url, str(response.status_code)))
+            else:
+                logger.error('Sitemap {0} not available'.format(sitemap_name))
+                faults.append((sitemap_name, sitemap_uri, 'sitemap file not available'))
+
         if faults:
-            message = ['*' * 40]
-            message.extend(faults)
+            message = ['Sitemap errors as follows:', '*' * 40]
+            message.extend('* ' + repr(fault) for fault in faults)
             message.append('*' * 40)
             logger.error('\n'.join(message))
         else:
-            logger.info('Sitemap ok')
+            logger.info("Sitemaps ok".format())
         return not faults
 
     def extracted_urls(self, uri):
         sitemap_as_string = self.sitemap_xml(uri)
         if sitemap_as_string:
             sitemap = ET.fromstring(sitemap_as_string)
-            for url in sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
+            for url in list(sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'))[:3]:
                 yield url.text
 
     @staticmethod
@@ -40,45 +54,51 @@ class Sitemap:
         try:
             response = requests.get(uri, verify=False, proxies=proxies)
             return response.text
-        except ConnectionError as e:
+        except (RequestException, ConnectionError, MaxRetryError) as e:
             logger.error("Sitemap: sitemap unavailable:\n{0}".format(e))
             return None
 
 
-def errorpage(response):
-    """error pages return 200 so need to check error page text"""
-    res = not 200 <= response.status_code < 300
-    text = tidy(strip_tags(response.text))
-    res = res and not('page not found' in text)
-    res = res and not('could not process request' in text)
-    res = res and not("we've encountered a problem." in text)
-    return res
+def page_error(response):
+    """error pages often return 200 so need to check error page text"""
+    res = not(200 <= response.status_code < 300)
+    text = easy_match(response.text)
+    res = res or ('page not found' in text)
+    res = res or ('could not process request' in text)
+    res = res or ("encountered a problem." in text)
+    # return res
+    return True
 
 
-def strip_tags(html):
-    s = MLStripper()
+def easy_match(text_with_markup):
+    """remove markup and condense multiple white space to single space"""
+    text = strip_markup(text_with_markup).lower().strip()
+    return re.sub('\s+', ' ', text)
+
+
+def strip_markup(html):
+    s = MarkupStripper()
     s.feed(html)
-    return s.get_data()
+    return s.text_without_markup()
 
 
-def tidy(s):
-    return re.sub('\s+', ' ', s.lower().strip())
-
-
-class MLStripper(HTMLParser):
+class MarkupStripper(HTMLParser):
     def __init__(self):
         super().__init__()
         self.reset()
-        self.fed = []
+        self.text = []
 
     def handle_data(self, d):
-        self.fed.append(d)
+        self.text.append(d)
 
-    def get_data(self):
-        return ' '.join(self.fed)
+    def text_without_markup(self):
+        """
+        markup replaced by space to handle <br/>. Assume markup is between not within words
+        """
+        return ' '.join(self.text)
 
 if __name__ == '__main__':
     with open('conf.yaml') as config_file:
         settings = yaml.load(config_file)['signallers']['SITEMAP_TEST']['sitemap']
     s = Sitemap(settings)
-    s.urls_not_available()
+    s.urls_ok()
