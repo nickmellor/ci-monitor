@@ -1,3 +1,5 @@
+import http
+
 from requests.packages.urllib3.exceptions import MaxRetryError
 from requests.exceptions import RequestException
 
@@ -16,47 +18,61 @@ class Sitemap:
         self.sitemaps = settings
 
     def urls_ok(self):
-        faults = []
+        errors = []
+        url_count = 0
         for sitemap_name, sitemap_uri in self.sitemaps.items():
             extracted_urls = list(self.extracted_urls(sitemap_uri))
+            url_count += len(extracted_urls)
             if extracted_urls:
-                for url in self.extracted_urls(sitemap_uri):
-                    url = 'http://www.medibank.com.au/kjhdsagfbvosjdhf'
+                for url in extracted_urls:
+                    # url = 'http://www.medibank.com.au/kjhdsagfbvosjdhf'
                     try:
-                        response = requests.get(url, verify=False, proxies=proxies)
+                        response = get_without_proxy(url)
                     except (RequestException, ConnectionError, MaxRetryError) as e:
-                        faults.append((sitemap_name, url, repr(e)))
+                        errors.append((sitemap_name, url, repr(e)))
                     else:
                         if page_error(response):
-                            faults.append((sitemap_name, url, str(response.status_code)))
+                            errors.append((sitemap_name, url, str(response.status_code)))
+                            logger.info("...'{url}' ...oops!".format(url=url))
+                        else:
+                            logger.info("...'{url}' passed".format(url=url))
             else:
-                logger.error('Sitemap {0} not available'.format(sitemap_name))
-                faults.append((sitemap_name, sitemap_uri, 'sitemap file not available'))
+                logger.error("Sitemap '{name}' ({url}) not available".format(name=sitemap_name, url=sitemap_uri))
+                errors.append((sitemap_name, sitemap_uri, 'sitemap file not available'))
 
-        if faults:
+        if errors:
             message = ['Sitemap errors as follows:', '*' * 40]
-            message.extend('* ' + repr(fault) for fault in faults)
+            message.extend('* ' + str(n) + '. ' + reportable_fault for n, reportable_fault in enumerate(repr(fault) for fault in errors))
+            message.append('* {0} failures testing {1} urls'.format(len(errors), url_count))
             message.append('*' * 40)
             logger.error('\n'.join(message))
         else:
-            logger.info("Sitemaps ok".format())
-        return not faults
+            logger.info("All {0} sitemap URLs ok".format(url_count))
+        return not errors
 
     def extracted_urls(self, uri):
         sitemap_as_string = self.sitemap_xml(uri)
         if sitemap_as_string:
             sitemap = ET.fromstring(sitemap_as_string)
-            for url in list(sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'))[:3]:
+            # for url in list(sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'))[:3]:
+            for url in sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
                 yield url.text
 
     @staticmethod
     def sitemap_xml(uri):
         try:
-            response = requests.get(uri, verify=False, proxies=proxies)
+            response = get_without_proxy(uri)
             return response.text
         except (RequestException, ConnectionError, MaxRetryError) as e:
             logger.error("Sitemap: sitemap unavailable:\n{0}".format(e))
             return None
+
+
+def get_without_proxy(address):
+    # response = requests.get(uri, verify=False, proxies=proxies)
+    session = requests.Session()
+    session.trust_env = False
+    return session.get(address)
 
 
 def page_error(response):
@@ -66,8 +82,8 @@ def page_error(response):
     res = res or ('page not found' in text)
     res = res or ('could not process request' in text)
     res = res or ("encountered a problem." in text)
-    # return res
-    return True
+    return res
+    # return True
 
 
 def easy_match(text_with_markup):
