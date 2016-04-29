@@ -1,15 +1,17 @@
 import http
 
+import time
 from requests.packages.urllib3.exceptions import MaxRetryError
 from requests.exceptions import RequestException
 
-from proxies import proxies
 import requests
 import xml.etree.ElementTree as ET
 from logger import logger
 import yaml
 from html.parser import HTMLParser
 import re
+from random import shuffle
+from proxies import proxies
 
 
 class Sitemap:
@@ -22,12 +24,13 @@ class Sitemap:
         url_count = 0
         for sitemap_name, sitemap_uri in self.sitemaps.items():
             extracted_urls = list(self.extracted_urls(sitemap_uri))
+            shuffle(extracted_urls)
             url_count += len(extracted_urls)
             if extracted_urls:
                 for url in extracted_urls:
                     # url = 'http://www.medibank.com.au/kjhdsagfbvosjdhf'
                     try:
-                        response = get_without_proxy(url)
+                        response = get(url)
                     except (RequestException, ConnectionError, MaxRetryError) as e:
                         errors.append((sitemap_name, url, repr(e)))
                     else:
@@ -36,18 +39,26 @@ class Sitemap:
                             logger.info("...'{url}' ...oops!".format(url=url))
                         else:
                             logger.info("...'{url}' passed".format(url=url))
+                    if response.history:
+                        print("Request was redirected")
+                        for resp in response.history:
+                            print (resp.status_code, resp.url)
+                        print("Final destination:")
+                        print(response.status_code, response.url)
             else:
                 logger.error("Sitemap '{name}' ({url}) not available".format(name=sitemap_name, url=sitemap_uri))
                 errors.append((sitemap_name, sitemap_uri, 'sitemap file not available'))
 
         if errors:
-            message = ['Sitemap errors as follows:', '*' * 40]
-            message.extend('* ' + str(n) + '. ' + reportable_fault for n, reportable_fault in enumerate(repr(fault) for fault in errors))
-            message.append('* {0} failures testing {1} urls'.format(len(errors), url_count))
-            message.append('*' * 40)
+            message = ['Sitemap errors as follows:', '*' * 79]
+            message.extend('* {no}. {fault}'.format(no=n + 1, fault=reportable_fault)
+                           for n, reportable_fault
+                           in enumerate(repr(error) for error in errors))
+            message.append('*** {0} failures testing {1} urls'.format(len(errors), url_count))
+            message.append('*' * 79)
             logger.error('\n'.join(message))
         else:
-            logger.info("All {0} sitemap URLs ok".format(url_count))
+            logger.info("All {count} sitemap URLs ok".format(count=url_count))
         return not errors
 
     def extracted_urls(self, uri):
@@ -61,18 +72,28 @@ class Sitemap:
     @staticmethod
     def sitemap_xml(uri):
         try:
-            response = get_without_proxy(uri)
+            response = get(uri)
             return response.text
         except (RequestException, ConnectionError, MaxRetryError) as e:
             logger.error("Sitemap: sitemap unavailable:\n{0}".format(e))
             return None
 
 
-def get_without_proxy(address):
+def get(address):
     # response = requests.get(uri, verify=False, proxies=proxies)
-    session = requests.Session()
-    session.trust_env = False
-    return session.get(address)
+    # time.sleep(3)
+    proxies = {
+        'http': 'http://secprxy02prd.medibank.local:8080',
+        'https': 'http://secprxy02prd.medibank.local:8080'
+    }
+    # split_at_protocol = address.split(':')
+    # if split_at_protocol[0] == 'http':
+    #     address = 'https:' + split_at_protocol[1]
+    # session = requests.Session()
+    # session.trust_env = False
+    response = requests.get(address, allow_redirects=True)
+    # response = session.get(address, allow_redirects=True)
+    return response
 
 
 def page_error(response):

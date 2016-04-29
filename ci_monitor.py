@@ -13,7 +13,7 @@ while True:
             try:
                 signaller.poll()
             except KeyboardInterrupt as e:
-                logger.error('Interrupted by Ctrl+C: exiting...')
+                logger.warning('Interrupted by Ctrl+C: exiting...')
                 sys.exit()
             except Exception as e:
                 unhandled_exceptions.append(signaller.unhandled_exception_raised)

@@ -34,8 +34,8 @@ signallers:
 #          jobs:
 #            ESB API tests: MDAL-ESS
     sitemap:
-      dev-legacy: http://dev-aem.medibank.local/sitemap-legacy.xml
-      dev-aem-retail: http://dev-aem.medibank.local/sitemap-retail.xml
+#      dev-legacy: http://dev-aem.medibank.local/sitemap-legacy.xml
+#      dev-aem-retail: http://dev-aem.medibank.local/sitemap-retail.xml
       prod-aem: https://www.medibank.com.au/sitemap-retail.xml
       prod-legacy: https://www.medibank.com.au/sitemap-legacy.xml
     sounds:
