@@ -46,7 +46,7 @@ class Signaller:
         if self.bamboo_tasks:
             self.poll_bamboo()
         if self.merge:
-            self.poll_merges()
+            self.merge.poll()
 
     def poll_bamboo(self):
         try:

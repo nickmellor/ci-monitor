@@ -54,6 +54,15 @@ signallers:
       name_patterns:
         - release/.+
         - hotfix/.+
+    bamboo:
+      environments:
+        DEV01:
+          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          jobs:
+            API tests: MDAL-AGAT
+    sounds:
+      failures: alarm_beep.wav
+      greenbuild: applause.wav
 
 
 bsm:
