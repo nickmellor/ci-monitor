@@ -32,7 +32,7 @@ class Signaller:
         traffic_light_present = self.signal_settings.get('trafficlight')
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight']) if traffic_light_present else None
         self.sitemap = Sitemap(self.signal_settings['sitemap'], self.signal_name) if self.signal_settings.get('sitemap') else None
-        self.bamboo_tasks = Bamboo(self.signal_settings['bamboo'])
+        self.bamboo_tasks = Bamboo(self.signal_settings['bamboo']) if self.signal_settings.get('bamboo') else None
         self.geckoboard = Geckoboard()
 
     def get_state(self):
@@ -44,7 +44,7 @@ class Signaller:
     def poll(self):
         logger.info('Signaller {signaller}: polling...'.format(signaller=self.signal_name))
         try:
-            bamboo_results = self.bamboo_tasks.all_results()
+            bamboo_results = self.bamboo_tasks.all_results() if self.bamboo_tasks else None
             sitemap_ok = self.sitemap.urls_ok() if self.sitemap else True
         except Exception as e:
             logger.error('Signaller {signaller}: Unhandled internal exception. '
@@ -102,15 +102,18 @@ class Signaller:
     def communicate_results(self, bamboo_results, sitemap_ok):
         all_passed = True
         comms_failure = False
-        for env_results in bamboo_results.values():
-            project_results = env_results.values()
-            retrieved_results = [result for result in project_results if result is not None]
-            # all returns True for empty list
-            all_passed = all_passed and all(retrieved_results)
-            if all_passed:
+        if bamboo_results:
+            for env_results in bamboo_results.values():
+                project_results = env_results.values()
+                retrieved_results = [result for result in project_results if result is not None]
+                # all returns True for empty list
                 all_passed = all_passed and all(retrieved_results)
-            if any(passed is None for passed in project_results):
-                comms_failure = True
+                if all_passed:
+                    all_passed = all_passed and all(retrieved_results)
+                if any(passed is None for passed in project_results):
+                    comms_failure = True
+        else:
+            all_passed = True
         all_passed = all_passed and sitemap_ok
         if comms_failure:
             if all_passed:
