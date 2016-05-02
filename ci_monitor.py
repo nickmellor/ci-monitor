@@ -1,7 +1,7 @@
 from time import sleep
 from conf import configuration, o_conf, config_changed
 import sys
-from signal import Signal
+from cimsignal import Signal
 from logger import logger, configure_logging
 
 logger.warning('CI Monitor restarted')
