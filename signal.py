@@ -12,13 +12,13 @@ from sitemap import Sitemap
 states = configuration['states']
 
 
-class Signaller:
+class Signal:
     """
-    a signaller associates builds/status of services with signals (traffic lights, sounds etc)
-    a signaller might read the API functional tests Bamboo build, play a sound if they have
+    a signal associates builds/status of services with signals (traffic lights, sounds etc)
+    a signal might read the API functional tests Bamboo build, play a sound if they have
     failing test(s), and display the build status on a traffic light
     or make a sound, or write to a log
-    each signaller has a 'state'-- that encompasses Bamboo responsiveness, test failures,
+    each signal has a 'state'-- that encompasses Bamboo responsiveness, test failures,
     presence of configured traffic lights, internal exceptions
     states are divided into ERROR, WARNING and NONE that are configurable, and currently
     affect the logging level
@@ -27,7 +27,7 @@ class Signaller:
     def __init__(self, signal_name):
         self.signal_name = signal_name
         self.state = self.get_state()
-        self.signal_settings = configuration['signallers'][signal_name]
+        self.signal_settings = configuration['signals'][signal_name]
         self.unhandled_exception_raised = False
         traffic_light_present = self.signal_settings.get('trafficlight')
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight']) if traffic_light_present else None
@@ -39,17 +39,17 @@ class Signaller:
         return State.retrieve(self.state_id())
 
     def state_id(self):
-        return 'signaller:{signal}'.format(signal=self.signal_name)
+        return 'signal:{signal}'.format(signal=self.signal_name)
 
     def poll(self):
-        logger.info('Signaller {signaller}: polling...'.format(signaller=self.signal_name))
+        logger.info('Signal {signal}: polling...'.format(signal=self.signal_name))
         try:
             bamboo_results = self.bamboo_tasks.all_results() if self.bamboo_tasks else None
             sitemap_ok = self.sitemap.urls_ok() if self.sitemap else True
         except Exception as e:
-            logger.error('Signaller {signaller}: Unhandled internal exception. '
+            logger.error('Signal {signal}: Unhandled internal exception. '
                          'Could be configuration problem or bug.\n{exception}'
-                         .format(signaller=self.signal_name, exception=e.args))
+                         .format(signal=self.signal_name, exception=e.args))
             self.internal_exception(e)
             # NB traffic light update not shown until unhandled exception clear for one complete pass
             logger.error('Waiting {0} secs\n'.format(configuration['errorheartbeat_secs']))
@@ -127,12 +127,12 @@ class Signaller:
                 state = 'failures'
         if self.get_state() != state:
             self.respond_to_error_level(state)
-            self.store_signaller_state(state)
+            self.store_signal_state(state)
         else:
             if self.trafficlight:
                 self.trafficlight.set_lights(state)
 
-    def store_signaller_state(self, state):
+    def store_signal_state(self, state):
         State.store(self.state_id(), state)
 
 

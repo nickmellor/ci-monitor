@@ -18,7 +18,7 @@ states:
   lampwarn: [commserrorandfailures, failures, commserror]
   lamperror: [internalexception]
   blinktime_secs: 0.1
-signallers:
+signals:
 #  OMS:
 #    trafficlight:
 #      id: 901880
@@ -36,7 +36,7 @@ signallers:
 #    sounds:
 #      failures: alarm_beep.wav
 #      greenbuild: applause.wav
-  Retail PROD:
+  RetailPROD:
     sitemap:
       interval_mins: 120
       files:
@@ -45,7 +45,7 @@ signallers:
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav
-  Retail DEV:
+  RetailDEV:
     sitemap:
       interval_mins: 20
       files:

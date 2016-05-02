@@ -13,13 +13,13 @@ from wait import Wait
 
 class Sitemap:
 
-    def __init__(self, settings, signaller):
+    def __init__(self, settings, signal):
         self.sitemaps = settings['files']
-        self.signaller = signaller
-        self.wait = Wait(settings['interval_mins'] * 60, signaller)
+        self.signal = signal
+        self.wait = Wait(settings['interval_mins'] * 60, signal)
 
     def state_id(self):
-        return 'sitemap state for signaller {0}'.format(self.signaller)
+        return 'sitemap state for signal {0}'.format(self.signal)
 
     def urls_ok(self):
         pn = self.wait.poll_now()
@@ -141,6 +141,6 @@ class MarkupStripper(HTMLParser):
 
 if __name__ == '__main__':
     with open('conf.yaml') as config_file:
-        settings = yaml.load(config_file)['signallers']['SITEMAP_TEST']['sitemap']
+        settings = yaml.load(config_file)['signals']['RetailDEV']['sitemap']
     s = Sitemap(settings)
     s.urls_ok()

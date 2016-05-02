@@ -10,7 +10,7 @@ from state import State
 
 class Bamboo:
     """
-    retrieve Bamboo results for a signaller's monitored environments
+    retrieve Bamboo results for a signal's monitored environments
     """
 
     def __init__(self, settings):
@@ -52,10 +52,10 @@ class Bamboo:
 
     def connection_failed(self, e, environment, job, uri):
         if self.previously_connected(uri):
-            message = "Signaller '{signaller}': {env}: {job} not responding, URI: '{uri}'\n" \
+            message = "Signal '{signal}': {env}: {job} not responding, URI: '{uri}'\n" \
                       "No further warnings will be given unless/until it responds.\n"
             message += "Exception: {exception}\n"
-            message = message.format(signaller="OMS", env=environment, job=job, uri=uri, exception=e)
+            message = message.format(signal="OMS", env=environment, job=job, uri=uri, exception=e)
             logger.warning(message)
             self.store_connection_state(uri, False)
         return None
