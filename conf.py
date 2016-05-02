@@ -29,4 +29,5 @@ def get_config():
     with open('conf.yaml') as config_file:
         configuration = yaml.load(config_file)
 
+
 config_changed()

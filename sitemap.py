@@ -1,6 +1,3 @@
-import http
-
-import time
 from requests.packages.urllib3.exceptions import MaxRetryError
 from requests.exceptions import RequestException
 
@@ -10,21 +7,29 @@ from logger import logger
 import yaml
 from html.parser import HTMLParser
 import re
-from random import shuffle
 from proxies import proxies
+from wait import Wait
 
 
 class Sitemap:
 
-    def __init__(self, settings):
-        self.sitemaps = settings
+    def __init__(self, settings, signaller):
+        self.sitemaps = settings['files']
+        self.signaller = signaller
+        self.wait = Wait(settings['interval_mins'] * 60, signaller)
+
+    def state_id(self):
+        return 'sitemap state for signaller {0}'.format(self.signaller)
 
     def urls_ok(self):
+        pn = self.wait.poll_now()
+        if pn:
+            logger.info('Yoohoo! Testing URLs!')
+        return pn
         errors = []
         url_count = 0
         for sitemap_name, sitemap_uri in self.sitemaps.items():
             extracted_urls = list(self.extracted_urls(sitemap_uri))
-            shuffle(extracted_urls)
             url_count += len(extracted_urls)
             if extracted_urls:
                 for url in extracted_urls:
@@ -40,15 +45,14 @@ class Sitemap:
                         else:
                             logger.info("...'{url}' passed".format(url=url))
                     if response.history:
-                        print("Request was redirected")
-                        for resp in response.history:
-                            print(resp.status_code, resp.url)
-                        print("Final destination:")
-                        print(response.status_code, response.url)
+                        logger.info("Request was redirected")
+                        for resp_history_item in response.history:
+                            logger.info('{0}: {1}'.format(resp_history_item.status_code, resp_history_item.url))
+                        logger.info("Final destination:")
+                        logger.info('{0}: {1}'.format(response.status_code, response.url))
             else:
                 logger.error("Sitemap '{name}' ({url}) not available".format(name=sitemap_name, url=sitemap_uri))
                 errors.append((sitemap_name, sitemap_uri, 'sitemap file not available'))
-
         if errors:
             message = ['Sitemap errors as follows:', '*' * 79]
             message.extend('* {no}. {fault}'.format(no=n + 1, fault=reportable_fault)
