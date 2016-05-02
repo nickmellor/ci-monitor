@@ -80,19 +80,7 @@ class Sitemap:
 
 
 def get(address):
-    # response = requests.get(uri, verify=False, proxies=proxies)
-    # time.sleep(3)
-    proxies = {
-        'http': 'http://secprxy02prd.medibank.local:8080',
-        'https': 'http://secprxy02prd.medibank.local:8080'
-    }
-    # split_at_protocol = address.split(':')
-    # if split_at_protocol[0] == 'http':
-    #     address = 'https:' + split_at_protocol[1]
-    # session = requests.Session()
-    # session.trust_env = False
-    response = requests.get(address, allow_redirects=True)
-    # response = session.get(address, allow_redirects=True)
+    response = requests.get(address, allow_redirects=True, proxies=proxies)
     return response
 
 
@@ -144,7 +132,7 @@ class MarkupStripper(HTMLParser):
 
     def text_without_markup(self):
         """
-        markup replaced by space to handle <br/>. Assume markup is between not within words
+        markup replaced by space mainly to interpret <br/> as word boundary
         """
         return ' '.join(self.text)
 
