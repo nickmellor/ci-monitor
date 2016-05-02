@@ -28,21 +28,21 @@ class Sitemap:
             url_count += len(extracted_urls)
             if extracted_urls:
                 for url in extracted_urls:
-                    # url = 'http://www.medibank.com.au/kjhdsagfbvosjdhf'
                     try:
                         response = get(url)
                     except (RequestException, ConnectionError, MaxRetryError) as e:
                         errors.append((sitemap_name, url, repr(e)))
                     else:
-                        if page_error(response):
-                            errors.append((sitemap_name, url, str(response.status_code)))
+                        pe = page_error(response)
+                        if pe:
+                            errors.append((sitemap_name, url, pe))
                             logger.info("...'{url}' ...oops!".format(url=url))
                         else:
                             logger.info("...'{url}' passed".format(url=url))
                     if response.history:
                         print("Request was redirected")
                         for resp in response.history:
-                            print (resp.status_code, resp.url)
+                            print(resp.status_code, resp.url)
                         print("Final destination:")
                         print(response.status_code, response.url)
             else:
@@ -97,14 +97,28 @@ def get(address):
 
 
 def page_error(response):
-    """error pages often return 200 so need to check error page text"""
-    res = not(200 <= response.status_code < 300)
+    """error pages often return 200 so need to check error page text too"""
+    error = not(200 <= response.status_code < 300)
+    if error:
+        return 'Http code error: {code}'.format(code=response.status_code)
+    error = text_error(response)
+    if error:
+        return "Error text found on page: '{0}'".format(error)
+    return ''
+
+
+def text_error(response):
     text = easy_match(response.text)
-    res = res or ('page not found' in text)
-    res = res or ('could not process request' in text)
-    res = res or ("encountered a problem." in text)
-    return res
-    # return True
+    messages = [
+        'could not process request',
+        've encountered a problem.',
+        'Sorry, but it looks like the page you are looking for could not be found.'
+    ]
+    for message in messages:
+        if message in text:
+            return message
+    else:
+        return None
 
 
 def easy_match(text_with_markup):
