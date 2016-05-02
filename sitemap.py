@@ -23,9 +23,8 @@ class Sitemap:
 
     def urls_ok(self):
         pn = self.wait.poll_now()
-        if pn:
-            logger.info('Yoohoo! Testing URLs!')
-        return pn
+        if not pn:
+            return True
         errors = []
         url_count = 0
         for sitemap_name, sitemap_uri in self.sitemaps.items():
