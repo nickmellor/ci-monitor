@@ -42,3 +42,8 @@ class Geckoboard:
                     logger.warning('Did not succeed sending to Geckoboard (env={0})'.format(env))
             except ConnectionError as e:
                 logger.error("Couldn't write to geckoboard. Exception follows: \n{0}".format(e))
+
+
+# TODO: geckoboard: display a few failing tests (+ most recent committers?)
+# TODO: add last downtime facility for Geckoboard
+# TODO: enable one CI-monitor to look after more than one Geckoboard widget

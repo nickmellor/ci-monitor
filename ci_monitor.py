@@ -24,9 +24,9 @@ while True:
     configure_logging()
     logger.warning('Config changed!')
 
-# TODO: fix logging level when config changes (conf being shadowed locally?)
-# TODO: enable one CI-monitor to look after more than one Geckoboard widget
 # TODO: decouple signals so they operate independently-- separate threads?
-# TODO: geckoboard: display a few failing tests (+ most recent committers?)
-# TODO: add last downtime facility for Geckoboard
-# TODO: HipChat notification of build going red/green
+# TODO: sep of concerns: monitors like Bamboo should expose methods for signal
+#         - poll()
+#         - state()
+#         - comms()
+# TODO: rename State to Persist

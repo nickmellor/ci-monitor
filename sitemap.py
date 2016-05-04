@@ -16,7 +16,11 @@ class Sitemap:
     def __init__(self, settings, signal):
         self.sitemaps = settings['files']
         self.signal = signal
-        self.wait = Wait(settings['interval_mins'] * 60, signal)
+        self.wait = Wait(signal)
+        if 'schedule' in settings:
+            self.wait.set_schedule(settings['schedule'])
+        elif 'interval' in settings:
+            self.wait.set_interval(settings['interval'] * 60)
 
     def state_id(self):
         return 'sitemap state for signal {0}'.format(self.signal)
@@ -140,7 +144,9 @@ class MarkupStripper(HTMLParser):
         return ' '.join(self.text)
 
 if __name__ == '__main__':
-    with open('conf.yaml') as config_file:
-        settings = yaml.load(config_file)['signals']['RetailDEV']['sitemap']
-    s = Sitemap(settings)
-    s.urls_ok()
+    # with open('conf.yaml') as config_file:
+    #     settings = yaml.load(config_file)['signals']['RetailDEV']['sitemap']
+    # s = Sitemap(settings)
+    # s.urls_ok()
+    import datetime
+    datetime.datetime.now()

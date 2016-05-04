@@ -38,7 +38,10 @@ signals:
 #      greenbuild: applause.wav
   RetailPROD:
     sitemap:
-      interval_mins: 120
+      schedule:
+        - 08:30AM
+        - 12:00PM
+        - 04:30PM
       files:
         prod-aem: https://www.medibank.com.au/sitemap-retail.xml
         prod-legacy: https://www.medibank.com.au/sitemap-legacy.xml
