@@ -38,7 +38,7 @@ class Merge:
         return branch_changeset == shared_changeset[0].hexsha
 
     def branches(self, project):
-        yield from (branch for branch in project.remote_branches(project.repo) if self.fits_criteria(branch))
+        yield from (branch for branch in project.remote_branches(project.repo) if self.fits_criteria(project, branch))
 
     def refresh_projects(self):
         for project in self.settings['repos']:
@@ -48,16 +48,19 @@ class Merge:
         # location config
         pass
 
-    def fits_criteria(self, branch):
-        commit_date = datetime.datetime.fromtimestamp(branch.commit.committed_date)
+    def fits_criteria(self, project, branch):
+        revision = project.latest_changeset(tidy_branch(branch))
+        commit_date = datetime.datetime.fromtimestamp(project.changeset(revision).committed_date)
         too_old_to_bother = commit_date < datetime.datetime.strptime(self.settings['start'], '%d/%m/%Y')
         stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['max_days'])
-        branch_name_matches = any(re.match(pattern, branch.name)
+        branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
                                   in self.settings['name_patterns'])
-        return True
-        # return stale and branch_name_matches and not too_old_to_bother
+        return stale and branch_name_matches and not too_old_to_bother
 
+
+def tidy_branch(branch):
+    return branch[2:] if branch.startswith('*') else branch
 
 if __name__ == '__main__':
     with open('conf.yaml') as config_file:
