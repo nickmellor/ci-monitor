@@ -40,7 +40,7 @@ signallers:
     trafficlight:
       id: 901880
     merge:
-      start: 01/04/2016
+      start: 01/09/2015
       location: scratch/repos
       repos:
         - api-gateway
@@ -52,8 +52,8 @@ signallers:
         - master
       max_days: 3
       name_patterns:
-        - release/.+
-        - hotfix/.+
+        - .*/release/.+
+        - .*/hotfix/.+
     bamboo:
       environments:
         DEV01:

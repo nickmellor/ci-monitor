@@ -24,12 +24,14 @@ class Merge:
         unmerged_branches = []
         for deploy_branch_name in ['develop']:
             for project in self.projects:
+                print('Project: {0}'.format(project.repo._working_tree_dir.split('\\')[-1]))
                 # project.repo.remotes.origin.fetch() -- has timeout at present
-                deploy_branch = project.repo.commit(deploy_branch_name)
+                deploy_rev = latest_commit(project, deploy_branch_name).hexsha
                 for branch in self.branches(project):
-                    release_branch = project.repo.commit(branch.name).hexsha
-                    if not project.repo.is_ancestor(release_branch, deploy_branch):
-                        unmerged_branches.append(branch.name)
+                    logger.info('Processing branch {0}'.format(branch))
+                    release_rev = latest_commit(project, branch).hexsha
+                    if not project.repo.is_ancestor(release_rev, deploy_rev):
+                        unmerged_branches.append((project.repo._working_tree_dir.split('\\')[-1], branch))
         print(unmerged_branches)
 
     def merged(self, project, branch, master):
@@ -38,7 +40,8 @@ class Merge:
         return branch_changeset == shared_changeset[0].hexsha
 
     def branches(self, project):
-        yield from (branch for branch in project.remote_branches(project.repo) if self.fits_criteria(project, branch))
+        yield from (tidy_branch(branch) for branch in project.remote_branches(project.repo)
+                    if self.fits_criteria(project, branch))
 
     def refresh_projects(self):
         for project in self.settings['repos']:
@@ -49,14 +52,22 @@ class Merge:
         pass
 
     def fits_criteria(self, project, branch):
-        revision = project.latest_changeset(tidy_branch(branch))
-        commit_date = datetime.datetime.fromtimestamp(project.changeset(revision).committed_date)
-        too_old_to_bother = commit_date < datetime.datetime.strptime(self.settings['start'], '%d/%m/%Y')
-        stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['max_days'])
+        is_merge = '->' in branch
+        if is_merge:
+            return False
+        commit = latest_commit(project, branch)
+        commit_date = datetime.datetime.fromtimestamp(commit.committed_date)
+        too_old = commit_date < datetime.datetime.strptime(self.settings['start'], '%d/%m/%Y')
+        is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['max_days'])
         branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
                                   in self.settings['name_patterns'])
-        return stale and branch_name_matches and not too_old_to_bother
+        return is_stale and branch_name_matches and not too_old
+
+
+def latest_commit(project, branch):
+    revision = project.latest_changeset(tidy_branch(branch))
+    return project.repo.commit(revision)
 
 
 def tidy_branch(branch):
