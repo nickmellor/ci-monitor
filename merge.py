@@ -1,7 +1,6 @@
 from logger import logger
 import re
 import os
-import time
 from mcmaster_utils import gitclient
 import datetime
 import yaml
@@ -20,18 +19,18 @@ class Merge:
                        in settings['repos']]
 
     def poll(self):
-        self.refresh_projects()
+        # self.refresh_projects()
         unmerged_branches = []
         for deploy_branch_name in ['develop']:
             for project in self.projects:
-                print('Project: {0}'.format(project.repo._working_tree_dir.split('\\')[-1]))
+                logger.info("Scanning repo for project '{0}'".format(project.repo._working_tree_dir.split(os.path.sep)[-1]))
                 # project.repo.remotes.origin.fetch() -- has timeout at present
                 deploy_rev = latest_commit(project, deploy_branch_name).hexsha
                 for branch in self.branches(project):
-                    logger.info('Processing branch {0}'.format(branch))
+                    # logger.info('Processing branch {0}'.format(branch))
                     release_rev = latest_commit(project, branch).hexsha
                     if not project.repo.is_ancestor(release_rev, deploy_rev):
-                        unmerged_branches.append((project.repo._working_tree_dir.split('\\')[-1], branch))
+                        unmerged_branches.append((project.repo._working_tree_dir.split(os.path.sep)[-1], branch))
         print(unmerged_branches)
 
     def merged(self, project, branch, master):
@@ -45,12 +44,18 @@ class Merge:
                     if not is_merge(branch) and self.fits_criteria(project, branch))
 
     def refresh_projects(self):
-        for project in self.settings['repos']:
-            self.gitclone(project)
+        self.clear_repos()
+        for repo_uri in self.settings['repos']:
+            self.gitclone(repo_uri, self.repo_dir())
 
-    def gitclone(self, project):
-        # Repo.clone_from(git_url, repo_dir)
-        pass
+    def clear_repos(self):
+        os.removedirs(self.repo_dir())
+
+    def repo_dir(self):
+        return os.path.normpath(self.settings['location'])
+
+    def gitclone(self, uri, directory):
+        Repo.clone_from(uri, directory)
 
     def fits_criteria(self, project, branch):
         commit = latest_commit(project, branch)
