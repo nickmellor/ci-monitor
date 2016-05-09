@@ -40,21 +40,19 @@ class Merge:
         return branch_changeset == shared_changeset[0].hexsha
 
     def branches(self, project):
-        yield from (tidy_branch(branch) for branch in project.remote_branches(project.repo)
-                    if self.fits_criteria(project, branch))
+        branches_and_merges = (tidy_branch(branch) for branch in project.remote_branches(project.repo))
+        yield from (branch for branch in project.remote_branches(project.repo)
+                    if not is_merge(branch) and self.fits_criteria(project, branch))
 
     def refresh_projects(self):
         for project in self.settings['repos']:
-            self.gitfetchall(project)
+            self.gitclone(project)
 
-    def gitfetchall(self, project):
-        # location config
+    def gitclone(self, project):
+        # Repo.clone_from(git_url, repo_dir)
         pass
 
     def fits_criteria(self, project, branch):
-        is_merge = '->' in branch
-        if is_merge:
-            return False
         commit = latest_commit(project, branch)
         commit_date = datetime.datetime.fromtimestamp(commit.committed_date)
         too_old = commit_date < datetime.datetime.strptime(self.settings['start'], '%d/%m/%Y')
@@ -65,13 +63,18 @@ class Merge:
         return is_stale and branch_name_matches and not too_old
 
 
-def latest_commit(project, branch):
-    revision = project.latest_changeset(tidy_branch(branch))
-    return project.repo.commit(revision)
+def is_merge(branch):
+    return '->' in branch
 
 
 def tidy_branch(branch):
     return branch[2:] if branch.startswith('*') else branch
+
+
+def latest_commit(project, branch):
+    revision = project.latest_changeset(tidy_branch(branch))
+    return project.repo.commit(revision)
+
 
 if __name__ == '__main__':
     with open('conf.yaml') as config_file:
