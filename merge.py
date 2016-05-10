@@ -19,7 +19,7 @@ class Merge:
                        in settings['repos']]
 
     def poll(self):
-        # self.refresh_projects()
+        self.refresh_projects()
         unmerged_branches = []
         for deploy_branch_name in ['develop']:
             for project in self.projects:
@@ -33,29 +33,31 @@ class Merge:
                         unmerged_branches.append((project.repo._working_tree_dir.split(os.path.sep)[-1], branch))
         print(unmerged_branches)
 
-    def merged(self, project, branch, master):
-        branch_changeset = project.latest_changeset(branch)
-        shared_changeset = project.shared_changeset(branch, master)
-        return branch_changeset == shared_changeset[0].hexsha
-
     def branches(self, project):
         branches_and_merges = (tidy_branch(branch) for branch in project.remote_branches(project.repo))
-        yield from (branch for branch in project.remote_branches(project.repo)
-                    if not is_merge(branch) and self.fits_criteria(project, branch))
+        yield from (branch_or_merge for branch_or_merge in project.remote_branches(project.repo)
+                    if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
 
     def refresh_projects(self):
-        self.clear_repos()
-        for repo_uri in self.settings['repos']:
-            self.gitclone(repo_uri, self.repo_dir())
-
-    def clear_repos(self):
-        os.removedirs(self.repo_dir())
+        self.clear_repos(self.repo_dir())
+        for name, url in self.settings['repos'].items():
+            logger.info("cloning project '{0}'".format(name))
+            old_cwd = os.getcwd()
+            os.chdir(self.repo_dir())
+            os.system('git clone {0}'.format(url))
+            os.chdir(old_cwd)
+            # Repo.clone_from(url, self.repo_dir())
 
     def repo_dir(self):
         return os.path.normpath(self.settings['location'])
 
-    def gitclone(self, uri, directory):
-        Repo.clone_from(uri, directory)
+    def clear_repos(self, top_level_dir):
+        for root, dirs, files in os.walk(top_level_dir, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+
 
     def fits_criteria(self, project, branch):
         commit = latest_commit(project, branch)
