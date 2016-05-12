@@ -4,7 +4,6 @@ import os
 from mcmaster_utils import gitclient
 import datetime
 import yaml
-from git import Repo
 
 
 class Merge:
@@ -19,7 +18,7 @@ class Merge:
                        in settings['repos']]
 
     def poll(self):
-        self.refresh_projects()
+        # self.refresh_projects()
         unmerged_branches = []
         for deploy_branch_name in ['develop']:
             for project in self.projects:
@@ -46,7 +45,6 @@ class Merge:
             os.chdir(self.repo_dir())
             os.system('git clone {0}'.format(url))
             os.chdir(old_cwd)
-            # Repo.clone_from(url, self.repo_dir())
 
     def repo_dir(self):
         return os.path.normpath(self.settings['location'])
