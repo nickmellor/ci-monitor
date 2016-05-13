@@ -19,23 +19,23 @@ states:
   lamperror: [internalexception]
   blinktime_secs: 0.1
 signals:
-#  OMS:
-#    trafficlight:
-#      id: 901880
-#    bamboo:
-#      environments:
-#        DEV01:
-#          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-#          jobs:
-#            API tests: MDAL-AGAT
-#            Jasmine unit tests: MDO-MSA
-#        SIT01:
-#          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-#          jobs:
-#            ESB API tests: MDAL-ESS
-#    sounds:
-#      failures: alarm_beep.wav
-#      greenbuild: applause.wav
+  OMS:
+    trafficlight:
+      id: 901880
+    bamboo:
+      environments:
+        DEV01:
+          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          jobs:
+            API tests: MDAL-AGAT
+            Jasmine unit tests: MDO-MSA
+        SIT01:
+          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          jobs:
+            ESB API tests: MDAL-ESS
+    sounds:
+      failures: alarm_beep.wav
+      greenbuild: applause.wav
   RetailPROD:
     sitemap:
       schedule:

@@ -9,7 +9,7 @@ while True:
     configure_logging()
     signals = []
     for signal_id in o_conf().signals:
-        signals += Signal(signal_id)
+        signals.append(Signal(signal_id))
     while not config_changed():
         unhandled_exceptions = []
         for signal in signals:
@@ -21,7 +21,7 @@ while True:
             except Exception as e:
                 unhandled_exceptions.append(signal.unhandled_exception_raised)
         if any(unhandled_exceptions):
-            logger.error("Unhandled exceptions in CI-Monitor:\n{0}".format(repr(unhandled_exceptions)))
+            logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(unhandled_exceptions)))
             sleep(o_conf().errorheartbeat_secs)
         else:
             sleep(o_conf().heartbeat_secs)
