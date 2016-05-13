@@ -43,6 +43,3 @@ def configure_logging():
         cons_handler.setLevel(loglevel_lookup[console_loglevel])
         cons_handler.setFormatter(formatter)
         logger.addHandler(cons_handler)
-
-
-configure_logging()

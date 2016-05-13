@@ -32,7 +32,7 @@ class Signal:
         self.unhandled_exception_raised = False
         traffic_light_present = self.signal_settings.get('trafficlight')
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight']) if traffic_light_present else None
-        self.merge = Merge(self.signal_settings['merge']) if self.signal_settings['merge'] else None
+        self.merge = Merge(self.signal_settings['merge']) if self.signal_settings.get('merge') else None
         self.sitemap = Sitemap(self.signal_settings['sitemap'], self.signal_name) if self.signal_settings.get('sitemap') else None
         self.bamboo_tasks = Bamboo(self.signal_settings['bamboo']) if self.signal_settings.get('bamboo') else None
         self.geckoboard = Geckoboard()
