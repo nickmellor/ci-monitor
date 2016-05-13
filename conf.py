@@ -2,19 +2,27 @@ import yaml
 import ostruct
 
 configuration = None
+_ostruct_conf = None
 
 
 def config_changed():
-    global configuration
+    global configuration, _ostruct_conf
     old_conf = configuration
     get_config()
     changed = old_conf != configuration
     if changed:
-        old_conf = configuration
+        set_oconf()
     return changed
 
-def conf():
-    return ostruct.OpenStruct(configuration)
+
+def set_oconf():
+    global _ostruct_conf
+    _ostruct_conf = ostruct.OpenStruct(configuration)
+
+
+def o_conf():
+    return _ostruct_conf
+
 
 def get_config():
     global configuration
@@ -22,4 +30,4 @@ def get_config():
         configuration = yaml.load(config_file)
 
 
-get_config()
+config_changed()

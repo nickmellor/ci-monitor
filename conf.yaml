@@ -1,5 +1,5 @@
-heartbeat_secs: 60
-errorheartbeat_secs: 60
+heartbeat_secs: 5
+errorheartbeat_secs: 5
 logging:
     console: info
     fileRotator: info
@@ -18,7 +18,7 @@ states:
   lampwarn: [commserrorandfailures, failures, commserror]
   lamperror: [internalexception]
   blinktime_secs: 0.1
-signallers:
+signals:
 #  OMS:
 #    trafficlight:
 #      id: 901880
@@ -60,10 +60,27 @@ signallers:
           uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
           jobs:
             API tests: MDAL-AGAT
+  RetailPROD:
+    sitemap:
+      schedule:
+        - 08:30AM
+        - 12:00PM
+        - 04:30PM
+      files:
+        prod-aem: https://www.medibank.com.au/sitemap-retail.xml
+        prod-legacy: https://www.medibank.com.au/sitemap-legacy.xml
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav
-
+  RetailDEV:
+    sitemap:
+      interval_mins: 20
+      files:
+        dev-legacy: http://dev-aem.medibank.local/sitemap-legacy.xml
+        dev-aem-retail: http://dev-aem.medibank.local/sitemap-retail.xml
+    sounds:
+      failures: alarm_beep.wav
+      greenbuild: applause.wav
 
 bsm:
   uri: http://bsmwebprd/topaz/bam/BAMOpenApi?customerId=1&userName={username}&password={password}&viewName=eBusiness&command=getNodes&layout=hierarchical&depth=4

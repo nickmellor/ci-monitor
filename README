@@ -5,18 +5,30 @@ Monitors the latest CI builds and reflects the results on a traffic light
 and Geckoboard.
 
 
-Environment
-===========
+On Raspberry Pi
+===============
 
 - Runs on a Raspberry Pi Linux box as a Python 3 script
 - ci_monitor.py auto-run from /etc/rc.local at bootup
-- Will also run on Windows or Linux PC (Mac not tried), though the cleware traffic light software may not.
+
+On Windows
+==========
+
+This is useful for testers and developers tasked with tracking the status of the build. The monitor can run
+on any number of machines independently
+
+Suggest setting up as a py2exe project:
+
+python setup.py py2exe
+
+then set up a shortcut to run ci_monitor.exe in the dist directory (working directory set to ci-monitor so it can find
+config files.)
 
 External libraries used
 -----------------------
 
 - requests
-- cleware traffic light control program (included in this repo)
+- cleware traffic light control program (included in the repo)
 - PyYAML
 
 pip install-- for some libraries use:

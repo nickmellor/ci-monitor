@@ -13,11 +13,11 @@ class TrafficLight:
     use one class instance per traffic light device
     """
 
-    def __init__(self, signaller, tlight_settings):
-        self.signaller = signaller  # just for logging
+    def __init__(self, signal, tlight_settings):
+        self.signal = signal  # just for logging
         self.device_id = tlight_settings['id']
-        logger.info("Traffic light device '{device}' is being used by signal '{signaller}'"
-                    .format(device=self.device_id, signaller=signaller))
+        logger.info("Traffic light device '{device}' is being used by signal '{signal}'"
+                    .format(device=self.device_id, signal=signal))
 
     def previous_state(self):
         return State.retrieve(self.previous_state_cache_key())
@@ -47,8 +47,8 @@ class TrafficLight:
             self._set_lamps('changestate', monitor=False)
             self._set_lamps('blank', monitor=False)
         if self.previously_connected():
-            logger.info("{signaller}: device '{device}': light changing from '{old}' to '{new}'"
-                        .format(signaller=self.signaller, device=self.device_id,
+            logger.info("{signal}: device '{device}': light changing from '{old}' to '{new}'"
+                        .format(signal=self.signal, device=self.device_id,
                                 old=self.previous_state(), new=new_state))
         self._set_lamps(new_state)
         self.set_state(new_state)
@@ -71,10 +71,10 @@ class TrafficLight:
         device_detected = not (stdout or error)  # device drivers missing/device missing not differentiated
         if not device_detected:
             if self.previously_connected():
-                message = "Signaller '{signaller}' traffic light '{device}' is not responding.\n" \
+                message = "Signal '{signal}' traffic light '{device}' is not responding.\n" \
                           "No further warnings for this traffic light will be given until it is connected.\n"
                 message += "Message: '{message}'\n"
-                message = message.format(signaller=self.signaller, device=self.device_id,
+                message = message.format(signal=self.signal, device=self.device_id,
                                          message=stdout.decode('UTF-8').strip())
                 logger.info(message)
         self.store_connection_status(device_detected)
