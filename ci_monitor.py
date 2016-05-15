@@ -1,35 +1,31 @@
 from time import sleep
 from conf import configuration, o_conf, config_changed
 import sys
-from cimsignal import Signal
+from indicator import Indicator
 from logger import logger, configure_logging
 
 logger.warning('CI Monitor restarted')
 while True:
     configure_logging()
-    signals = []
-    for signal_id in o_conf().signals:
-        signals.append(Signal(signal_id))
+    indicators = []
+    for indicator_id in o_conf().indicators:
+        indicators.append(Indicator(indicator_id))
     while not config_changed():
-        unhandled_exceptions = []
-        for signal in signals:
+        for ind in indicators:
             try:
-                signal.poll()
+                ind.run()
             except KeyboardInterrupt as e:
                 logger.warning('Interrupted by Ctrl+C: exiting...')
                 sys.exit()
             except Exception as e:
-                unhandled_exceptions.append(signal.unhandled_exception_raised)
-        if any(unhandled_exceptions):
-            logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(unhandled_exceptions)))
-            sleep(o_conf().errorheartbeat_secs)
+                logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
+                sleep(o_conf().errorheartbeat_secs)
         else:
             sleep(o_conf().heartbeat_secs)
     logger.warning('Config changed!')
 
-# TODO: decouple signals so they operate independently-- separate threads?
+# TODO: decouple indicators so they operate independently-- separate threads?
 # TODO: sep of concerns: monitors like Bamboo should expose methods for signal
 #         - poll()
-#         - state()
+#         - state() -- or should this be in indicator?
 #         - comms()
-# TODO: rename State to Persist

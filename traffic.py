@@ -3,7 +3,7 @@ import subprocess
 from logger import logger
 from conf import configuration
 from time import sleep
-from state import State
+from persist import Persist
 
 settings = configuration['states']
 
@@ -20,16 +20,16 @@ class TrafficLight:
                     .format(device=self.device_id, signal=signal))
 
     def previous_state(self):
-        return State.retrieve(self.previous_state_cache_key())
+        return Persist.retrieve(self.previous_state_cache_key())
 
     def store_state(self, state):
-        State.store(self.previous_state_cache_key(), state)
+        Persist.store(self.previous_state_cache_key(), state)
 
     def previous_state_cache_key(self):
         return 'tlight:{device_id}:previousState'.format(device_id=self.device_id)
 
     def previously_connected(self):
-        return State.retrieve(self.connected_cache_key(), True)
+        return Persist.retrieve(self.connected_cache_key(), True)
 
     def connected_cache_key(self):
         return 'tlight:{device_id}:connected'.format(device_id=self.device_id)
@@ -54,7 +54,7 @@ class TrafficLight:
         self.set_state(new_state)
 
     def set_state(self, new_state):
-        State.store(self.previous_state_cache_key(), new_state)
+        Persist.store(self.previous_state_cache_key(), new_state)
 
     def set_lights(self, new_state):
         if new_state != self.previous_state():
@@ -80,7 +80,7 @@ class TrafficLight:
         self.store_connection_status(device_detected)
 
     def store_connection_status(self, device_detected):
-        State.store(self.connected_cache_key(), device_detected)
+        Persist.store(self.connected_cache_key(), device_detected)
 
     def _shell_command(self, state):
         lamp_pattern = settings['lamppatterns'][state]

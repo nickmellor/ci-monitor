@@ -5,7 +5,7 @@ from logger import logger
 from proxies import proxies
 import requests
 import json
-from state import State
+from persist import Persist
 
 
 class Bamboo:
@@ -48,7 +48,7 @@ class Bamboo:
             return self.process_bamboo_results(job, response, uri)
 
     def previously_connected(self, uri):
-        return State.retrieve(self.previous_connection_cache_key(uri), True)
+        return Persist.retrieve(self.previous_connection_cache_key(uri), True)
 
     def connection_failed(self, e, environment, job, uri):
         if self.previously_connected(uri):
@@ -91,13 +91,13 @@ class Bamboo:
         return 'BambooConnection:{uri}'.format(uri=uri)
 
     def store_connection_state(self, uri, was_connected):
-        State.store(self.previous_connection_cache_key(uri), was_connected)
+        Persist.store(self.previous_connection_cache_key(uri), was_connected)
 
     def previous_failure_count(self, uri):
-        return State.retrieve(self.previous_failures_cache_key(uri), 0)
+        return Persist.retrieve(self.previous_failures_cache_key(uri), 0)
 
     def store_failure_count(self, uri, n):
-        State.store(self.previous_failures_cache_key(uri), n)
+        Persist.store(self.previous_failures_cache_key(uri), n)
 
     @staticmethod
     def previous_failures_cache_key(uri):

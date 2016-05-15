@@ -1,7 +1,7 @@
 import datetime
 
 # needs to be config reload-proof
-from state import State
+from persist import Persist
 
 
 class Wait:
@@ -28,15 +28,15 @@ class Wait:
 
     def _set_override(self, tf=None):
         if tf is not None:
-            State.store(self._override_state_id(), tf)
-        elif not self._override_state_id() in State.state:
+            Persist.store(self._override_state_id(), tf)
+        elif not self._override_state_id() in Persist.persisted_data:
             # default for first time
             self._set_override(True)
 
     def _set_interval_timestamp(self, dt=None):
         if dt is not None:
-            State.store(self._timestamp_state_id(), dt)
-        elif not self._timestamp_state_id() in State.state:
+            Persist.store(self._timestamp_state_id(), dt)
+        elif not self._timestamp_state_id() in Persist.persisted_data:
             self._set_interval_timestamp(now())
 
     def poll_now(self):
@@ -51,10 +51,10 @@ class Wait:
             return False
 
     def _override(self):
-        return State.retrieve(self._override_state_id(), default=True)
+        return Persist.retrieve(self._override_state_id(), default=True)
 
     def _timestamp(self):
-        return State.retrieve(self._timestamp_state_id(), default=datetime.datetime.now())
+        return Persist.retrieve(self._timestamp_state_id(), default=datetime.datetime.now())
 
     def _override_state_id(self):
         return self.state_base_id + ':sitemap:override'

@@ -4,7 +4,6 @@ from requests.exceptions import RequestException
 import requests
 import xml.etree.ElementTree as ET
 from logger import logger
-import yaml
 from html.parser import HTMLParser
 import re
 from proxies import proxies
@@ -31,7 +30,8 @@ class Sitemap:
             return True
         errors = []
         url_count = 0
-        for sitemap_name, sitemap_uri in self.sitemaps.items():
+        sitemap_name = self.sitemaps.items()
+        xxx, sitemap_uri in self.sitemaps.items():
             extracted_urls = list(self.extracted_urls(sitemap_uri))
             url_count += len(extracted_urls)
             if extracted_urls:

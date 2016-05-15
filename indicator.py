@@ -6,19 +6,22 @@ from conf import configuration
 from merge import Merge
 from geckoboard import Geckoboard
 from logger import logger
-from state import State
+from persist import Persist
 from traffic import TrafficLight
 from sitemap import Sitemap
 
 states = configuration['states']
 
 
-class Signal:
+class Indicator:
     """
-    a signal associates builds/status of services with signals (traffic lights, sounds etc)
-    a signal might read the API functional tests Bamboo build, play a sound if they have
-    failing test(s), and display the build status on a traffic light
-    or make a sound, or write to a log
+    an indicator associates builds/status of services with signals (traffic lights, sounds etc)
+    an indicator might
+
+    - read the API functional tests Bamboo build, play a sound if they have
+      failing test(s), and display the build status on a traffic light
+    - make a sound and write to a log if a service is down
+
     each signal has a 'state'-- that encompasses Bamboo responsiveness, test failures,
     presence of configured traffic lights, internal exceptions
     states are divided into ERROR, WARNING and NONE that are configurable, and currently
@@ -30,21 +33,23 @@ class Signal:
         self.state = self.get_state()
         self.signal_settings = configuration['signals'][signal_name]
         self.unhandled_exception_raised = False
+        # TODO: move traffic light detection to traffic.py
         traffic_light_present = self.signal_settings.get('trafficlight')
         self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight']) if traffic_light_present else None
+        # TODO: (eventually) use reflection to configure infrastructure to check
         self.merge = Merge(self.signal_settings['merge']) if self.signal_settings.get('merge') else None
         self.sitemap = Sitemap(self.signal_settings['sitemap'], self.signal_name) if self.signal_settings.get('sitemap') else None
         self.bamboo_tasks = Bamboo(self.signal_settings['bamboo']) if self.signal_settings.get('bamboo') else None
-        self.geckoboard = Geckoboard()
+        # self.geckoboard = Geckoboard()
 
     def get_state(self):
-        return State.retrieve(self.state_id())
+        return Persist.retrieve(self.state_id())
 
     def state_id(self):
         return 'signal:{signal}'.format(signal=self.signal_name)
 
-    def poll(self):
-        logger.info('Signaller {signaller}: polling...'.format(signaller=self.signal_name))
+    def run(self):
+        logger.info('Indicator {indicator}: running...'.format(indicator=self.signal_name))
         if self.bamboo_tasks:
             self.poll_bamboo()
         if self.merge:
@@ -142,7 +147,7 @@ class Signal:
                 self.trafficlight.set_lights(state)
 
     def store_signal_state(self, state):
-        State.store(self.state_id(), state)
+        Persist.store(self.state_id(), state)
 
 
 # TODO: BSM/New Relic
