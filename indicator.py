@@ -1,5 +1,4 @@
 from time import sleep
-
 import soundplayer
 from bamboo import Bamboo
 from conf import configuration
@@ -28,42 +27,44 @@ class Indicator:
     affect the logging level
     """
 
-    def __init__(self, signal_name):
-        self.signal_name = signal_name
-        self.state = self.get_state()
-        self.signal_settings = configuration['signals'][signal_name]
+    def __init__(self, indicator_name, settings):
+        self.indicator_name = indicator_name
+        # self.state = self.get_state()
+        self.state = None
+        self.settings = settings
         self.unhandled_exception_raised = False
-        # TODO: move traffic light detection to traffic.py
-        traffic_light_present = self.signal_settings.get('trafficlight')
-        self.trafficlight = TrafficLight(signal_name, self.signal_settings['trafficlight']) if traffic_light_present else None
-        # TODO: (eventually) use reflection to configure infrastructure to check
-        self.merge = Merge(self.signal_settings['merge']) if self.signal_settings.get('merge') else None
-        self.sitemap = Sitemap(self.signal_settings['sitemap'], self.signal_name) if self.signal_settings.get('sitemap') else None
-        self.bamboo_tasks = Bamboo(self.signal_settings['bamboo']) if self.signal_settings.get('bamboo') else None
-        # self.geckoboard = Geckoboard()
+        self.testables = []
+        for testable in self.settings.testables:
+        # for name, settings in self.settings.testables.items():
+            # # TODO: move traffic light detection to traffic.py
+            # traffic_light_present = name == 'trafficlight'
+            # if traffic_light_present:
+            #     self.testables.append(TrafficLight(name, settings) if traffic_light_present else None)
+            # TODO: (eventually) use reflection to configure infrastructure to check
+            # if self.testables.get('merge'):
+            #     self.testables.append(Merge(name, self.testables['merge']))
 
-    def get_state(self):
-        return Persist.retrieve(self.state_id())
-
-    def state_id(self):
-        return 'signal:{signal}'.format(signal=self.signal_name)
+            if testable.sitemap:
+                self.testables.append(Sitemap(self.indicator_name, testable.sitemap))
+            # if self.testables.get('bamboo'):
+            #     self.testables.append(Bamboo(self.testables['bamboo']))
+            # self.geckoboard = Geckoboard()
 
     def run(self):
-        logger.info('Indicator {indicator}: running...'.format(indicator=self.signal_name))
-        if self.bamboo_tasks:
-            self.poll_bamboo()
-        if self.merge:
-            self.merge.poll()
+        logger.info('Indicator {indicator}: running...'.format(indicator=self.indicator_name))
+        for testable in self.testables:
+            logger.info("Checking: '{name}'".format(name=testable.name))
+            testable.poll()
 
     def poll_bamboo(self):
-        logger.info('Signal {signal}: polling...'.format(signal=self.signal_name))
+        logger.info('Signal {signal}: polling...'.format(signal=self.indicator_name))
         try:
             bamboo_results = self.bamboo_tasks.all_results() if self.bamboo_tasks else None
             sitemap_ok = self.sitemap.urls_ok() if self.sitemap else True
         except Exception as e:
             logger.error('Signal {signal}: Unhandled internal exception. '
                          'Could be configuration problem or bug.\n{exception}'
-                         .format(signal=self.signal_name, exception=e.args))
+                         .format(signal=self.indicator_name, exception=e.args))
             self.internal_exception(e)
             # NB traffic light update not shown until unhandled exception clear for one complete pass
             logger.error('Waiting {0} secs\n'.format(configuration['errorheartbeat_secs']))
@@ -75,7 +76,8 @@ class Indicator:
                 self.unhandled_exception_raised = False
 
     def signal_unhandled_exception(self, e):
-        logger.error("Signal {signal}: internal exception occurred:\n{exception}".format(signal=self.signal_name, exception=e))
+        logger.error("Signal {signal}: internal exception occurred:\n{exception}".format(signal=self.indicator_name,
+                                                                                         exception=e))
         self.unhandled_exception = True
 
     def respond_to_error_level(self, new_state):
@@ -87,7 +89,7 @@ class Indicator:
         change_to_from_warning = is_new_warning != (self.get_state() in warnings)
         change_of_error_level = change_to_from_error or change_to_from_warning
         if change_of_error_level:
-            sound = self.signal_settings['sounds']
+            sound = self.testables['sounds']
             if is_new_error or is_new_warning:
                 wav = sound['failures']
             else:
@@ -99,7 +101,7 @@ class Indicator:
             level = 'WARNING'
         else:
             level = 'NONE'
-        message = "State changing from '{previous}' to '{current}'"\
+        message = "State changing from '{previous}' to '{current}'" \
             .format(previous=self.get_state(), current=new_state)
         logger_method = {'ERROR': logger.error,
                          'WARNING': logger.warn,
@@ -148,7 +150,6 @@ class Indicator:
 
     def store_signal_state(self, state):
         Persist.store(self.state_id(), state)
-
 
 # TODO: BSM/New Relic
 # TODO: Geckoboard

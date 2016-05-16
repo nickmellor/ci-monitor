@@ -12,50 +12,48 @@ from wait import Wait
 
 class Sitemap:
 
-    def __init__(self, settings, signal):
-        self.sitemaps = settings['files']
-        self.signal = signal
-        self.wait = Wait(signal)
-        if 'schedule' in settings:
-            self.wait.set_schedule(settings['schedule'])
-        elif 'interval' in settings:
-            self.wait.set_interval(settings['interval'] * 60)
+    def __init__(self, indicator, settings):
+        # super call
+        self.sitemap = settings.file
+        self.indicator = indicator
+        self.name = settings.name
+        self.ok = True
+        self.reported = False
+        # self.wait = Wait(indicator)
+        # if 'schedule' in settings:
+        #     self.wait.set_schedule(settings['schedule'])
+        # elif 'interval' in settings:
+        #     self.wait.set_interval(settings['interval'] * 60)
 
-    def state_id(self):
-        return 'sitemap state for signal {0}'.format(self.signal)
-
-    def urls_ok(self):
-        pn = self.wait.poll_now()
-        if not pn:
-            return True
+    def poll(self):
+        # pn = self.wait.poll_now()
+        # if not pn:
+        #     return True
         errors = []
-        url_count = 0
-        sitemap_name = self.sitemaps.items()
-        xxx, sitemap_uri in self.sitemaps.items():
-            extracted_urls = list(self.extracted_urls(sitemap_uri))
-            url_count += len(extracted_urls)
-            if extracted_urls:
-                for url in extracted_urls:
-                    try:
-                        response = get(url)
-                    except (RequestException, ConnectionError, MaxRetryError) as e:
-                        errors.append((sitemap_name, url, repr(e)))
+        extracted_urls = list(self.extracted_urls(self.sitemap))
+        url_count = len(extracted_urls)
+        if extracted_urls:
+            for url in extracted_urls:
+                try:
+                    response = get(url)
+                except (RequestException, ConnectionError, MaxRetryError) as e:
+                    errors.append((self.name, url, repr(e)))
+                else:
+                    pe = page_error(response)
+                    if pe:
+                        errors.append((self.name, url, pe))
+                        logger.info("{name} -> '{url}' ...OOPS!".format(name=self.name, url=url))
                     else:
-                        pe = page_error(response)
-                        if pe:
-                            errors.append((sitemap_name, url, pe))
-                            logger.info("...'{url}' ...oops!".format(url=url))
-                        else:
-                            logger.info("...'{url}' passed".format(url=url))
-                    if response.history:
-                        logger.info("Request was redirected")
-                        for resp_history_item in response.history:
-                            logger.info('{0}: {1}'.format(resp_history_item.status_code, resp_history_item.url))
-                        logger.info("Final destination:")
-                        logger.info('{0}: {1}'.format(response.status_code, response.url))
-            else:
-                logger.error("Sitemap '{name}' ({url}) not available".format(name=sitemap_name, url=sitemap_uri))
-                errors.append((sitemap_name, sitemap_uri, 'sitemap file not available'))
+                        logger.info("{name} -> '{url}' passed".format(name=self.name, url=url))
+                if response.history:
+                    logger.info("Request was redirected")
+                    for resp_history_item in response.history:
+                        logger.info('{0}: {1}'.format(resp_history_item.status_code, resp_history_item.url))
+                    logger.info("Final destination:")
+                    logger.info('{0}: {1}'.format(response.status_code, response.url))
+        else:
+            logger.error("Sitemap '{name}' ({sitemap}) not available".format(name=self.name, sitemap=self.sitemap))
+            errors.append((self.name, self.sitemap, 'sitemap file not available'))
         if errors:
             message = ['Sitemap errors as follows:', '*' * 79]
             message.extend('* {no}. {fault}'.format(no=n + 1, fault=reportable_fault)
@@ -66,7 +64,7 @@ class Sitemap:
             logger.error('\n'.join(message))
         else:
             logger.info("All {count} sitemap URLs ok".format(count=url_count))
-        return not errors
+        self.ok = not errors
 
     def extracted_urls(self, uri):
         sitemap_as_string = self.sitemap_xml(uri)

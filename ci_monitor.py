@@ -8,12 +8,12 @@ logger.warning('CI Monitor restarted')
 while True:
     configure_logging()
     indicators = []
-    for indicator_id in o_conf().indicators:
-        indicators.append(Indicator(indicator_id))
+    for name, settings in o_conf().indicators.items():
+        indicators.append(Indicator(name, settings))
     while not config_changed():
-        for ind in indicators:
+        for indicator in indicators:
             try:
-                ind.run()
+                indicator.run()
             except KeyboardInterrupt as e:
                 logger.warning('Interrupted by Ctrl+C: exiting...')
                 sys.exit()
