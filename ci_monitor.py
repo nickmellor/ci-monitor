@@ -12,15 +12,15 @@ while True:
         indicators.append(Indicator(name, settings))
     while not config_changed():
         for indicator in indicators:
-            try:
-                indicator.run()
-            except KeyboardInterrupt as e:
-                logger.warning('Interrupted by Ctrl+C: exiting...')
-                sys.exit()
-            except Exception as e:
-                logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
-                sleep(o_conf().errorheartbeat_secs)
-        else:
+            # try:
+            indicator.run()
+            # except KeyboardInterrupt as e:
+            #     logger.warning('Interrupted by Ctrl+C: exiting...')
+            #     sys.exit()
+            # except Exception as e:
+            #     logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
+            #     sleep(o_conf().errorheartbeat_secs)
+            # else:
             sleep(o_conf().heartbeat_secs)
     logger.warning('Config changed!')
 

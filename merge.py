@@ -22,19 +22,20 @@ class Merge(Infrastructure):
 
     def poll(self):
         # self.refresh_projects()
-        unmerged_branches = []
-        for deploy_branch_name in self.settings.deployments:
-            for project in self.projects:
-                logger.info("{indicator}: reconciling master branches in project '{0}'".format(self.indicator,
-                    project.repo._working_tree_dir.split(os.path.sep)[-1]))
-                # project.repo.remotes.origin.fetch() -- has timeout at present
-                deploy_rev = latest_commit(project, deploy_branch_name).hexsha
-                for branch in self.branches(project):
-                    # logger.info('Processing branch {0}'.format(branch))
-                    release_rev = latest_commit(project, branch).hexsha
-                    if not project.repo.is_ancestor(release_rev, deploy_rev):
-                        unmerged_branches.append((project.repo._working_tree_dir.split(os.path.sep)[-1], branch))
-        print(unmerged_branches)
+        unmerged_branches = set()
+        master_branch_name = self.settings.master
+        for project in self.projects:
+            project_name = project.repo._working_tree_dir.split(os.path.sep)[-1]
+            logger.info("{indicator}: reconciling master branch merges in project '{project}'"
+                .format(indicator=self.indicator, project=project_name))
+            # project.repo.remotes.origin.fetch() -- has timeout at present
+            deploy_rev = latest_commit(project, master_branch_name).hexsha
+            for branch in self.branches(project):
+                release_rev = latest_commit(project, branch).hexsha
+                if not project.repo.is_ancestor(release_rev, deploy_rev):
+                    logger.error("Unmerged in project {project}: {branch} -> {destination}"
+                                 .format(project=project_name, branch=branch, destination=master_branch_name))
+
 
     def branches(self, project):
         branches_and_merges = (tidy_branch(branch) for branch in project.remote_branches(project.repo))
@@ -63,8 +64,8 @@ class Merge(Infrastructure):
     def fits_criteria(self, project, branch):
         commit = latest_commit(project, branch)
         commit_date = datetime.datetime.fromtimestamp(commit.committed_date)
-        too_old = commit_date < datetime.datetime.strptime(self.settings['start'], '%d/%m/%Y')
-        is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['max_days'])
+        too_old = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings.max_age_weeks)
+        is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings.stale_days)
         branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
                                   in self.settings['name_patterns'])

@@ -61,17 +61,15 @@ indicators:
 #          file: http://dev-aem.medibank.local/sitemap-retail.xml
       - merge:
           name: OMS
-          start: 01/09/2015
+          max_age_weeks: 12
           location: scratch/repos
           repos:
             - api-gateway
             - integration-services
             - member-services-aem
             - aem-core
-          deployments:
-            - origin/develop
-            - origin/master
-          max_days: 3
+          master: origin/master
+          stale_days: 3
           name_patterns:
             - .*/release/.+
             - .*/hotfix/.+
