@@ -22,7 +22,6 @@ class Merge(Infrastructure):
 
     def poll(self):
         # self.refresh_projects()
-        unmerged_branches = set()
         master_branch_name = self.settings.master
         for project in self.projects:
             project_name = project.repo._working_tree_dir.split(os.path.sep)[-1]
@@ -36,10 +35,9 @@ class Merge(Infrastructure):
                     logger.error("Unmerged in project {project}: {branch} -> {destination}"
                                  .format(project=project_name, branch=branch, destination=master_branch_name))
 
-
     def branches(self, project):
         branches_and_merges = (tidy_branch(branch) for branch in project.remote_branches(project.repo))
-        yield from (branch_or_merge for branch_or_merge in project.remote_branches(project.repo)
+        yield from (branch_or_merge for branch_or_merge in branches_and_merges
                     if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
 
     def refresh_projects(self):
@@ -57,9 +55,15 @@ class Merge(Infrastructure):
     def clear_repos(self, top_level_dir):
         for root, dirs, files in os.walk(top_level_dir, topdown=False):
             for name in files:
-                os.remove(os.path.join(root, name))
+                try:
+                    os.remove(os.path.join(root, name))
+                except:
+                    pass
             for name in dirs:
-                os.rmdir(os.path.join(root, name))
+                try:
+                    os.rmdir(os.path.join(root, name))
+                except:
+                    pass
 
     def fits_criteria(self, project, branch):
         commit = latest_commit(project, branch)
