@@ -8,9 +8,12 @@ class Infrastructure:
         self.old_state = None
         self.state = None
 
-    def state_change(self):
-        raise NotImplementedException("'state_change()' method not implemented")
+    # def state_change(self):
+    #     raise NotImplementedException("'state_change()' method not implemented")
 
+    # def ok(self):
+    #     raise NotImplementedException("'ok()' method not implemented")
+    #
     def comms_error(self):
         raise NotImplementedException("'comms_error()' method not implemented")
 

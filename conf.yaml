@@ -51,14 +51,30 @@ indicators:
 
   RetailDEV:
     testables:
-      - sitemap:
-          name: Legacy.NET
-          interval_mins: 20
-          file: http://dev-aem.medibank.local/sitemap-legacy.xml
-      - sitemap:
-          name: AEM
-          interval_mins: 20
-          file: http://dev-aem.medibank.local/sitemap-retail.xml
+#      - sitemap:
+#          name: Legacy.NET
+#          interval_mins: 20
+#          file: http://dev-aem.medibank.local/sitemap-legacy.xml
+#      - sitemap:
+#          name: AEM
+#          interval_mins: 20
+#          file: http://dev-aem.medibank.local/sitemap-retail.xml
+      - merge:
+          name: OMS
+          start: 01/09/2015
+          location: scratch/repos
+          repos:
+            - api-gateway
+            - integration-services
+            - member-services-aem
+            - aem-core
+          deployments:
+            - origin/develop
+            - origin/master
+          max_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav

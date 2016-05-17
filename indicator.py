@@ -41,9 +41,8 @@ class Indicator:
             # if traffic_light_present:
             #     self.testables.append(TrafficLight(name, settings) if traffic_light_present else None)
             # TODO: (eventually) use reflection to configure infrastructure to check
-            # if self.testables.get('merge'):
-            #     self.testables.append(Merge(name, self.testables['merge']))
-
+            if testable.merge:
+                self.testables.append(Merge(self.indicator_name, testable.merge))
             if testable.sitemap:
                 self.testables.append(Sitemap(self.indicator_name, testable.sitemap))
             # if self.testables.get('bamboo'):

@@ -1,3 +1,4 @@
+from infrastructure import Infrastructure
 from logger import logger
 import re
 import os
@@ -6,13 +7,15 @@ import datetime
 import yaml
 
 
-class Merge:
+class Merge(Infrastructure):
     """
     check stash/git branches for
     """
 
-    def __init__(self, settings):
+    def __init__(self, indicator, settings):
+        self.indicator = indicator
         self.settings = settings
+        self.name = self.settings.name
         self.projects = [gitclient.GitClient(os.path.join(self.settings['location'], project))
                        for project
                        in settings['repos']]
@@ -20,9 +23,10 @@ class Merge:
     def poll(self):
         # self.refresh_projects()
         unmerged_branches = []
-        for deploy_branch_name in ['develop']:
+        for deploy_branch_name in self.settings.deployments:
             for project in self.projects:
-                logger.info("Scanning repo for project '{0}'".format(project.repo._working_tree_dir.split(os.path.sep)[-1]))
+                logger.info("{indicator}: reconciling master branches in project '{0}'".format(self.indicator,
+                    project.repo._working_tree_dir.split(os.path.sep)[-1]))
                 # project.repo.remotes.origin.fetch() -- has timeout at present
                 deploy_rev = latest_commit(project, deploy_branch_name).hexsha
                 for branch in self.branches(project):
@@ -56,7 +60,6 @@ class Merge:
             for name in dirs:
                 os.rmdir(os.path.join(root, name))
 
-
     def fits_criteria(self, project, branch):
         commit = latest_commit(project, branch)
         commit_date = datetime.datetime.fromtimestamp(commit.committed_date)
@@ -67,6 +70,8 @@ class Merge:
                                   in self.settings['name_patterns'])
         return is_stale and branch_name_matches and not too_old
 
+    def comms_error(self):
+        return False
 
 def is_merge(branch):
     return '->' in branch

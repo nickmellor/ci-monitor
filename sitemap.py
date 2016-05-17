@@ -3,6 +3,8 @@ from requests.exceptions import RequestException
 
 import requests
 import xml.etree.ElementTree as ET
+
+from infrastructure import Infrastructure
 from logger import logger
 from html.parser import HTMLParser
 import re
@@ -10,7 +12,7 @@ from proxies import proxies
 from wait import Wait
 
 
-class Sitemap:
+class Sitemap(Infrastructure):
 
     def __init__(self, indicator, settings):
         # super call
@@ -82,6 +84,11 @@ class Sitemap:
         except (RequestException, ConnectionError, MaxRetryError) as e:
             logger.error("Sitemap: sitemap unavailable:\n{0}".format(e))
             return None
+
+    def comms_error(self):
+        return False
+
+
 
 
 def get(address):
