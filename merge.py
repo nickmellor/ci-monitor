@@ -32,7 +32,7 @@ class Merge(Infrastructure):
             for branch in self.branches(project):
                 release_rev = latest_commit(project, branch).hexsha
                 if not project.repo.is_ancestor(release_rev, deploy_rev):
-                    logger.error("Unmerged in project {project}: {branch} -> {destination}"
+                    logger.error("Unmerged in project '{project}': {branch} -> {destination}"
                                  .format(project=project_name, branch=branch, destination=master_branch_name))
 
     def branches(self, project):
@@ -41,7 +41,7 @@ class Merge(Infrastructure):
                     if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
 
     def refresh_projects(self):
-        self.clear_repos(self.repo_dir())
+        # self.clear_repos(self.repo_dir())
         for name, url in self.settings['repos'].items():
             logger.info("cloning project '{0}'".format(name))
             old_cwd = os.getcwd()
