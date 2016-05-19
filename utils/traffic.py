@@ -2,7 +2,7 @@ import os
 import subprocess
 from time import sleep
 
-from logger import logger
+from utils.logger import logger
 
 from utils.conf import configuration
 from utils.persist import Persist

@@ -1,10 +1,11 @@
 from time import sleep
 
-from logger import logger
-from sitemap import Sitemap
+from utils.logger import logger
+from monitors.sitemap import Sitemap
+from monitors.merge import Merge
+from monitors.bamboo import Bamboo
 
 import soundplayer
-from monitors.merge import Merge
 from utils.conf import configuration
 from utils.persist import Persist
 
@@ -32,25 +33,25 @@ class Indicator:
         self.state = None
         self.settings = settings
         self.unhandled_exception_raised = False
-        self.testables = []
-        for testable in self.settings.testables:
+        self.monitored = []
+        for monitored in self.settings.monitoring:
         # for name, settings in self.settings.testables.items():
             # # TODO: move traffic light detection to traffic.py
             # traffic_light_present = name == 'trafficlight'
             # if traffic_light_present:
             #     self.testables.append(TrafficLight(name, settings) if traffic_light_present else None)
-            # TODO: (eventually) use reflection to configure infrastructure to check
-            if testable.merge:
-                self.testables.append(Merge(self.indicator_name, testable.merge))
-            if testable.sitemap:
-                self.testables.append(Sitemap(self.indicator_name, testable.sitemap))
-            # if self.testables.get('bamboo'):
-            #     self.testables.append(Bamboo(self.testables['bamboo']))
+            # TODO: use reflection to configure infrastructure to check
+            if monitored.merge:
+                self.monitored.append(Merge(self.indicator_name, monitored.merge))
+            if monitored.sitemap:
+                self.monitored.append(Sitemap(self.indicator_name, monitored.sitemap))
+            if monitored.bamboo:
+                self.monitored.append(Bamboo(self.indicator_name, monitored.bamboo))
             # self.geckoboard = Geckoboard()
 
     def run(self):
         logger.info('Indicator {indicator}: running...'.format(indicator=self.indicator_name))
-        for testable in self.testables:
+        for testable in self.monitored:
             logger.info("Checking: '{name}'".format(name=testable.name))
             testable.poll()
 
@@ -87,7 +88,7 @@ class Indicator:
         change_to_from_warning = is_new_warning != (self.get_state() in warnings)
         change_of_error_level = change_to_from_error or change_to_from_warning
         if change_of_error_level:
-            sound = self.testables['sounds']
+            sound = self.monitored['sounds']
             if is_new_error or is_new_warning:
                 wav = sound['failures']
             else:

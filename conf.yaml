@@ -19,23 +19,24 @@ states:
   lamperror: [internalexception]
   blinktime_secs: 0.1
 indicators:
-#  OMS:
-#    trafficlight:
-#      id: 901880
-#    bamboo:
-#      environments:
-#        DEV01:
-#          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-#          jobs:
-#            API tests: MDAL-AGAT
-#            Jasmine unit tests: MDO-MSA
-#        SIT01:
-#          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-#          jobs:
-#            ESB API tests: MDAL-ESS
-#    sounds:
-#      failures: alarm_beep.wav
-#      greenbuild: applause.wav
+  OMS:
+    trafficlight:
+      id: 901880
+    monitoring:
+      - bamboo:
+          name: DEV01
+          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          tasks:
+            API tests: MDAL-AGAT
+            Jasmine unit tests: MDO-MSA
+      - bamboo:
+          name: WSDLs
+          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          tasks:
+            ESB API tests: MDAL-ESS
+    sounds:
+      failures: alarm_beep.wav
+      greenbuild: applause.wav
 #  RetailPROD:
 #    sitemap:
 #      schedule:
@@ -49,33 +50,33 @@ indicators:
 #      failures: alarm_beep.wav
 #      greenbuild: applause.wav
 
-  RetailDEV:
-    testables:
-#      - sitemap:
-#          name: Legacy.NET
-#          interval_mins: 20
-#          file: http://dev-aem.medibank.local/sitemap-legacy.xml
-#      - sitemap:
-#          name: AEM
-#          interval_mins: 20
-#          file: http://dev-aem.medibank.local/sitemap-retail.xml
-      - merge:
-          name: OMS
-          max_age_weeks: 12
-          location: scratch/repos
-          repos:
-            'api-gateway': ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
-            'integration-services': ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
-            'member-services-aem': ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
-            'aem-core': ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
-          master: origin/master
-          stale_days: 3
-          name_patterns:
-            - .*/release/.+
-            - .*/hotfix/.+
-    sounds:
-      failures: alarm_beep.wav
-      greenbuild: applause.wav
+#  RetailDEV:
+#    testables:
+##      - sitemap:
+##          name: Legacy.NET
+##          interval_mins: 20
+##          file: http://dev-aem.medibank.local/sitemap-legacy.xml
+##      - sitemap:
+##          name: AEM
+##          interval_mins: 20
+##          file: http://dev-aem.medibank.local/sitemap-retail.xml
+#      - merge:
+#          name: OMS
+#          max_age_weeks: 12
+#          location: scratch/repos
+#          repos:
+#            'api-gateway': ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
+#            'integration-services': ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
+#            'member-services-aem': ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
+#            'aem-core': ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
+#          master: origin/master
+#          stale_days: 3
+#          name_patterns:
+#            - .*/release/.+
+#            - .*/hotfix/.+
+#    sounds:
+#      failures: alarm_beep.wav
+#      greenbuild: applause.wav
 
 #bsm:
 #  uri: http://bsmwebprd/topaz/bam/BAMOpenApi?customerId=1&userName={username}&password={password}&viewName=eBusiness&command=getNodes&layout=hierarchical&depth=4

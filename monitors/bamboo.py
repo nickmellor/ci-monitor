@@ -1,8 +1,8 @@
 import json
 
 import requests
-from logger import logger
-from persist import Persist
+from utils.logger import logger
+from utils.persist import Persist
 from requests.exceptions import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
 
@@ -10,50 +10,41 @@ from utils.proxies import proxies
 
 
 class Bamboo:
-    """
-    retrieve Bamboo results for a signal's monitored environments
-    """
 
-    def __init__(self, settings):
+    def __init__(self, indicator, settings):
+        self.indicator = indicator
         self.settings = settings
-        self.environments = settings['environments']
 
-    def all_results(self):
+    def poll(self):
         results = {}
-        for env, detail in self.environments.items():
-            results[env] = self.environment_results(env, detail)
-        return results
+        template = self.settings.template
+        for name, tag in self.settings.tasks.items():
+            uri = template.format(tag=tag)
+            results.update(self.poll_bamboo_task(name, uri))
+        return all(results.values())
 
-    def environment_results(self, environment, bamboo_detail):
-        results = {}
-        uri_template = bamboo_detail.get('uri')
-        for job, tag in bamboo_detail['jobs'].items():
-            uri = uri_template.format(tag=tag)
-            result = self.bamboo_job_result(environment, job, uri)
-            results.update({job: result})
-            if self.previously_connected(uri):
-                logger.info("{environment}: {job}: {tag}, '{result}'"
-                            .format(environment=environment, job=job, tag=tag,
-                                    result='passed' if result else 'some failed tests'))
-        return results
-
-    def bamboo_job_result(self, environment, job, uri):
+    def poll_bamboo_task(self, name, uri):
         try:
             if proxies:
                 response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
             else:
                 response = requests.get(uri, verify=False, timeout=10.0)
         except (RequestException, ConnectionError, MaxRetryError) as e:
-            return self.connection_failed(e, environment, job, uri)
+            return self.connection_failed(e, self.indicator, name, uri)
         else:
-            return self.process_bamboo_results(job, response, uri)
+            result = self.process_bamboo_results(name, response, uri)
+            if self.previously_connected(uri):
+                logger.info("{environment}: {task_name}: {tag}, '{result}'"
+                            .format(environment=name, job=task_name, tag=tag,
+                                    result='passed' if result else 'some failed tests'))
+            return result
 
     def previously_connected(self, uri):
         return Persist.retrieve(self.previous_connection_cache_key(uri), True)
 
     def connection_failed(self, e, environment, job, uri):
         if self.previously_connected(uri):
-            message = "Signal '{signal}': {env}: {job} not responding, URI: '{uri}'\n" \
+            message = "Indicator '{indicator}': {env}: {job} not responding, URI: '{uri}'\n" \
                       "No further warnings will be given unless/until it responds.\n"
             message += "Exception: {exception}\n"
             message = message.format(signal="OMS", env=environment, job=job, uri=uri, exception=e)

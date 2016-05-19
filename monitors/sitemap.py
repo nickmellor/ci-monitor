@@ -3,11 +3,11 @@ import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 
 import requests
-from logger import logger
+from utils.logger import logger
 from requests.exceptions import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
 
-from monitors.infrastructure import Infrastructure
+from monitors.monitor import Infrastructure
 from utils.proxies import proxies
 
 

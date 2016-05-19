@@ -5,7 +5,7 @@ import re
 import yaml
 
 from mcmaster_utils import gitclient
-from monitors.infrastructure import Infrastructure
+from monitors.monitor import Infrastructure
 from utils.logger import logger
 
 
