@@ -1,7 +1,7 @@
 import datetime
 
 # needs to be config reload-proof
-from persist import Persist
+from utils.persist import Persist
 
 
 class Wait:

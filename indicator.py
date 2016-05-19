@@ -1,13 +1,12 @@
 from time import sleep
-import soundplayer
-from bamboo import Bamboo
-from conf import configuration
-from merge import Merge
-from geckoboard import Geckoboard
+
 from logger import logger
-from persist import Persist
-from traffic import TrafficLight
 from sitemap import Sitemap
+
+import soundplayer
+from monitors.merge import Merge
+from utils.conf import configuration
+from utils.persist import Persist
 
 states = configuration['states']
 

@@ -1,8 +1,10 @@
-import requests
 import json
-from proxies import proxies
+
+import requests
 from logger import logger
-from conf import configuration
+
+from utils.conf import configuration
+from utils.proxies import proxies
 
 
 class Geckoboard:

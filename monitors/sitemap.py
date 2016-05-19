@@ -1,15 +1,14 @@
-from requests.packages.urllib3.exceptions import MaxRetryError
-from requests.exceptions import RequestException
+import re
+import xml.etree.ElementTree as ET
+from html.parser import HTMLParser
 
 import requests
-import xml.etree.ElementTree as ET
-
-from infrastructure import Infrastructure
 from logger import logger
-from html.parser import HTMLParser
-import re
-from proxies import proxies
-from wait import Wait
+from requests.exceptions import RequestException
+from requests.packages.urllib3.exceptions import MaxRetryError
+
+from monitors.infrastructure import Infrastructure
+from utils.proxies import proxies
 
 
 class Sitemap(Infrastructure):

@@ -1,9 +1,11 @@
 import os
 import subprocess
-from logger import logger
-from conf import configuration
 from time import sleep
-from persist import Persist
+
+from logger import logger
+
+from utils.conf import configuration
+from utils.persist import Persist
 
 settings = configuration['states']
 

@@ -1,11 +1,12 @@
+import json
+
+import requests
+from logger import logger
+from persist import Persist
 from requests.exceptions import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
 
-from logger import logger
-from proxies import proxies
-import requests
-import json
-from persist import Persist
+from utils.proxies import proxies
 
 
 class Bamboo:

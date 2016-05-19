@@ -1,9 +1,11 @@
-from conf import configuration
-from proxies import proxies
-import requests
-import xml.etree.ElementTree as ET
 import json
+import xml.etree.ElementTree as ET
+
+import requests
 from logger import logger
+
+from utils.conf import configuration
+from utils.proxies import proxies
 
 polled_services = configuration['bsm']['services']
 

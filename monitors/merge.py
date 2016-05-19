@@ -1,10 +1,12 @@
-from infrastructure import Infrastructure
-from logger import logger
-import re
-import os
-from mcmaster_utils import gitclient
 import datetime
+import os
+import re
+
 import yaml
+
+from mcmaster_utils import gitclient
+from monitors.infrastructure import Infrastructure
+from utils.logger import logger
 
 
 class Merge(Infrastructure):
@@ -66,14 +68,16 @@ class Merge(Infrastructure):
                     pass
 
     def fits_criteria(self, project, branch):
-        commit = latest_commit(project, branch)
-        commit_date = datetime.datetime.fromtimestamp(commit.committed_date)
+        commit_date = self.last_commit_date(project, branch)
         too_old = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings.max_age_weeks)
         is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings.stale_days)
         branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
                                   in self.settings['name_patterns'])
         return is_stale and branch_name_matches and not too_old
+
+    def last_commit_date(self, project, branch):
+        return datetime.datetime.fromtimestamp(latest_commit(project, branch).committed_date)
 
     def comms_error(self):
         return False

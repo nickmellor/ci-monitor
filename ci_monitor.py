@@ -1,8 +1,8 @@
 from time import sleep
-from conf import configuration, o_conf, config_changed
-import sys
+
 from indicator import Indicator
-from logger import logger, configure_logging
+from utils.conf import o_conf, config_changed
+from utils.logger import logger, configure_logging
 
 logger.warning('CI Monitor restarted')
 while True:
