@@ -3,18 +3,18 @@ import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 
 import requests
-from utils.logger import logger
 from requests.exceptions import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
 
-from monitors.monitor import Infrastructure
+from monitor import Monitor
+from utils.logger import logger
 from utils.proxies import proxies
 
 
-class Sitemap(Infrastructure):
+class Sitemap(Monitor):
 
     def __init__(self, indicator, settings):
-        # super call
+        super().__init__()
         self.sitemap = settings.file
         self.indicator = indicator
         self.name = settings.name

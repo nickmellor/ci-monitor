@@ -5,16 +5,17 @@ import re
 import yaml
 
 from mcmaster_utils import gitclient
-from monitors.monitor import Infrastructure
+from monitor import Monitor
 from utils.logger import logger
 
 
-class Merge(Infrastructure):
+class Merge(Monitor):
     """
     check stash/git branches for
     """
 
     def __init__(self, indicator, settings):
+        super().__init__()
         self.indicator = indicator
         self.settings = settings
         self.name = self.settings.name

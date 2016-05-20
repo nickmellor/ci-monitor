@@ -1,27 +1,41 @@
 import json
 
 import requests
-from utils.logger import logger
-from utils.persist import Persist
 from requests.exceptions import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
 
+from monitor import Monitor
+from utils.logger import logger
+from utils.persist import Persist
 from utils.proxies import proxies
 
 
-class Bamboo:
+class Bamboo(Monitor):
 
     def __init__(self, indicator, settings):
+        super().__init__()
         self.indicator = indicator
         self.settings = settings
+        self.previous_connection = {}
+        self.connection = {}
+        self.previously_failed = {}
+        self.results = {}
+        self.previous_results = {}
 
     def poll(self):
-        results = {}
+        self.previous_results = self.results
+        self.previous_connection = self.connection
+        self.connection = {}
+        self.previous_results = self.results
+        self.results = {}
         template = self.settings.template
         for name, tag in self.settings.tasks.items():
             uri = template.format(tag=tag)
-            results.update(self.poll_bamboo_task(name, uri))
-        return all(results.values())
+            self.results[name] = self.poll_bamboo_task(name, uri)
+        connection_changed = self.previous_connection != self.connection
+        results_changed = self.results != self.previous_results
+        self.changed = connection_changed or results_changed
+        self.changed = self.changed or self.results != and not self.changed
 
     def poll_bamboo_task(self, name, uri):
         try:
@@ -29,68 +43,55 @@ class Bamboo:
                 response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
             else:
                 response = requests.get(uri, verify=False, timeout=10.0)
+            connection_ok = True
         except (RequestException, ConnectionError, MaxRetryError) as e:
-            return self.connection_failed(e, self.indicator, name, uri)
+            self.connection_failed(name, e)
+            connection_ok = False
+            result = None
         else:
-            result = self.process_bamboo_results(name, response, uri)
-            if self.previously_connected(uri):
-                logger.info("{environment}: {task_name}: {tag}, '{result}'"
-                            .format(environment=name, job=task_name, tag=tag,
+            result = self.parse_response(name, response)
+            if self.previously_connected(name):
+                logger.info("{indicator}: {task_name}: '{result}'"
+                            .format(indicator=self.indicator, task_name=name,
                                     result='passed' if result else 'some failed tests'))
-            return result
+        self.connection[name] = connection_ok
+        return result
 
-    def previously_connected(self, uri):
-        return Persist.retrieve(self.previous_connection_cache_key(uri), True)
+    def previously_connected(self, name):
+        return self.connection.get(name, True)
+        # return Persist.retrieve(self.previous_connection_cache_key(uri), True)
 
-    def connection_failed(self, e, environment, job, uri):
-        if self.previously_connected(uri):
-            message = "Indicator '{indicator}': {env}: {job} not responding, URI: '{uri}'\n" \
+    def connection_failed(self, name, e):
+        if self.previously_connected(name):
+            message = "{indicator}: {name} not responding\n" \
                       "No further warnings will be given unless/until it responds.\n"
             message += "Exception: {exception}\n"
-            message = message.format(signal="OMS", env=environment, job=job, uri=uri, exception=e)
+            message = message.format(indicator=self.indicator, name=name, uri=uri, exception=e)
             logger.warning(message)
-            self.store_connection_state(uri, False)
-        return None
 
-    def process_bamboo_results(self, job, response, uri):
-        self.store_connection_state(uri, True)
-        logger.info("{job}: response {response} from ({uri})"
-                    .format(response=response.status_code, job=job, uri=uri))
-        results = json.loads(response.text)
-        logger.info("{job}: no of tests passing: {passing}".format(job=job, passing=results['successfulTestCount']))
-        self.handle_recurring_failures(job, uri, results)
+    def parse_response(self, name, response):
+        logger.info("{indicator}: {job} response {status} from ({uri})"
+                    .format(indicator=self.indicator, status=response.status_code, name=name))
+        result = json.loads(response.text)
+        logger.info("{job}: no of tests passing: {passing}".format(job=name, passing=result['successfulTestCount']))
+        self.handle_failure(name, result)
         logger.info("{job}: skipped tests: {skipped}"
-                    .format(job=job, skipped=results['skippedTestCount']))
-        return results['successful']
+                    .format(job=name, skipped=result['skippedTestCount']))
+        return result['successful']
 
-    def handle_recurring_failures(self, job, uri, results):
-        failures = results['failedTestCount']
-        if failures == 0:
-            logger.info("{job}: All active tests passed".format(job=job))
-        if failures != self.previous_failure_count(uri):
-            if failures != 0:
+    def handle_failure(self, name, result):
+        failed = result['failedTestCount']
+        if failed == 0:
+            logger.info("{job}: All active tests passed".format(job=name))
+        this_task_changed = failed != self.previously_failed[name]
+        if this_task_changed:
+            if failed != 0:
                 logger.warning(
                     "{job}: *** Tests failing: {failing} ***\n"
-                    "Is this useful? {reason}\n"
-                    "No further warnings will be given until number of failures changes"
-                        .format(job=job, failing=failures, reason=results['buildReason']))
+                    "This message from Bamboo might be useful: '{reason}'\n"
+                    "No further warnings will be given until number of failed tests changes"
+                        .format(job=name, failing=failed, reason=result['buildReason']))
             else:
-                logger.warning("*** NEW!! Tests all passing! ({job}) ***\n".format(job=job))
-            self.store_failure_count(uri, failures)
-
-    @staticmethod
-    def previous_connection_cache_key(uri):
-        return 'BambooConnection:{uri}'.format(uri=uri)
-
-    def store_connection_state(self, uri, was_connected):
-        Persist.store(self.previous_connection_cache_key(uri), was_connected)
-
-    def previous_failure_count(self, uri):
-        return Persist.retrieve(self.previous_failures_cache_key(uri), 0)
-
-    def store_failure_count(self, uri, n):
-        Persist.store(self.previous_failures_cache_key(uri), n)
-
-    @staticmethod
-    def previous_failures_cache_key(uri):
-        return 'BambooFailures:{uri}'.format(uri=uri)
+                logger.warning(" *** NEW!! Tests all passing! ({job}) ***\n".format(job=name))
+            self.previously_failed[name] = failed
+        self.changed = self.changed or this_task_changed
