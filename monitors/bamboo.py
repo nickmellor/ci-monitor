@@ -66,7 +66,7 @@ class Bamboo(Monitor):
             message = "{indicator}: {name} not responding\n" \
                       "No further warnings will be given unless/until it responds.\n"
             message += "Exception: {exception}\n"
-            message = message.format(indicator=self.indicator, name=name, uri=uri, exception=e)
+            message = message.format(indicator=self.indicator, name=name, exception=e)
             logger.warning(message)
 
     def parse_response(self, name, response):
