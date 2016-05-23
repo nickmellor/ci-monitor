@@ -1,12 +1,11 @@
 from time import sleep
 
-from utils.logger import logger
-from monitors.sitemap import Sitemap
-from monitors.merge import Merge
 from monitors.bamboo import Bamboo
-
-import soundplayer
+from monitors.merge import Merge
+from monitors.sitemap import Sitemap
+from utils import soundplayer
 from utils.conf import configuration
+from utils.logger import logger
 from utils.persist import Persist
 
 states = configuration['states']
@@ -42,11 +41,11 @@ class Indicator:
             #     self.testables.append(TrafficLight(name, settings) if traffic_light_present else None)
             # TODO: use reflection to configure infrastructure to check
             if monitored.merge:
-                self.monitored.append(Merge(self.indicator_name, monitored.merge))
+                self.monitored.append(Merge(self.indicator_name, Merge, monitored.merge))
             if monitored.sitemap:
-                self.monitored.append(Sitemap(self.indicator_name, monitored.sitemap))
+                self.monitored.append(Sitemap(self.indicator_name, Sitemap, monitored.sitemap))
             if monitored.bamboo:
-                self.monitored.append(Bamboo(self.indicator_name, monitored.bamboo))
+                self.monitored.append(Bamboo(self.indicator_name, Bamboo, monitored.bamboo))
             # self.geckoboard = Geckoboard()
 
     def run(self):

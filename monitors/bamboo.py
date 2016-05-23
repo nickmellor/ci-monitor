@@ -12,10 +12,11 @@ from utils.proxies import proxies
 
 class Bamboo(Monitor):
 
-    def __init__(self, indicator, settings):
-        super().__init__()
+    def __init__(self, indicator, monitor_class, settings):
+        super().__init__(monitor_class)
         self.indicator = indicator
         self.settings = settings
+        self.name = self.settings.name
         self.previous_connection = {}
         self.connection = {}
         self.previously_failed = {}
@@ -25,9 +26,7 @@ class Bamboo(Monitor):
     def poll(self):
         self.previous_results = self.results
         self.previous_connection = self.connection
-        self.connection = {}
         self.previous_results = self.results
-        self.results = {}
         template = self.settings.template
         for name, tag in self.settings.tasks.items():
             uri = template.format(tag=tag)
@@ -35,7 +34,6 @@ class Bamboo(Monitor):
         connection_changed = self.previous_connection != self.connection
         results_changed = self.results != self.previous_results
         self.changed = connection_changed or results_changed
-        self.changed = self.changed or self.results != and not self.changed
 
     def poll_bamboo_task(self, name, uri):
         try:
@@ -49,7 +47,7 @@ class Bamboo(Monitor):
             connection_ok = False
             result = None
         else:
-            result = self.parse_response(name, response)
+            result = self.tests_pass(name, response)
             if self.previously_connected(name):
                 logger.info("{indicator}: {task_name}: '{result}'"
                             .format(indicator=self.indicator, task_name=name,
@@ -58,8 +56,11 @@ class Bamboo(Monitor):
         return result
 
     def previously_connected(self, name):
-        return self.connection.get(name, True)
-        # return Persist.retrieve(self.previous_connection_cache_key(uri), True)
+        if name in self.previous_connection:
+            return self.previous_connection.get(name)
+        else:
+            self.previous_connection[name] = True
+            return True
 
     def connection_failed(self, name, e):
         if self.previously_connected(name):
@@ -69,15 +70,15 @@ class Bamboo(Monitor):
             message = message.format(indicator=self.indicator, name=name, exception=e)
             logger.warning(message)
 
-    def parse_response(self, name, response):
-        logger.info("{indicator}: {job} response {status} from ({uri})"
+    def tests_pass(self, name, response):
+        logger.info("{indicator}: {job} response {status} from '{name}'"
                     .format(indicator=self.indicator, status=response.status_code, name=name))
-        result = json.loads(response.text)
-        logger.info("{job}: no of tests passing: {passing}".format(job=name, passing=result['successfulTestCount']))
-        self.handle_failure(name, result)
+        parsed_json = json.loads(response.text)
+        logger.info("{job}: no of tests passing: {passing}".format(job=name, passing=parsed_json['successfulTestCount']))
+        self.handle_failure(name, parsed_json)
         logger.info("{job}: skipped tests: {skipped}"
-                    .format(job=name, skipped=result['skippedTestCount']))
-        return result['successful']
+                    .format(job=name, skipped=parsed_json['skippedTestCount']))
+        return parsed_json['successful']
 
     def handle_failure(self, name, result):
         failed = result['failedTestCount']

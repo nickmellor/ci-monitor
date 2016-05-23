@@ -5,6 +5,7 @@ class NotImplementedException(Exception):
 class Monitor:
 
     def __init__(self, subclass):
+        self.subclass = subclass
         self.old_state = None
         self.state = None
         self.old_comms_ok = True
