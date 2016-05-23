@@ -31,6 +31,7 @@ class Bamboo(Monitor):
         for name, tag in self.settings.tasks.items():
             uri = template.format(tag=tag)
             self.all_tests_pass[name] = self.poll_bamboo_task(name, uri)
+            logger.debug("uri: '{0}'".format(uri))
         connection_changed = self.previous_connection != self.connection
         results_changed = self.all_tests_pass != self.previous_results
         self.changed = connection_changed or results_changed
@@ -39,7 +40,7 @@ class Bamboo(Monitor):
         return all(self.all_tests_pass.values())
 
     def comms_ok(self):
-        all(self.connection.values())
+        return all(self.connection.values())
 
     def poll_bamboo_task(self, name, uri):
         try:
@@ -77,7 +78,7 @@ class Bamboo(Monitor):
             logger.warning(message)
 
     def tests_pass(self, name, response):
-        logger.info("{indicator}: {job} response {status} from '{name}'"
+        logger.info("{indicator}: {name} response {status} from '{name}'"
                     .format(indicator=self.indicator, status=response.status_code, name=name))
         parsed_json = json.loads(response.text)
         logger.info("{job}: no of tests passing: {passing}".format(job=name, passing=parsed_json['successfulTestCount']))
@@ -90,7 +91,7 @@ class Bamboo(Monitor):
         failed = result['failedTestCount']
         if failed == 0:
             logger.info("{job}: All active tests passed".format(job=name))
-        this_task_changed = failed != self.previously_failed[name]
+        this_task_changed = failed != self.previously_failed.get(name)
         if this_task_changed:
             if failed != 0:
                 logger.warning(

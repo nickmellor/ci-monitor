@@ -1,5 +1,5 @@
-heartbeat_secs: 5
-errorheartbeat_secs: 5
+heartbeat_secs: 30
+errorheartbeat_secs: 30
 logging:
     console: info
     fileRotator: info

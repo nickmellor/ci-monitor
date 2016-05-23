@@ -22,6 +22,9 @@ class Monitor:
     def comms_ok(self):
         raise NotImplementedException("'comms_ok()' method not implemented")
 
+    def has_changed(self):
+        raise NotImplementedException("'has_changed()' method not implemented")
+
     def poll(self):
         raise NotImplementedException("'poll()' method not implemented")
 
