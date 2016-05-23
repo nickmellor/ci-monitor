@@ -20,20 +20,26 @@ class Bamboo(Monitor):
         self.previous_connection = {}
         self.connection = {}
         self.previously_failed = {}
-        self.results = {}
+        self.all_tests_pass = {}
         self.previous_results = {}
 
     def poll(self):
-        self.previous_results = self.results
+        self.previous_results = self.all_tests_pass
         self.previous_connection = self.connection
-        self.previous_results = self.results
+        self.previous_results = self.all_tests_pass
         template = self.settings.template
         for name, tag in self.settings.tasks.items():
             uri = template.format(tag=tag)
-            self.results[name] = self.poll_bamboo_task(name, uri)
+            self.all_tests_pass[name] = self.poll_bamboo_task(name, uri)
         connection_changed = self.previous_connection != self.connection
-        results_changed = self.results != self.previous_results
+        results_changed = self.all_tests_pass != self.previous_results
         self.changed = connection_changed or results_changed
+
+    def tests_ok(self):
+        return all(self.all_tests_pass.values())
+
+    def comms_ok(self):
+        all(self.connection.values())
 
     def poll_bamboo_task(self, name, uri):
         try:

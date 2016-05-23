@@ -13,12 +13,12 @@ from utils.proxies import proxies
 
 class Sitemap(Monitor):
 
-    def __init__(self, indicator, settings):
-        super().__init__()
+    def __init__(self, indicator, monitor_class, settings):
+        super().__init__(monitor_class)
         self.sitemap = settings.file
         self.indicator = indicator
         self.name = settings.name
-        self.ok = True
+        self.all_good = True
         self.reported = False
         # self.wait = Wait(indicator)
         # if 'schedule' in settings:
@@ -56,16 +56,23 @@ class Sitemap(Monitor):
             logger.error("Sitemap '{name}' ({sitemap}) not available".format(name=self.name, sitemap=self.sitemap))
             errors.append((self.name, self.sitemap, 'sitemap file not available'))
         if errors:
-            message = ['Sitemap errors as follows:', '*' * 79]
+            message = ['Sitemap errors as follows:', '*' * 125]
             message.extend('* {no}. {fault}'.format(no=n + 1, fault=reportable_fault)
                            for n, reportable_fault
                            in enumerate(repr(error) for error in errors))
             message.append('*** {0} failures testing {1} urls'.format(len(errors), url_count))
-            message.append('*' * 79)
+            message.append('*' * 125)
             logger.error('\n'.join(message))
         else:
             logger.info("All {count} sitemap URLs ok".format(count=url_count))
-        self.ok = not errors
+        self.all_good = not errors
+
+    def tests_ok(self):
+        return self.all_good
+
+    def comms_ok(self):
+        # TODO: comms error if can't reach URLs
+        return True
 
     def extracted_urls(self, uri):
         sitemap_as_string = self.sitemap_xml(uri)
