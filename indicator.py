@@ -1,12 +1,13 @@
 from time import sleep
 
-from monitors.bamboo import Bamboo
-from monitors.merge import Merge
-from monitors.sitemap import Sitemap
+# from monitors.bamboo import Bamboo
+# from monitors.merge import Merge
+# from monitors.sitemap import Sitemap
 from utils import soundplayer
 from utils.conf import configuration
 from utils.logger import logger
 from utils.persist import Persist
+from utils.getclass import get_class
 
 states = configuration['states']
 
@@ -36,9 +37,8 @@ class Indicator:
         for monitor in self.settings.monitoring:
             for monitor_name, monitor_settings in monitor.items():
                 try:
-                    MonitorClass = eval(monitor_name.capitalize())
-                    monitor_instance = MonitorClass(self.indicator_name, monitor_name, monitor_settings)
-                    self.monitors.append(monitor_instance)
+                    monitor_class = 'monitors.{0}.{1}'.format(monitor_name, monitor_name.capitalize())
+                    self.monitors.append(get_class(monitor_class)(self.indicator_name, monitor_name, monitor_settings))
                 except NameError as e:
                     message = "{indicator}: implementation for monitor type '{monitor}' " \
                               "is not available or incomplete\n" \
