@@ -1,7 +1,3 @@
-class NotImplementedException(Exception):
-    pass
-
-
 class Monitor:
 
     def __init__(self, subclass):
@@ -30,3 +26,7 @@ class Monitor:
 
     def set_state(self, value):
         self.state = value
+
+
+class NotImplementedException(Exception):
+    pass

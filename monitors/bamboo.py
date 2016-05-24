@@ -42,6 +42,9 @@ class Bamboo(Monitor):
     def comms_ok(self):
         return all(self.connection.values())
 
+    def has_changed(self):
+        return self.changed
+
     def poll_bamboo_task(self, name, uri):
         try:
             if proxies:
@@ -89,8 +92,6 @@ class Bamboo(Monitor):
 
     def handle_failure(self, name, result):
         failed = result['failedTestCount']
-        if failed == 0:
-            logger.info("{job}: All active tests passed".format(job=name))
         this_task_changed = failed != self.previously_failed.get(name)
         if this_task_changed:
             if failed != 0:

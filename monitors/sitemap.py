@@ -91,11 +91,8 @@ class Sitemap(Monitor):
             logger.error("Sitemap: sitemap unavailable:\n{0}".format(e))
             return None
 
-    def comms_error(self):
+    def has_changed(self):
         return False
-
-
-
 
 def get(address):
     response = requests.get(address, allow_redirects=True, proxies=proxies)

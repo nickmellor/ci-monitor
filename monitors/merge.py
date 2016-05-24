@@ -48,6 +48,10 @@ class Merge(Monitor):
         # TODO: comms error if can't git clone
         return True
 
+    def has_changed(self):
+        # TODO: needs implementing
+        return False
+
     def branches(self, project):
         branches_and_merges = (tidy_branch(branch) for branch in project.remote_branches(project.repo))
         yield from (branch_or_merge for branch_or_merge in branches_and_merges

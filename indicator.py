@@ -51,7 +51,8 @@ class Indicator:
     def run(self):
         logger.info('Indicator {indicator}: running...'.format(indicator=self.indicator_name))
         for testable in self.monitored:
-            logger.info("Checking: '{name}'".format(name=testable.name))
+            logger.info("{indicator}: checking '{name}' tests"
+                           .format(indicator=self.indicator_name, name=testable.name))
             testable.poll()
 
     def poll_bamboo(self):
