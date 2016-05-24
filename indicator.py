@@ -26,34 +26,32 @@ class Indicator:
     affect the logging level
     """
 
-    def __init__(self, indicator_name, settings):
+    def __init__(self, indicator_name, monitor_settings):
         self.indicator_name = indicator_name
         # self.state = self.get_state()
         self.state = None
-        self.settings = settings
+        self.settings = monitor_settings
         self.unhandled_exception_raised = False
-        self.monitored = []
-        for monitored in self.settings.monitoring:
-        # for name, settings in self.settings.testables.items():
-            # # TODO: move traffic light detection to traffic.py
-            # traffic_light_present = name == 'trafficlight'
-            # if traffic_light_present:
-            #     self.testables.append(TrafficLight(name, settings) if traffic_light_present else None)
-            # TODO: use reflection to configure infrastructure to check
-            if monitored.merge:
-                self.monitored.append(Merge(self.indicator_name, Merge, monitored.merge))
-            if monitored.sitemap:
-                self.monitored.append(Sitemap(self.indicator_name, Sitemap, monitored.sitemap))
-            if monitored.bamboo:
-                self.monitored.append(Bamboo(self.indicator_name, Bamboo, monitored.bamboo))
-            # self.geckoboard = Geckoboard()
+        self.monitors = []
+        for monitor in self.settings.monitoring:
+            for monitor_name, monitor_settings in monitor.items():
+                try:
+                    MonitorClass = eval(monitor_name.capitalize())
+                    monitor_instance = MonitorClass(self.indicator_name, monitor_name, monitor_settings)
+                    self.monitors.append(monitor_instance)
+                except NameError as e:
+                    message = "{indicator}: implementation for monitor type '{monitor}' " \
+                              "is not available or incomplete\n" \
+                              "Exception: {exception}\n"
+                    message = message.format(indicator=self.indicator_name, monitor=monitor_name, exception=e)
+                    logger.error(message)
 
     def run(self):
         logger.info('Indicator {indicator}: running...'.format(indicator=self.indicator_name))
-        for testable in self.monitored:
-            logger.info("{indicator}: checking '{name}' tests"
-                           .format(indicator=self.indicator_name, name=testable.name))
-            testable.poll()
+        for monitor in self.monitors:
+            logger.info("{indicator}: polling '{name}' tests"
+                           .format(indicator=self.indicator_name, name=monitor.name))
+            monitor.poll()
 
     def poll_bamboo(self):
         logger.info('Signal {signal}: polling...'.format(signal=self.indicator_name))
@@ -88,7 +86,7 @@ class Indicator:
         change_to_from_warning = is_new_warning != (self.get_state() in warnings)
         change_of_error_level = change_to_from_error or change_to_from_warning
         if change_of_error_level:
-            sound = self.monitored['sounds']
+            sound = self.monitors['sounds']
             if is_new_error or is_new_warning:
                 wav = sound['failures']
             else:

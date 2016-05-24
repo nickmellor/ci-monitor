@@ -23,6 +23,8 @@ indicators:
     trafficlight:
       id: 901880
     monitoring:
+      - alien:
+          attribute1: sdfkjhsdfklj
       - bamboo:
           name: DEV01
           template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
