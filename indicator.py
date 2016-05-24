@@ -26,11 +26,11 @@ class Indicator:
     affect the logging level
     """
 
-    def __init__(self, indicator_name, monitor_settings):
+    def __init__(self, indicator_name, settings):
         self.indicator_name = indicator_name
         # self.state = self.get_state()
         self.state = None
-        self.settings = monitor_settings
+        self.settings = settings
         self.unhandled_exception_raised = False
         self.monitors = []
         for monitor in self.settings.monitoring:

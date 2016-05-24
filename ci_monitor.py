@@ -21,7 +21,7 @@ while True:
             #     logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
             #     sleep(o_conf().errorheartbeat_secs)
             # else:
-            sleep(o_conf().heartbeat_secs)
+            sleep(o_conf().defaults.schedule.heartbeat_secs)
     logger.warning('Config changed!')
 
 # TODO: decouple indicators so they operate independently-- separate threads?
