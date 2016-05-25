@@ -3,7 +3,7 @@ import json
 import requests
 from logger import logger
 
-from utils.conf import configuration
+from conf import configuration
 from utils.proxies import proxies
 
 

@@ -2,7 +2,7 @@ import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
 
-from utils.conf import configuration
+from conf import configuration
 
 loglevel_lookup = {
     'error': logging.ERROR,

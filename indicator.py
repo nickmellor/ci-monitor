@@ -4,7 +4,7 @@ from time import sleep
 # from monitors.merge import Merge
 # from monitors.sitemap import Sitemap
 from utils import soundplayer
-from utils.conf import configuration
+from conf import configuration
 from utils.logger import logger
 from utils.persist import Persist
 from utils.getclass import get_class

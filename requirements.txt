@@ -6,3 +6,4 @@ ostruct
 urllib3
 auth
 GitPython
+schedule

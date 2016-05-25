@@ -1,4 +1,4 @@
-from utils.conf import configuration
+from conf import configuration
 try:
     proxies = {
         "http": configuration['proxies']['http'],

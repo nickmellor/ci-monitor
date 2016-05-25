@@ -1,7 +1,5 @@
 indicators:
   OMS:
-    trafficlight:
-      id: 901880
     monitoring:
       - bamboo:
           name: DEV01
@@ -14,6 +12,10 @@ indicators:
           template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
           tasks:
             ESB API tests: MDAL-ESS
+    schedule:
+      - always
+    trafficlight:
+      id: 901880
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav

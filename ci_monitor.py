@@ -1,7 +1,9 @@
 from time import sleep
 
+import schedule
+
+from conf import o_conf, config_changed
 from indicator import Indicator
-from utils.conf import o_conf, config_changed
 from utils.logger import logger, configure_logging
 
 logger.warning('CI Monitor restarted')
@@ -11,6 +13,7 @@ while True:
     for name, settings in o_conf().indicators.items():
         indicators.append(Indicator(name, settings))
     while not config_changed():
+        schedule.clear()
         for indicator in indicators:
             # try:
             indicator.run()
