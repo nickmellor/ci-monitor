@@ -11,11 +11,11 @@ from conf import o_conf
 class Scheduler:
     def __init__(self, job, settings):
         # parse schedule section
-        self.settings = settings.schedule
-        for setting in settings:
-            if setting in ['every heartbeat', 'always']:
+        self.repeat_patterns = settings.schedule
+        for repeat_pattern in self.repeat_patterns:
+            if repeat_pattern in ['every heartbeat', 'always']:
                 schedule.every(o_conf().defaults.schedule.heartbeat).seconds.do(job)
-            components = deque(setting.split())
+            components = deque(repeat_pattern.split())
             current = components.popleft()
             if current == 'at':
                 schedule.every().day.at(components.pop()).do(job)

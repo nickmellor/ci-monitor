@@ -90,9 +90,10 @@ indicators:
 #      #Elevate: MEDIBANKCORP-RCWAT19
 
 defaults:
-  schedule:
     heartbeat_secs: 30
     errorheartbeat_secs: 30
+  schedule:
+    - every heartbeat
 logging:
     console: info
     fileRotator: info

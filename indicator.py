@@ -4,10 +4,11 @@ from time import sleep
 # from monitors.merge import Merge
 # from monitors.sitemap import Sitemap
 from utils import soundplayer
-from conf import configuration
+from conf import configuration, o_conf
 from utils.logger import logger
 from utils.persist import Persist
 from utils.getclass import get_class
+from utils.scheduler import Scheduler
 
 states = configuration['states']
 
@@ -34,17 +35,32 @@ class Indicator:
         self.settings = settings
         self.unhandled_exception_raised = False
         self.monitors = []
-        for monitor in self.settings.monitoring:
-            for monitor_name, monitor_settings in monitor.items():
-                try:
-                    monitor_class = 'monitors.{0}.{1}'.format(monitor_name, monitor_name.capitalize())
-                    self.monitors.append(get_class(monitor_class)(self.indicator_name, monitor_name, monitor_settings))
-                except NameError as e:
-                    message = "{indicator}: implementation for monitor type '{monitor}' " \
-                              "is not available or incomplete\n" \
-                              "Exception: {exception}\n"
-                    message = message.format(indicator=self.indicator_name, monitor=monitor_name, exception=e)
-                    logger.error(message)
+        for monitor_config in self.settings.monitoring:
+            for monitor_name, monitor_settings in monitor_config.items():
+                monitor = self.initalise_monitor(monitor_name,
+                                            monitor_settings, self.find_schedule(monitor_settings))
+                self.monitors.append(monitor)
+
+    def initalise_monitor(self, monitor_name, monitor_settings, schedule_location):
+        try:
+            monitor_class = 'monitors.{0}.{1}'.format(monitor_name, monitor_name.capitalize())
+            monitor = get_class(monitor_class)(self.indicator_name, monitor_name, monitor_settings)
+            Scheduler(monitor.poll, schedule_location)
+            return monitor
+        except NameError as e:
+            message = "{indicator}: implementation for monitor type '{monitor}' " \
+                      "is not available or incomplete\n" \
+                      "Exception: {exception}\n"
+            message = message.format(indicator=self.indicator_name, monitor=monitor_name, exception=e)
+            logger.error(message)
+
+    def find_schedule(self, monitor_settings):
+        if 'schedule' in monitor_settings:
+            return monitor_settings
+        elif 'schedule' in self.settings:
+            return self.settings
+        else:
+            return o_conf().defaults
 
     def run(self):
         logger.info('Indicator {indicator}: running...'.format(indicator=self.indicator_name))

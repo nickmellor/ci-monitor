@@ -27,7 +27,7 @@ while True:
             sleep(o_conf().defaults.schedule.heartbeat_secs)
     logger.warning('Config changed!')
 
-# TODO: decouple indicators so they operate independently-- separate threads?
+# TODO:
 # TODO: sep of concerns: monitors like Bamboo should expose methods for indicator
 #         - poll()
 #         - state() -- or should this be in indicator?
