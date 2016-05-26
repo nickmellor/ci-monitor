@@ -8,7 +8,7 @@ from conf import configuration, o_conf
 from utils.logger import logger
 from utils.persist import Persist
 from utils.getclass import get_class
-from utils.scheduler import Scheduler
+from utils.schedulesetter import ScheduleSetter
 
 states = configuration['states']
 
@@ -45,7 +45,7 @@ class Indicator:
         try:
             monitor_class = 'monitors.{0}.{1}'.format(monitor_name, monitor_name.capitalize())
             monitor = get_class(monitor_class)(self.indicator_name, monitor_name, monitor_settings)
-            Scheduler(monitor.poll, schedule_location)
+            ScheduleSetter(monitor.poll, schedule_location)
             return monitor
         except NameError as e:
             message = "{indicator}: implementation for monitor type '{monitor}' " \

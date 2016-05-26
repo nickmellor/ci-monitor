@@ -8,7 +8,7 @@ import schedule
 from conf import o_conf
 
 
-class Scheduler:
+class ScheduleSetter:
     def __init__(self, job, settings):
         # parse schedule section
         self.repeat_patterns = settings.schedule
