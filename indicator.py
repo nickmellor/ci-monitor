@@ -37,11 +37,11 @@ class Indicator:
         self.monitors = []
         for monitor_config in self.settings.monitoring:
             for monitor_name, monitor_settings in monitor_config.items():
-                monitor = self.initalise_monitor(monitor_name,
-                                            monitor_settings, self.find_schedule(monitor_settings))
+                monitor = self.create_monitor(monitor_name,
+                                              monitor_settings, self.find_schedule(monitor_settings))
                 self.monitors.append(monitor)
 
-    def initalise_monitor(self, monitor_name, monitor_settings, schedule_location):
+    def create_monitor(self, monitor_name, monitor_settings, schedule_location):
         try:
             monitor_class = 'monitors.{0}.{1}'.format(monitor_name, monitor_name.capitalize())
             monitor = get_class(monitor_class)(self.indicator_name, monitor_name, monitor_settings)
