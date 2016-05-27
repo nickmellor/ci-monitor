@@ -14,7 +14,7 @@ class ScheduleSetter:
         self.repeat_patterns = settings.schedule
         for repeat_pattern in self.repeat_patterns:
             if repeat_pattern in ['every heartbeat', 'always']:
-                schedule.every(o_conf().defaults.schedule.heartbeat).seconds.do(job)
+                schedule.every(o_conf().defaults.heartbeat_secs).seconds.do(job)
             components = deque(repeat_pattern.split())
             current = components.popleft()
             if current == 'at':
@@ -24,10 +24,10 @@ class ScheduleSetter:
                 schedule.every(interval).unit(time_unit).do(job)
 
 
-def job():
-    print('Hello, world!')
-
-if __name__ == '__main__':
-    schedule.every(5).seconds.do(job)
-    while(1):
-        schedule.run_pending()
+# def job():
+#     print('Hello, world!')
+#
+# if __name__ == '__main__':
+#     schedule.every(5).seconds.do(job)
+#     while(1):
+#         schedule.run_pending()

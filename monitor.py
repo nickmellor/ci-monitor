@@ -5,8 +5,6 @@ class Monitor:
         self.old_state = None
         self.state = None
         self.set_state('allTestsPassed')
-        self.old_comms_ok = True
-        self.comms_ok = True
         self.changed = False
 
     # def state_change(self):

@@ -25,7 +25,7 @@ class Bamboo(Monitor):
 
     def poll(self):
         self.previous_results = self.all_tests_pass
-        self.previous_connection = self.connection
+        # self.previous_connection = self.connection
         self.previous_results = self.all_tests_pass
         template = self.settings.template
         for name, tag in self.settings.tasks.items():
@@ -40,7 +40,8 @@ class Bamboo(Monitor):
         return all(self.all_tests_pass.values())
 
     def comms_ok(self):
-        return all(self.connection.values())
+        print(self.connection)
+        return all(self.connection.values()) if self.connection else False
 
     def has_changed(self):
         return self.changed
@@ -51,10 +52,10 @@ class Bamboo(Monitor):
                 response = requests.get(uri, verify=False, proxies=proxies, timeout=10.0)
             else:
                 response = requests.get(uri, verify=False, timeout=10.0)
-            connection_ok = True
+            self.connection[name] = True
         except (RequestException, ConnectionError, MaxRetryError) as e:
             self.connection_failed(name, e)
-            connection_ok = False
+            self.connection[name] = False
             result = None
         else:
             result = self.tests_pass(name, response)
@@ -62,7 +63,7 @@ class Bamboo(Monitor):
                 logger.info("{indicator}: {task_name}: '{result}'"
                             .format(indicator=self.indicator, task_name=name,
                                     result='passed' if result else 'some failed tests'))
-        self.connection[name] = connection_ok
+                self.previous_connection['name'] = False
         return result
 
     def previously_connected(self, name):

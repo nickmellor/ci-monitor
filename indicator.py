@@ -3,6 +3,8 @@ from time import sleep
 # from monitors.bamboo import Bamboo
 # from monitors.merge import Merge
 # from monitors.sitemap import Sitemap
+import schedule
+
 from utils import soundplayer
 from conf import configuration, o_conf
 from utils.logger import logger
@@ -55,19 +57,19 @@ class Indicator:
             logger.error(message)
 
     def find_schedule(self, monitor_settings):
-        if 'schedule' in monitor_settings:
+        if monitor_settings.get('schedule'):
             return monitor_settings
-        elif 'schedule' in self.settings:
+        elif self.settings.get('schedule'):
             return self.settings
         else:
             return o_conf().defaults
 
     def run(self):
-        logger.info('Indicator {indicator}: running...'.format(indicator=self.indicator_name))
+        schedule.run_pending()
         for monitor in self.monitors:
             logger.info("{indicator}: polling '{name}' tests"
                            .format(indicator=self.indicator_name, name=monitor.name))
-            monitor.poll()
+            print(monitor.has_changed(), monitor.comms_ok(), monitor.tests_ok())
 
     def poll_bamboo(self):
         logger.info('Signal {signal}: polling...'.format(signal=self.indicator_name))
