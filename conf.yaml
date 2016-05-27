@@ -19,7 +19,6 @@ indicators:
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav
-
 defaults:
   heartbeat_secs: 30
   errorheartbeat_secs: 30

@@ -70,6 +70,13 @@ class Merge(Monitor):
         return os.path.normpath(self.settings['location'])
 
     def clear_repos(self, top_level_dir):
+        # TODO: maybe this will fix the problem of git repos not being completely removed
+        # from subprocess import Popen, PIPE, STDOUT
+        #
+        # cmd = 'rm -frv /path/to/dir'
+        # p   = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+        # out = p.stdout.read()
+        # print(out)
         for root, dirs, files in os.walk(top_level_dir, topdown=False):
             for name in files:
                 try:
