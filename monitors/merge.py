@@ -19,14 +19,16 @@ class Merge(Monitor):
         self.indicator = indicator
         self.settings = settings
         self.name = self.settings.name
-        self.all_good = True
         self.projects = [gitclient.GitClient(os.path.join(self.settings['location'], project))
                        for project
                        in settings['repos']]
+        self.errors = set()
+        self.old_errors = set()
 
     def poll(self):
         # self.refresh_projects()
-        self.all_good = True
+        self.old_errors = self.errors
+        self.errors = set()
         master_branch_name = self.settings.master
         for project in self.projects:
             project_name = project.repo._working_tree_dir.split(os.path.sep)[-1]
@@ -37,20 +39,22 @@ class Merge(Monitor):
             for branch in self.branches(project):
                 release_rev = latest_commit(project, branch).hexsha
                 if not project.repo.is_ancestor(release_rev, deploy_rev):
-                    logger.error("Unmerged in project '{project}': {branch} -> {destination}"
-                                 .format(project=project_name, branch=branch, destination=master_branch_name))
-                    self.all_good = False
+                    error = "{indicator}: unmerged in project '{project}': {branch} -> {destination}"\
+                            .format(indicator=self.indicator, project=project_name,
+                                    branch=branch, destination=master_branch_name)
+                    if error not in self.old_errors:
+                        logger.error(error)
+                    self.errors.add(error)
 
     def tests_ok(self):
-        return self.all_good
+        return not self.errors
 
     def comms_ok(self):
         # TODO: comms error if can't git clone
         return True
 
     def has_changed(self):
-        # TODO: needs implementing
-        return False
+        return self.old_errors != self.errors
 
     def branches(self, project):
         branches_and_merges = (tidy_branch(branch) for branch in project.remote_branches(project.repo))

@@ -39,8 +39,7 @@ class Indicator:
         self.monitors = []
         for monitor_config in self.settings.monitoring:
             for monitor_name, monitor_settings in monitor_config.items():
-                monitor = self.create_monitor(monitor_name,
-                                              monitor_settings, self.find_schedule(monitor_settings))
+                monitor = self.create_monitor(monitor_name, monitor_settings, self.find_schedule(monitor_settings))
                 self.monitors.append(monitor)
 
     def create_monitor(self, monitor_name, monitor_settings, schedule_location):
@@ -65,11 +64,11 @@ class Indicator:
             return o_conf().defaults
 
     def run(self):
+        print(schedule.jobs)
         schedule.run_pending()
         for monitor in self.monitors:
             logger.info("{indicator}: polling '{name}' tests"
                            .format(indicator=self.indicator_name, name=monitor.name))
-            print(monitor.has_changed(), monitor.comms_ok(), monitor.tests_ok())
 
     def poll_bamboo(self):
         logger.info('Signal {signal}: polling...'.format(signal=self.indicator_name))

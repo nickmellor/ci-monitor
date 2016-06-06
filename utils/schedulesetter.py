@@ -15,13 +15,14 @@ class ScheduleSetter:
         for repeat_pattern in self.repeat_patterns:
             if repeat_pattern in ['every heartbeat', 'always']:
                 schedule.every(o_conf().defaults.heartbeat_secs).seconds.do(job)
-            components = deque(repeat_pattern.split())
-            current = components.popleft()
-            if current == 'at':
-                schedule.every().day.at(components.pop()).do(job)
-            if current == 'every':
-                interval, time_unit = components
-                schedule.every(interval).unit(time_unit).do(job)
+            else:
+                components = deque(repeat_pattern.split())
+                current = components.popleft()
+                if current == 'at':
+                    schedule.every().day.at(components.popleft()).do(job)
+                if current == 'every':
+                    interval, time_unit = components
+                    schedule.every(interval).unit(time_unit).do(job)
 
 
 # def job():

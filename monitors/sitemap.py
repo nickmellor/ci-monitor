@@ -20,16 +20,8 @@ class Sitemap(Monitor):
         self.name = settings.name
         self.all_good = True
         self.reported = False
-        # self.wait = Wait(indicator)
-        # if 'schedule' in settings:
-        #     self.wait.set_schedule(settings['schedule'])
-        # elif 'interval' in settings:
-        #     self.wait.set_interval(settings['interval'] * 60)
 
     def poll(self):
-        # pn = self.wait.poll_now()
-        # if not pn:
-        #     return True
         errors = []
         extracted_urls = list(self.extracted_urls(self.sitemap))
         url_count = len(extracted_urls)
