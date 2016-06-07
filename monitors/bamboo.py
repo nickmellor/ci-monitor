@@ -12,8 +12,8 @@ from utils.proxies import proxies
 
 class Bamboo(Monitor):
 
-    def __init__(self, indicator, monitor_class, settings):
-        super().__init__(monitor_class)
+    def __init__(self, indicator, clazz, settings):
+        super().__init__(clazz)
         self.indicator = indicator
         self.settings = settings
         self.name = self.settings.name
@@ -40,7 +40,7 @@ class Bamboo(Monitor):
         return all(self.all_tests_pass.values())
 
     def comms_ok(self):
-        print(self.connection)
+        # print(self.connection)
         return all(self.connection.values()) if self.connection else False
 
     def has_changed(self):

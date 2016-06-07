@@ -1,4 +1,5 @@
 from time import sleep
+from devices.traffic import TrafficLight
 
 # from monitors.bamboo import Bamboo
 # from monitors.merge import Merge
@@ -37,16 +38,20 @@ class Indicator:
         self.settings = settings
         self.unhandled_exception_raised = False
         self.monitors = []
+        self.setup_monitors()
+        self.setup_devices()
+
+    def setup_monitors(self):
         for monitor_config in self.settings.monitoring:
             for monitor_name, monitor_settings in monitor_config.items():
-                monitor = self.create_monitor(monitor_name, monitor_settings, self.find_schedule(monitor_settings))
+                monitor = self.schedule_monitor(monitor_name, monitor_settings, self.find_schedule(monitor_settings))
                 self.monitors.append(monitor)
 
-    def create_monitor(self, monitor_name, monitor_settings, schedule_location):
+    def schedule_monitor(self, monitor_name, monitor_settings, schedule_location):
         try:
             monitor_class = 'monitors.{0}.{1}'.format(monitor_name, monitor_name.capitalize())
             monitor = get_class(monitor_class)(self.indicator_name, monitor_name, monitor_settings)
-            ScheduleSetter(monitor.poll, schedule_location)
+            ScheduleSetter(monitor, schedule_location)
             return monitor
         except NameError as e:
             message = "{indicator}: implementation for monitor type '{monitor}' " \
@@ -63,52 +68,72 @@ class Indicator:
         else:
             return o_conf().defaults
 
-    def run(self):
-        print(schedule.jobs)
-        schedule.run_pending()
-        for monitor in self.monitors:
-            logger.info("{indicator}: polling '{name}' tests"
-                           .format(indicator=self.indicator_name, name=monitor.name))
+    def setup_devices(self):
+        settings = self.settings.trafficlight
+        if settings:
+            self.trafficlight = TrafficLight(self.indicator_name, settings)
 
-    def poll_bamboo(self):
-        logger.info('Signal {signal}: polling...'.format(signal=self.indicator_name))
-        try:
-            bamboo_results = self.bamboo_tasks.all_results() if self.bamboo_tasks else None
-            sitemap_ok = self.sitemap.urls_ok() if self.sitemap else True
-        except Exception as e:
-            logger.error('Signal {signal}: Unhandled internal exception. '
-                         'Could be configuration problem or bug.\n{exception}'
-                         .format(signal=self.indicator_name, exception=e.args))
-            self.internal_exception(e)
+    def run(self):
+        schedule.run_pending()
+        state = self.get_state()
+        self.show_change(state)
+        if self.trafficlight:
+            self.trafficlight.set_lights(state)
+        self.state = state
+
+
+        # except Exception as e:
+        #     logger.error('Signal {signal}: Unhandled internal exception. '
+        #                  'Could be configuration problem or bug.\n{exception}'
+        #                  .format(signal=self.indicator_name, exception=e.args))
+        #     self.internal_exception(e)
             # NB traffic light update not shown until unhandled exception clear for one complete pass
-            logger.error('Waiting {0} secs\n'.format(configuration['errorheartbeat_secs']))
-            sleep(configuration['errorheartbeat_secs'])
-        else:
-            self.communicate_results(bamboo_results, sitemap_ok)
-            self.geckoboard.show_monitored_environments(bamboo_results)
-            if self.unhandled_exception_raised:
-                self.unhandled_exception_raised = False
+            # logger.error('Waiting {0} secs\n'.format(configuration['errorheartbeat_secs']))
+            # sleep(configuration['errorheartbeat_secs'])
+
+    def get_state(self):
+        # for monitor in self.monitors:
+            # logger.info("{indicator}: polling '{name}' tests"
+            #             .format(indicator=self.indicator_name, name=monitor.name))
+            # logger.info("  {0}:{1}:{2}".format(monitor.tests_ok(), monitor.comms_ok(), monitor.has_changed()))
+        comms_failures = any(not monitor.comms_ok() for monitor in self.monitors)
+        test_failures = any(not monitor.tests_ok() for monitor in self.monitors)
+        state = 1 if test_failures else 0
+        state += 2 if comms_failures else 0
+        return o_conf().states[str(state)]
 
     def signal_unhandled_exception(self, e):
         logger.error("Signal {signal}: internal exception occurred:\n{exception}".format(signal=self.indicator_name,
                                                                                          exception=e))
         self.unhandled_exception = True
 
-    def respond_to_error_level(self, new_state):
-        errors = states['lamperror']
-        is_new_error = new_state in errors
-        warnings = states['lampwarn']
-        is_new_warning = new_state in warnings
-        change_to_from_error = is_new_error != (self.get_state() in errors)
-        change_to_from_warning = is_new_warning != (self.get_state() in warnings)
+    def show_change(self, state):
+        settings = o_conf().lights
+        errors = settings.lamperror
+        is_error = state in errors
+        warnings = settings.lampwarn
+        is_warning = state in warnings
+        change_to_from_error = is_error != (self.get_state() in errors)
+        change_to_from_warning = is_warning != (self.get_state() in warnings)
         change_of_error_level = change_to_from_error or change_to_from_warning
+        self.show_by_traffic_light(state)
+        self.show_by_sound(change_of_error_level, is_error, is_warning)
+        self.show_by_logging(change_to_from_error, change_to_from_warning, state)
+
+    def show_by_traffic_light(self, state):
+        self.trafficlight.blink()
+        self.trafficlight.set_lights(state)
+
+    def show_by_sound(self, change_of_error_level, is_error, is_warning):
         if change_of_error_level:
-            sound = self.monitors['sounds']
-            if is_new_error or is_new_warning:
+            sound = self.settings.sounds
+            if is_error or is_warning:
                 wav = sound['failures']
             else:
                 wav = sound['greenbuild']
             soundplayer.playwav(wav)
+
+    def show_by_logging(self, change_to_from_error, change_to_from_warning, state):
         if change_to_from_error:
             level = 'ERROR'
         elif change_to_from_warning:
@@ -116,54 +141,14 @@ class Indicator:
         else:
             level = 'NONE'
         message = "State changing from '{previous}' to '{current}'" \
-            .format(previous=self.get_state(), current=new_state)
+            .format(previous=self.get_state(), current=state)
         logger_method = {'ERROR': logger.error,
                          'WARNING': logger.warn,
                          'NONE': logger.info}
         logger_method[level](message)
-        if self.trafficlight:
-            self.trafficlight.set_lights(new_state)
 
     def internal_exception(self, e):
         if not self.unhandled_exception_raised:
             self.signal_unhandled_exception(e)
-            self.respond_to_error_level('internalexception')
+            self.show_change('internalexception')
 
-    def communicate_results(self, bamboo_results, sitemap_ok):
-        all_passed = True
-        comms_failure = False
-        if bamboo_results:
-            for env_results in bamboo_results.values():
-                project_results = env_results.values()
-                retrieved_results = [result for result in project_results if result is not None]
-                # all returns True for empty list
-                all_passed = all_passed and all(retrieved_results)
-                if all_passed:
-                    all_passed = all_passed and all(retrieved_results)
-                if any(passed is None for passed in project_results):
-                    comms_failure = True
-        else:
-            all_passed = True
-        all_passed = all_passed and sitemap_ok
-        if comms_failure:
-            if all_passed:
-                state = 'commserror'
-            else:
-                state = 'commserrorandfailures'
-        else:
-            if all_passed:
-                state = 'alltestspassed'
-            else:
-                state = 'failures'
-        if self.get_state() != state:
-            self.respond_to_error_level(state)
-            self.store_signal_state(state)
-        else:
-            if self.trafficlight:
-                self.trafficlight.set_lights(state)
-
-    def store_signal_state(self, state):
-        Persist.store(self.state_id(), state)
-
-# TODO: BSM/New Relic
-# TODO: Geckoboard

@@ -1,25 +1,31 @@
 indicators:
   OMS:
     monitoring:
-#      - bamboo:
-#          name: DEV01
-#          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-#          tasks:
-#            API tests: MDAL-AGAT
-#            Jasmine unit tests: MDO-MSA
-#      - bamboo:
-#          name: WSDLs
-#          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-#          tasks:
-#            ESB API tests: MDAL-ESS
-#      - sitemap:
-#          name: Legacy
-#          interval_mins: 20
-#          file: http://dev-aem.medibank.local/sitemap-legacy.xml
-#      - sitemap:
-#          name: AEM
-#          interval_mins: 20
-#          file: http://dev-aem.medibank.local/sitemap-retail.xml
+      - bamboo:
+          name: DEV01
+          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          tasks:
+            API tests: MDAL-AGAT
+            Jasmine tests: MDO-MSA
+      - bamboo:
+          name: WSDLs
+          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          tasks:
+            ESB API tests: MDAL-ESS
+      - sitemap:
+          name: Legacy
+          file: http://dev-aem.medibank.local/sitemap-legacy.xml
+          schedule:
+            - at 09:00
+            - at 12:00
+            - at 16:00
+      - sitemap:
+          name: AEM
+          file: http://dev-aem.medibank.local/sitemap-retail.xml
+          schedule:
+            - at 09:00
+            - at 12:00
+            - at 16:00
       - merge:
           name: Digital
           max_age_weeks: 12
@@ -30,8 +36,6 @@ indicators:
             'member-services-aem': ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
             'aem-core': ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
           master: origin/master
-#          schedule:
-#            - at 22:25
           stale_days: 3
           name_patterns:
             - .*/release/.+
@@ -44,22 +48,23 @@ indicators:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 defaults:
-  heartbeat_secs: 30
-  errorheartbeat_secs: 30
+  heartbeat_secs: 10
+  errorheartbeat_secs: 10
   schedule:
     - every heartbeat
 logging:
-    console: info
+    console: warning
     fileRotator: info
 proxies:
     http: http://ausydisa02.au.imckesson.com:8080
     https: http://ausydisa02.au.imckesson.com:8080
 states:
-    failures
-    alltestspassed
-    internalexception
-    commserror
-    commserrorandfailures
+    '0': alltestspassed
+    '1': failures
+    '2': commserror
+    '3': commserrorandfailures
+    '4': internalexception
+
 severities:
   lampwarn: [commserrorandfailures, failures, commserror]
   lamperror: [internalexception]

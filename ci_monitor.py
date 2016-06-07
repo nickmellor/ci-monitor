@@ -16,15 +16,15 @@ while True:
         indicators.append(Indicator(name, settings))
     while not config_changed():
         for indicator in indicators:
-            try:
+            # try:
                 indicator.run()
-            except KeyboardInterrupt as e:
-                logger.warning('Interrupted by Ctrl+C: exiting...')
-                sys.exit()
-            except Exception as e:
-                logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
-                sleep(o_conf().errorheartbeat_secs)
-            else:
+            # except KeyboardInterrupt as e:
+            #     logger.warning('Interrupted by Ctrl+C: exiting...')
+            #     sys.exit()
+            # except Exception as e:
+            #     logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
+            #     sleep(o_conf().defaults.errorheartbeat_secs)
+            # else:
                 sleep(o_conf().defaults.heartbeat_secs)
     logger.warning('Config changed!')
 
@@ -33,6 +33,8 @@ while True:
 # TODO: sep of concerns: monitors like Bamboo should expose methods for indicator
 # TODO: implement scheduling
 # TODO: traffic light transitions in new architecture
+# TODO: unhandled exceptions in indicators
+# TODO: factor out message building (esp. indicator name)
 #         - poll()
 #         - state() -- or should this be in indicator?
 #         - comms()
