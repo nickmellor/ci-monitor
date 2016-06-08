@@ -57,5 +57,5 @@ class TrafficLight:
         lamps = "{lamps}".format(lamps=lamp_switches)
         verb = os.path.join(".", "usbswitchcmd")
         device = "-n {device}".format(device=str(self.device_id))
-        shell_command = "{verb} {device} {lamps}".format(verb=verb, device=device, lamps=lamps)
-        return shell_command
+        command = "{verb} {device} {lamps}".format(verb=verb, device=device, lamps=lamps)
+        return command

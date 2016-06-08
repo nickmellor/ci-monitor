@@ -41,7 +41,7 @@ indicators:
             - .*/release/.+
             - .*/hotfix/.+
     schedule:
-      - every heartbeat
+      - every 1 minute
     trafficlight:
       id: 901880
     sounds:

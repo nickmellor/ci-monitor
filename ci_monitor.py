@@ -30,11 +30,8 @@ while True:
 
 # TODO: state collation in indicators
 # TODO: deal with unhandled exceptions in new architecture
-# TODO: sep of concerns: monitors like Bamboo should expose methods for indicator
-# TODO: implement scheduling
-# TODO: traffic light transitions in new architecture
+# TODO: interval scheduling with time units
+# TODO: check traffic light transitions in new architecture
+# TODO: traffic light blink (indicator)
 # TODO: unhandled exceptions in indicators
 # TODO: factor out message building (esp. indicator name)
-#         - poll()
-#         - state() -- or should this be in indicator?
-#         - comms()

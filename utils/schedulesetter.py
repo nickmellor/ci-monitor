@@ -14,10 +14,10 @@ class ScheduleSetter:
             if repeat_pattern in ['every heartbeat', 'always']:
                 schedule.every(o_conf().defaults.heartbeat_secs).seconds.do(monitor.poll)
             else:
-                components = deque(repeat_pattern.split())
-                current = components.popleft()
-                if current == 'at':
-                    schedule.every().day.at(components.popleft()).do(monitor.poll)
-                if current == 'every':
-                    interval, time_unit = components
-                    schedule.every(interval).unit(time_unit).do(monitor.poll)
+                tokens = deque(repeat_pattern.split())
+                type_token = tokens.popleft()
+                if type_token == 'at':
+                    schedule.every().day.at(tokens.popleft()).do(monitor.poll)
+                if type_token == 'every':
+                    interval, time_unit = tokens
+                    schedule.every(int(interval)).set_unit(time_unit).do(monitor.poll)
