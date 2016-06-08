@@ -18,7 +18,6 @@ class Sitemap(Monitor):
         super().__init__(indicator, monitor_class, settings)
         self.sitemap = settings.file
         self.all_good = True
-        self.reported = False
 
     def poll(self):
         errors = []

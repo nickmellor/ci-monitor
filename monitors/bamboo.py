@@ -6,7 +6,6 @@ from requests.packages.urllib3.exceptions import MaxRetryError
 
 from monitor import Monitor
 from utils.logger import logger
-from utils.persist import Persist
 from utils.proxies import proxies
 
 

@@ -4,7 +4,6 @@ from time import sleep
 
 from conf import configuration, o_conf
 from utils.logger import logger
-from utils.persist import Persist
 
 settings = configuration['states']
 
