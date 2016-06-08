@@ -113,8 +113,8 @@ class Indicator:
         is_error = state in errors
         warnings = settings.lampwarn
         is_warning = state in warnings
-        change_to_from_error = is_error != (self.get_state() in errors)
-        change_to_from_warning = is_warning != (self.get_state() in warnings)
+        change_to_from_error = is_error != (self.state in errors)
+        change_to_from_warning = is_warning != (self.state in warnings)
         change_of_error_level = change_to_from_error or change_to_from_warning
         self.show_by_traffic_light(state)
         self.show_by_sound(change_of_error_level, is_error, is_warning)
@@ -141,7 +141,7 @@ class Indicator:
         else:
             level = 'NONE'
         message = "State changing from '{previous}' to '{current}'" \
-            .format(previous=self.get_state(), current=state)
+            .format(previous=self.state, current=state)
         logger_method = {'ERROR': logger.error,
                          'WARNING': logger.warn,
                          'NONE': logger.info}
