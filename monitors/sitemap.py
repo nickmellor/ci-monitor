@@ -1,6 +1,7 @@
 import re
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
+import os
 
 import requests
 from requests.exceptions import RequestException
@@ -69,8 +70,18 @@ class Sitemap(Monitor):
     def extracted_urls(self, uri):
         sitemap_as_string = self.sitemap_xml(uri)
         if sitemap_as_string:
-            sitemap = ET.fromstring(sitemap_as_string)
-            # for url in list(sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'))[:3]:
+            try:
+                sitemap = ET.fromstring(sitemap_as_string)
+            except ET.ParseError as e:
+                message = "{indicator}: Error parsing sitemap '{sitemap}'\n" \
+                          "{lines} lines in sitemap XML file\n" \
+                          "First 10 lines of the sitemap read as follows:\n\n"
+                lines = sitemap_as_string.splitlines()
+                message += os.linesep.join(lines[:9])
+                message += '\n'
+                message += 'Exception raised:\n{exception}\n\n'
+                logger.error(message.format(indicator=self.indicator, lines=len(lines), exception=e))
+                logger.info('Sitemap length: {0}'.format(len(sitemap_as_string)))
             for url in sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
                 yield url.text
 

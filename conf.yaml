@@ -18,13 +18,13 @@ indicators:
           schedule:
             - at 09:00
             - at 12:00
-            - at 16:00
+            - at 15:00
       - sitemap:
           name: AEM
           file: http://dev-aem.medibank.local/sitemap-retail.xml
           schedule:
-            - at 09:00
-            - at 12:00
+            - at 10:00
+            - at 13:00
             - at 16:00
       - merge:
           name: Digital

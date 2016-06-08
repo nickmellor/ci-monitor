@@ -11,7 +11,7 @@ from utils.logger import logger
 
 class Merge(Monitor):
     """
-    check stash/git branches for
+    check stash/git repo for revisions not merged back into base branch
     """
 
     def __init__(self, indicator, monitor_class, settings):
@@ -119,13 +119,3 @@ def tidy_branch(branch):
 def latest_commit(project, branch):
     revision = project.latest_changeset(tidy_branch(branch))
     return project.repo.commit(revision)
-
-
-if __name__ == '__main__':
-    with open('conf.yaml') as config_file:
-        settings = yaml.load(config_file)['signallers']['MERGETEST']['merge']
-    m = Merge(settings)
-    m.poll()
-    # repo = Repo('scratch/repos/integration-services')
-    # d = repo.heads['develop'].commit.committed_date
-    # print(time.gmtime(d))
