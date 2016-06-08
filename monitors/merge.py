@@ -39,9 +39,10 @@ class Merge(Monitor):
             for branch in self.branches(project):
                 release_rev = latest_commit(project, branch).hexsha
                 if not project.repo.is_ancestor(release_rev, deploy_rev):
-                    error = "{indicator}: unmerged in project '{project}': {branch} -> {destination}"\
+                    error = "{indicator}: unmerged in project '{project}': {branch} -> {destination} last revision dated {date}" \
                             .format(indicator=self.indicator, project=project_name,
-                                    branch=branch, destination=master_branch_name)
+                                    branch=branch, destination=master_branch_name,
+                                    date=self.last_commit_date(project, branch))
                     if error not in self.old_errors:
                         logger.error(error)
                     self.errors.add(error)

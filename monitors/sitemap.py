@@ -80,10 +80,11 @@ class Sitemap(Monitor):
                 message += os.linesep.join(lines[:9])
                 message += '\n'
                 message += 'Exception raised:\n{exception}\n\n'
-                logger.error(message.format(indicator=self.indicator, lines=len(lines), exception=e))
+                logger.error(message.format(indicator=self.indicator, sitemap=uri, lines=len(lines), exception=e))
                 logger.info('Sitemap length: {0}'.format(len(sitemap_as_string)))
-            for url in sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
-                yield url.text
+            else:
+                for url in sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
+                    yield url.text
 
     @staticmethod
     def sitemap_xml(uri):
