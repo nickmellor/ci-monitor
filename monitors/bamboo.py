@@ -12,11 +12,8 @@ from utils.proxies import proxies
 
 class Bamboo(Monitor):
 
-    def __init__(self, indicator, clazz, settings):
-        super().__init__(clazz)
-        self.indicator = indicator
-        self.settings = settings
-        self.name = self.settings.name
+    def __init__(self, indicator, monitor_class, settings):
+        super().__init__(indicator, monitor_class, settings)
         self.previous_connection = {}
         self.connection = {}
         self.previously_failed = {}

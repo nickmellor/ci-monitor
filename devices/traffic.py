@@ -36,7 +36,8 @@ class TrafficLight:
             logger.info("Executing shell command for traffic light: '{0}'".format(shell_command))
         stdout, error = subprocess.Popen(shell_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                          shell=True).communicate()
-        device_detected = not (stdout or error)  # device drivers missing/device missing not differentiated
+        # device drivers missing/device missing not differentiated
+        device_detected = not (stdout or error)
         if self.connected:
             if not device_detected:
                 message = "Indicator '{indicator}' traffic light '{device}' is not responding.\n" \

@@ -15,10 +15,8 @@ from utils.proxies import proxies
 class Sitemap(Monitor):
 
     def __init__(self, indicator, monitor_class, settings):
-        super().__init__(monitor_class)
+        super().__init__(indicator, monitor_class, settings)
         self.sitemap = settings.file
-        self.indicator = indicator
-        self.name = settings.name
         self.all_good = True
         self.reported = False
 

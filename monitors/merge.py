@@ -15,10 +15,7 @@ class Merge(Monitor):
     """
 
     def __init__(self, indicator, monitor_class, settings):
-        super().__init__(monitor_class)
-        self.indicator = indicator
-        self.settings = settings
-        self.name = self.settings.name
+        super().__init__(indicator, monitor_class, settings)
         self.projects = [gitclient.GitClient(os.path.join(self.settings['location'], project))
                        for project
                        in settings['repos']]
@@ -39,8 +36,8 @@ class Merge(Monitor):
             for branch in self.branches(project):
                 release_rev = latest_commit(project, branch).hexsha
                 if not project.repo.is_ancestor(release_rev, deploy_rev):
-                    error = "{indicator}: unmerged in project '{project}': {branch} -> {destination} last revision dated {date}" \
-                            .format(indicator=self.indicator, project=project_name,
+                    error = "{indicator} ({monitor}): unmerged branch in repo '{project}': {branch} -> {destination} last revision dated {date}" \
+                            .format(indicator=self.indicator, monitor=self.name, project=project_name,
                                     branch=branch, destination=master_branch_name,
                                     date=self.last_commit_date(project, branch))
                     if error not in self.old_errors:

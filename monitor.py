@@ -1,7 +1,11 @@
 class Monitor:
 
-    def __init__(self, subclass):
-        self.subclass = subclass
+    def __init__(self, indicator, monitor_class, settings):
+        self.monitor_class = monitor_class
+        self.indicator = indicator
+        self.settings = settings
+        self.name = self.settings.name
+
         self.old_state = None
         self.state = None
         self.set_state('allTestsPassed')
