@@ -35,15 +35,12 @@ Note on pip install:
 
 For some libraries (especially XML libraries on Windows):
 
-python -m pip install <library>
+python -m pip install -r requirements.txt
 
-from the command line works better than "pip install <library>"
+from the command line works better than
 
-schedule hotfix: the following method added to the Job class allows interval time units to be passed as a variable.
+pip install -r requirements.txt
 
-    def set_unit(self, unit):
-        self.unit = unit if unit[-1] == 's' else unit + 's'
-        return self
 
 IMPLEMENTATION NOTES
 --------------------

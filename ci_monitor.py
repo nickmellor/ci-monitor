@@ -29,7 +29,9 @@ while True:
     logger.warning('Config changed!')
 
 # TODO: unit tests
+# TODO: repeat suppressed "indications" daily (suppressed repeat errors)
 # TODO: consider making merge atomic. Leads to repetitive config but reduces code exceptions and long delays
+# TODO: exclusions list for merges(?)
 # TODO: deal with unhandled exceptions in new architecture
 # TODO: check traffic light transitions in new architecture
 # TODO: traffic light blink (indicator) in new architecture

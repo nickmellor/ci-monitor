@@ -30,8 +30,7 @@ indicators:
           name: API Gateway
           max_age_weeks: 12
           location: scratch/repos
-          repos:
-            'api-gateway': ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
+          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
           master: origin/master
           stale_days: 3
           name_patterns:
@@ -43,11 +42,10 @@ indicators:
           name: Integration Services
           max_age_weeks: 12
           location: scratch/repos
-          repos:
-            'integration-services': ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
           master: origin/master
           stale_days: 3
-          name_patterns:
+          branches:
             - .*/release/.+
             - .*/hotfix/.+
           schedule:
@@ -56,11 +54,10 @@ indicators:
           name: Member Services AEM
           max_age_weeks: 12
           location: scratch/repos
-          repos:
-            'member-services-aem': ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
+          repo: ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
           master: origin/master
           stale_days: 3
-          name_patterns:
+          branches:
             - .*/release/.+
             - .*/hotfix/.+
           schedule:
@@ -69,11 +66,10 @@ indicators:
           name: AEM Core
           max_age_weeks: 12
           location: scratch/repos
-          repos:
-            'aem-core': ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
           master: origin/master
           stale_days: 3
-          name_patterns:
+          branches:
             - .*/release/.+
             - .*/hotfix/.+
           schedule:

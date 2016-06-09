@@ -16,33 +16,34 @@ class Merge(Monitor):
 
     def __init__(self, indicator, monitor_class, settings):
         super().__init__(indicator, monitor_class, settings)
-        self.projects = [gitclient.GitClient(os.path.join(self.settings['location'], project))
-                       for project
-                       in settings['repos']]
+        self.project = gitclient.GitClient(os.path.join(os.path.normpath(settings.location), self.project_dirname(settings.repo)))
         self.errors = set()
         self.old_errors = set()
+
+    def project_dirname(self, git_url):
+        return os.path.splitext(os.path.basename(git_url))[0]
+
 
     def poll(self):
         # self.refresh_projects()
         self.old_errors = self.errors
         self.errors = set()
         master_branch_name = self.settings.master
-        for project in self.projects:
-            project_name = project.repo._working_tree_dir.split(os.path.sep)[-1]
-            logger.info("{indicator}: reconciling master branch merges in project '{project}'"
-                .format(indicator=self.indicator, project=project_name))
-            # project.repo.remotes.origin.fetch() -- has timeout at present
-            deploy_rev = latest_commit(project, master_branch_name).hexsha
-            for branch in self.branches(project):
-                release_rev = latest_commit(project, branch).hexsha
-                if not project.repo.is_ancestor(release_rev, deploy_rev):
-                    error = "{indicator} ({monitor}): unmerged branch in repo '{project}': {branch} -> {destination} last revision dated {date}" \
-                            .format(indicator=self.indicator, monitor=self.name, project=project_name,
-                                    branch=branch, destination=master_branch_name,
-                                    date=self.last_commit_date(project, branch))
-                    if error not in self.old_errors:
-                        logger.error(error)
-                    self.errors.add(error)
+        project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
+        logger.info("{indicator}: reconciling master branch merges in project '{project}'"
+            .format(indicator=self.indicator, project=project_name))
+        # project.repo.remotes.origin.fetch() -- times out at present
+        deploy_rev = latest_commit(self.project, master_branch_name).hexsha
+        for branch in self.branches(self.project):
+            release_rev = latest_commit(self.project, branch).hexsha
+            if not self.project.repo.is_ancestor(release_rev, deploy_rev):
+                error = "{indicator} ({monitor}): unmerged branch in repo '{project}': {branch} -> {destination} last revision dated {date}" \
+                        .format(indicator=self.indicator, monitor=self.name, project=project_name,
+                                branch=branch, destination=master_branch_name,
+                                date=self.last_commit_date(self.project, branch))
+                if error not in self.old_errors:
+                    logger.error(error)
+                self.errors.add(error)
 
     def tests_ok(self):
         return not self.errors
@@ -97,7 +98,7 @@ class Merge(Monitor):
         is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings.stale_days)
         branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
-                                  in self.settings['name_patterns'])
+                                  in self.settings['branches'])
         return is_stale and branch_name_matches and not too_old
 
     def last_commit_date(self, project, branch):
