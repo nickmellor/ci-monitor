@@ -28,7 +28,6 @@ while True:
                 sleep(o_conf().defaults.heartbeat_secs)
     logger.warning('Config changed!')
 
-# TODO: state collation in indicators
 # TODO: unit tests
 # TODO: consider making merge atomic. Leads to repetitive config but reduces code exceptions and long delays
 # TODO: deal with unhandled exceptions in new architecture
