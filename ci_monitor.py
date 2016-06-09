@@ -1,35 +1,43 @@
 from time import sleep
-from conf import configuration, o_conf, config_changed
 import sys
-from cimsignal import Signal
-from logger import logger, configure_logging
+
+import schedule
+
+from conf import o_conf, config_changed
+from indicator import Indicator
+from utils.logger import logger, configure_logging
 
 logger.warning('CI Monitor restarted')
 while True:
     configure_logging()
-    signals = []
-    for signal_id in o_conf().signals:
-        signals.append(Signal(signal_id))
+    schedule.clear()
+    indicators = []
+    for name, settings in o_conf().indicators.items():
+        indicators.append(Indicator(name, settings))
     while not config_changed():
-        unhandled_exceptions = []
-        for signal in signals:
-            try:
-                signal.poll()
-            except KeyboardInterrupt as e:
-                logger.warning('Interrupted by Ctrl+C: exiting...')
-                sys.exit()
-            except Exception as e:
-                unhandled_exceptions.append(signal.unhandled_exception_raised)
-        if any(unhandled_exceptions):
-            logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(unhandled_exceptions)))
-            sleep(o_conf().errorheartbeat_secs)
-        else:
-            sleep(o_conf().heartbeat_secs)
+        for indicator in indicators:
+            # try:
+                indicator.run()
+            # except KeyboardInterrupt as e:
+            #     logger.warning('Interrupted by Ctrl+C: exiting...')
+            #     sys.exit()
+            # except Exception as e:
+            #     logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
+            #     sleep(o_conf().defaults.errorheartbeat_secs)
+            # else:
+                sleep(o_conf().defaults.heartbeat_secs)
     logger.warning('Config changed!')
 
-# TODO: decouple signals so they operate independently-- separate threads?
-# TODO: sep of concerns: monitors like Bamboo should expose methods for signal
-#         - poll()
-#         - state()
-#         - comms()
-# TODO: rename State to Persist
+# TODO: state collation in indicators
+# TODO: unit tests
+# TODO: consider making merge atomic. Leads to repetitive config but reduces code exceptions and long delays
+# TODO: deal with unhandled exceptions in new architecture
+# TODO: check traffic light transitions in new architecture
+# TODO: traffic light blink (indicator) in new architecture
+# TODO: unhandled exceptions in indicators
+# TODO: factor out message building (esp. indicator name)
+# TODO: ScheduleSetter log to info when polling monitor (move from indicator)
+# TODO: monitors return results as Python objects; indicator can output
+# TODO: Detect and Show for Monitor and Indicator? But disallows detect to be an action not a test
+# TODO: consider multi-threading
+# TODO: find config and scratch automatically when running as .exe

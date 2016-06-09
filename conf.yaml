@@ -1,12 +1,113 @@
-heartbeat_secs: 5
-errorheartbeat_secs: 5
+indicators:
+  OMS:
+    monitoring:
+      - bamboo:
+          name: DEV01
+          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          tasks:
+            API tests: MDAL-AGAT
+            Jasmine tests: MDO-MSA
+      - bamboo:
+          name: WSDLs
+          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          tasks:
+            ESB API tests: MDAL-ESS
+      - sitemap:
+          name: Legacy
+          file: http://dev-aem.medibank.local/sitemap-legacy.xml
+          schedule:
+            - at 09:00
+            - at 12:00
+            - at 15:00
+      - sitemap:
+          name: AEM
+          file: http://dev-aem.medibank.local/sitemap-retail.xml
+          schedule:
+            - at 10:00
+            - at 13:00
+            - at 16:00
+      - merge:
+          name: API Gateway
+          max_age_weeks: 12
+          location: scratch/repos
+          repos:
+            'api-gateway': ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
+          master: origin/master
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+          schedule:
+            - every heartbeat
+      - merge:
+          name: Integration Services
+          max_age_weeks: 12
+          location: scratch/repos
+          repos:
+            'integration-services': ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
+          master: origin/master
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+          schedule:
+            - every heartbeat
+      - merge:
+          name: Member Services AEM
+          max_age_weeks: 12
+          location: scratch/repos
+          repos:
+            'member-services-aem': ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
+          master: origin/master
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+          schedule:
+            - every heartbeat
+      - merge:
+          name: AEM Core
+          max_age_weeks: 12
+          location: scratch/repos
+          repos:
+            'aem-core': ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
+          master: origin/master
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+          schedule:
+            - every heartbeat
+    trafficlight:
+      id: 901880
+    sounds:
+      failures: alarm_beep.wav
+      greenbuild: applause.wav
+defaults:
+  heartbeat_secs: 15
+  errorheartbeat_secs: 10
+  schedule:
+    - every heartbeat
 logging:
-    console: info
+    console: warning
     fileRotator: info
 proxies:
     http: http://ausydisa02.au.imckesson.com:8080
     https: http://ausydisa02.au.imckesson.com:8080
 states:
+  # numeric strings as keys because ostruct currently can't handle numerics in key position
+  '0': alltestspassed
+  '1': failures
+  '2': commserror
+  '3': commserrorandfailures
+  '4': internalexception
+
+severities:
+  lampwarn: [commserrorandfailures, failures, commserror]
+  lamperror: [internalexception]
+  blinktime_secs: 0.1
+
+lights:
   lamppatterns:
     failures: [red]
     alltestspassed: [green]
@@ -18,71 +119,3 @@ states:
   lampwarn: [commserrorandfailures, failures, commserror]
   lamperror: [internalexception]
   blinktime_secs: 0.1
-signals:
-  OMS:
-    trafficlight:
-      id: 901880
-    bamboo:
-      environments:
-        DEV01:
-          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-          jobs:
-            API tests: MDAL-AGAT
-            Jasmine unit tests: MDO-MSA
-        SIT01:
-          uri: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-          jobs:
-            ESB API tests: MDAL-ESS
-    sounds:
-      failures: alarm_beep.wav
-      greenbuild: applause.wav
-  RetailPROD:
-    sitemap:
-      schedule:
-        - 08:30AM
-        - 12:00PM
-        - 04:30PM
-      files:
-        prod-aem: https://www.medibank.com.au/sitemap-retail.xml
-        prod-legacy: https://www.medibank.com.au/sitemap-legacy.xml
-    sounds:
-      failures: alarm_beep.wav
-      greenbuild: applause.wav
-  RetailDEV:
-    sitemap:
-      interval_mins: 20
-      files:
-        dev-legacy: http://dev-aem.medibank.local/sitemap-legacy.xml
-        dev-aem-retail: http://dev-aem.medibank.local/sitemap-retail.xml
-    sounds:
-      failures: alarm_beep.wav
-      greenbuild: applause.wav
-
-bsm:
-  uri: http://bsmwebprd/topaz/bam/BAMOpenApi?customerId=1&userName={username}&password={password}&viewName=eBusiness&command=getNodes&layout=hierarchical&depth=4
-  services: [AWS/AEM, Customer Loyality, OMS, Sales Site]
-  okstatus: ['20', '-2']
-
-#geckoboard:
-#  bamboo_environments: [OMSDEV01]
-#  apikey: 1cc8d5ca020cbd02b239f66389f1fefd
-#  bamboo_widgets:
-#    OMSDEV01: 146729-b35320bb-c355-405f-a228-71c5656a0709
-
-
-#    DEV:
-#      Smoke: MEDIBANKCORP-RCWAT
-#      #Retail: MEDIBANKCORP-RCWAT3
-#      Corp: MEDIBANKCORP-RCWAT0
-#      #Elevate: MEDIBANKCORP-RCWAT17
-#      Inc: MEDIBANKCORP-RCWAT21
-#    #TEST:
-#      #Corporate: MEDIBANKCORP-RCWAT9
-#      #Elevate: MEDIBANKCORP-RCWAT18
-#      #Inc: MEDIBANKCORP-RCWAT22
-#      #Retail: MEDIBANKCORP-RCWAT8
-#    SIT:
-#      #Retail: MEDIBANKCORP-RCWAT4
-#      Corp: MEDIBANKCORP-RCWAT5
-#      #Inc: MEDIBANKCORP-RCWAT23
-#      #Elevate: MEDIBANKCORP-RCWAT19
