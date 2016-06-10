@@ -37,7 +37,7 @@ indicators:
             - .*/release/.+
             - .*/hotfix/.+
           schedule:
-            - every heartbeat
+            - at 10:00
       - merge:
           name: Integration Services
           max_age_weeks: 12
@@ -49,7 +49,7 @@ indicators:
             - .*/release/.+
             - .*/hotfix/.+
           schedule:
-            - every heartbeat
+            - at 10:05
       - merge:
           name: Member Services AEM
           max_age_weeks: 12
@@ -73,7 +73,7 @@ indicators:
             - .*/release/.+
             - .*/hotfix/.+
           schedule:
-            - every heartbeat
+            - at 10:10
     trafficlight:
       id: 901880
     sounds:
