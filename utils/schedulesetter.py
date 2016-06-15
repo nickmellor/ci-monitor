@@ -21,3 +21,11 @@ class ScheduleSetter:
                 if type_token == 'every':
                     interval, time_unit = tokens
                     schedule.every(int(interval)).set_unit(time_unit).do(monitor.poll)
+
+
+# NB!! (09/06/2016)
+# Hotfix needed in scheduler (Jobs class):
+#    def set_unit(self, unit):
+#         # unit should be plural
+#         self.unit = unit if unit[-1] == 's' else unit + 's'
+#         return self

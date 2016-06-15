@@ -27,36 +27,41 @@ active config file.)
 External libraries used
 -----------------------
 
-- requests
-- cleware traffic light control program (included in the repo)
-- PyYAML
+CI Monitor is a python 3 app.
 
-pip install-- for some libraries use:
+see requirements.txt
 
-python -m pip install <library>
+Note on pip install:
 
-from the command line. Works better!
+For some libraries (especially XML libraries on Windows):
+
+python -m pip install -r requirements.txt
+
+from the command line works better than
+
+pip install -r requirements.txt
 
 
 IMPLEMENTATION NOTES
 --------------------
 
-heartbeat (config): shortest unit of time used by CI-Monitor
+heartbeat (config): shortest unit of time used by CI-Monitor. If nothing's happening, CI monitor waits
+    for a heartbeat
 
 configuration: uses conf.yaml in project root
   - config directory contains examples
-  - configuration needs love: cascading defaults needed like the schedule functionality
+  - configuration needs love: more cascading defaults needed (cf schedules)
 
 indicator (class):
-  - loads "monitors" and schedules them based on config
+  - loads "monitors" and schedules them based on YAML config file
   - polls for results from monitors
   - communicates results on (logging, sounds, traffic light etc.)
   - modularising this part of the app is in progress
 
 monitor (class):
-  - each monitor checks one condition and returns results through exposed methods
+  - each monitor instance checks one condition (defined in config) and returns results through exposed methods
 
 ostruct (library): used mainly to simplify reading config
   - config.defaults.sounds.failure rather than config['defaults']['sounds']['failure']
 
-schedule (library): excellent little library used to schedule monitoring tasks
+schedule (library): used to schedule monitoring tasks
