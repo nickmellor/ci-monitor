@@ -26,7 +26,7 @@ while True:
             break
         today = day_of_month()
         if today != last_day:
-            logger.warning('Date flip-over!')
+            logger.info('Date flip-- restarting!')
             last_day = today
             break
         for indicator in indicators:
@@ -42,16 +42,16 @@ while True:
                 sleep(o_conf().defaults.heartbeat_secs)
 
 
-
+# TODO: internal exception: KeyError('successfulTestCount',)
+# TODO: 'daily at' for schedules
 # TODO: unit tests(!)
-# TODO: repeat suppressed "indications" daily (suppressed repeat errors)
 # TODO: test recovery from persistent error (e.g. build fixed)
 # TODO: exclusions list for merges(?)
 # TODO: check traffic light transitions
 # TODO: traffic light blink
 # TODO: factor out message building (esp. indicator name)
-# TODO: ScheduleSetter log to info when polling monitor (move from indicator)
-# TODO: monitors return results as Python objects; indicator can output
+# TODO: ScheduleSetter log to info when polling listener (move from indicator)
+# TODO: listeners return results as Python objects; indicator can output
 # TODO: Detect and Show for Monitor and Indicator? But disallows detect to be an action not a test
 # TODO: consider multi-threading
 # TODO: find config and scratch automatically when running as .exe

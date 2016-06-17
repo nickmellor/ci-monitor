@@ -1,13 +1,12 @@
-class Monitor:
+class Listener:
 
-    def __init__(self, indicator, monitor_class, settings):
-        self.monitor_class = monitor_class
-        self.indicator = indicator
+    def __init__(self, indicator_name, listener_class, settings):
+        self.listener_class = listener_class
+        self.indicator_name = indicator_name
         self.settings = settings
         self.name = self.settings.name
 
         self.old_state = None
-        self.state = None
         self.set_state('allTestsPassed')
         self.changed = False
 
@@ -18,13 +17,22 @@ class Monitor:
         raise NotImplementedException("'ok()' method not implemented")
 
     def comms_ok(self):
-        raise NotImplementedException("'comms_ok()' method not implemented")
+        return True
 
     def has_changed(self):
         raise NotImplementedException("'has_changed()' method not implemented")
 
+    def has_improved(self):
+        return False
+
+    def has_got_worse(self):
+        return False
+
     def poll(self):
         raise NotImplementedException("'poll()' method not implemented")
+
+    def results(self):
+        pass
 
     def set_state(self, value):
         self.state = value

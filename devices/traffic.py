@@ -16,8 +16,8 @@ class TrafficLight:
     def __init__(self, indicator, device_settings):
         self.indicator = indicator  # just for logging
         self.device_id = device_settings['id']
-        logger.info("Traffic light device '{device}' is being used by signal '{signal}'"
-                    .format(device=self.device_id, signal=indicator))
+        logger.info("Traffic light device '{device}' is being used by indicator '{indicator}'"
+                    .format(device=self.device_id, indicator=indicator))
         self.state = None
         self.connected = True
 

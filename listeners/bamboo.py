@@ -4,15 +4,15 @@ import requests
 from requests.exceptions import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
 
-from monitor import Monitor
+from listener import Listener
 from utils.logger import logger
 from utils.proxies import proxies
 
 
-class Bamboo(Monitor):
+class Bamboo(Listener):
 
-    def __init__(self, indicator, monitor_class, settings):
-        super().__init__(indicator, monitor_class, settings)
+    def __init__(self, indicator_name, listener_class, settings):
+        super().__init__(indicator_name, listener_class, settings)
         self.previous_connection = {}
         self.connection = {}
         self.previously_failed = {}
@@ -57,7 +57,7 @@ class Bamboo(Monitor):
             result = self.tests_pass(name, response)
             if self.previously_connected(name):
                 logger.info("{indicator}: {task_name}: '{result}'"
-                            .format(indicator=self.indicator, task_name=name,
+                            .format(indicator=self.indicator_name, task_name=name,
                                     result='passed' if result else 'some failed tests'))
                 self.previous_connection['name'] = False
         return result
@@ -74,12 +74,12 @@ class Bamboo(Monitor):
             message = "{indicator}: {name} not responding\n" \
                       "No further warnings will be given unless/until it responds.\n"
             message += "Exception: {exception}\n"
-            message = message.format(indicator=self.indicator, name=name, exception=e)
+            message = message.format(indicator=self.indicator_name, name=name, exception=e)
             logger.warning(message)
 
     def tests_pass(self, name, response):
         logger.info("{indicator}: {name} response {status} from '{name}'"
-                    .format(indicator=self.indicator, status=response.status_code, name=name))
+                    .format(indicator=self.indicator_name, status=response.status_code, name=name))
         parsed_json = json.loads(response.text)
         logger.info("{job}: no of tests passing: {passing}".format(job=name, passing=parsed_json['successfulTestCount']))
         self.handle_failure(name, parsed_json)
