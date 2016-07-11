@@ -17,10 +17,19 @@ On Windows
 This is useful for testers and developers tasked with tracking the status of the build. The monitor can run
 on any number of machines independently
 
+Casual user
+-----------
+
 Easiest way is to run as a a py2exe project. From project directory:
 
 Set up a shortcut to run ci_monitor.exe in the dist directory (working directory set to *project root* so it can find
 configs etc.)
+
+Developer
+---------
+
+python setup.py py2exe updates the ci_monitor.exe. This is best pushed with code changes so ci-monitor works out of the
+box without needing to know the mechanics of installing Python libraries (which can be non-trival under Windows)
 
 Note on pip install:
 
