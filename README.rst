@@ -17,15 +17,10 @@ On Windows
 This is useful for testers and developers tasked with tracking the status of the build. The monitor can run
 on any number of machines independently
 
-Suggest setting up as a py2exe project:
+Easiest way is to run as a a py2exe project. From project directory:
 
-python setup.py py2exe
-
-then set up a shortcut to run ci_monitor.exe in the dist directory (working directory set to project root so it can find
-active config file.)
-
-Setup
-=====
+Set up a shortcut to run ci_monitor.exe in the dist directory (working directory set to *project root* so it can find
+configs etc.)
 
 Note on pip install:
 
@@ -43,12 +38,12 @@ External libraries used
 
 CI Monitor is a python 3 app.
 
-see requirements.txt
-
 ostruct (library): used mainly to simplify reading config
   - config.defaults.sounds.failure rather than config['defaults']['sounds']['failure']
 
 schedule (library): used to schedule monitoring tasks
+
+see requirements.txt
 
 
 IMPLEMENTATION NOTES
@@ -58,7 +53,7 @@ heartbeat (config): shortest unit of time used by CI-Monitor. If nothing's happe
     for a heartbeat
 
 configuration:
-  - looks for CIMCONFIG environment variable (filename without .yaml). If not present, 'default'
+  - looks for CIMCONFIG environment variable (filename without .yaml). If not present, assumes 'default'
   - configs directory contains examples
   - configuration needs love: more cascading defaults needed (cf schedules)
 

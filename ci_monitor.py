@@ -35,24 +35,20 @@ while True:
             except KeyboardInterrupt as e:
                 logger.warning('Interrupted by Ctrl+C: exiting...')
                 sys.exit()
-            # except Exception as e:
-            #     logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
-            #     sleep(o_conf().defaults.errorheartbeat_secs)
+            except Exception as e:
+                logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
+                sleep(o_conf().defaults.errorheartbeat_secs)
             else:
                 # heartbeat avoids busy wait in monitoring app
                 sleep(o_conf().defaults.heartbeat_secs)
 
 
-# TODO: internal exception: KeyError('successfulTestCount',)
-# TODO: 'daily at' for schedules
+# TODO: catch internal exception: KeyError('successfulTestCount',)
 # TODO: unit tests(!)
 # TODO: test recovery from persistent error (e.g. build fixed)
 # TODO: exclusions list for merges(?)
 # TODO: check traffic light transitions
-# TODO: traffic light blink
 # TODO: factor out message building (esp. indicator name)
-# TODO: ScheduleSetter log to info when polling listener (move from indicator)
-# TODO: listeners return results as Python objects; indicator can output
-# TODO: Detect and Show for Monitor and Indicator? But disallows detect to be an action not a test
+# TODO: log to info when polling listener (move to indicator)
+# TODO: results dropped as JSON in directory (further decouple indications from results)
 # TODO: consider multi-threading
-# TODO: find config and scratch automatically when running as .exe
