@@ -1,0 +1,50 @@
+indicators:
+  test_config:
+    monitoring:
+      - bamboo:
+          name: WSDLs
+          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          tasks:
+            ESB API tests: MDAL-ESS
+    schedule:
+      - always
+    trafficlight:
+      id: 901880
+    sounds:
+      failures: alarm_beep.wav
+      greenbuild: applause.wav
+
+defaults:
+  heartbeat_secs: 30
+  errorheartbeat_secs: 30
+  schedule:
+    - every heartbeat
+logging:
+    console: info
+    fileRotator: info
+proxies:
+    http: http://ausydisa02.au.imckesson.com:8080
+    https: http://ausydisa02.au.imckesson.com:8080
+states:
+    - failures
+    - alltestspassed
+    - internalexception
+    - commserror
+    - commserrorandfailures
+severities:
+  warnings: [commserrorandfailures, failures, commserror]
+  errors: [internalexception]
+  blinktime_secs: 0.1
+
+lights:
+  lamppatterns:
+    failures: [red]
+    alltestspassed: [green]
+    blank: [alloff]
+    internalexception: [red, yellow, green]
+    commserror: [yellow]
+    commserrorandfailures: [red, yellow]
+    changestate: [red, green]
+  lampwarn: [commserrorandfailures, failures, commserror]
+  lamperror: [internalexception]
+  blinktime_secs: 0.1

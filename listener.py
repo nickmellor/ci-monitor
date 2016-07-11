@@ -32,7 +32,11 @@ class Listener:
         raise NotImplementedException("'poll()' method not implemented")
 
     def results(self):
-        pass
+        return {'has_improved': self.has_improved(),
+                'has_got_worse': self.has_got_worse(),
+                'has_changed': self.has_changed(),
+                'comms_ok': self.comms_ok(),
+                'tests_ok': self.tests_ok()}
 
     def set_state(self, value):
         self.state = value

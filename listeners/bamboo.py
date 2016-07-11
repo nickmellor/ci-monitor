@@ -37,7 +37,7 @@ class Bamboo(Listener):
 
     def comms_ok(self):
         # print(self.connection)
-        return all(self.connection.values()) if self.connection else False
+        return all(self.connection.values()) if self.connection else True
 
     def has_changed(self):
         return self.changed

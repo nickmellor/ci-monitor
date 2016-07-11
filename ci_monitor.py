@@ -35,10 +35,11 @@ while True:
             except KeyboardInterrupt as e:
                 logger.warning('Interrupted by Ctrl+C: exiting...')
                 sys.exit()
-            except Exception as e:
-                logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
-                sleep(o_conf().defaults.errorheartbeat_secs)
+            # except Exception as e:
+            #     logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
+            #     sleep(o_conf().defaults.errorheartbeat_secs)
             else:
+                # heartbeat avoids busy wait in monitoring app
                 sleep(o_conf().defaults.heartbeat_secs)
 
 

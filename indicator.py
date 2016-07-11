@@ -69,7 +69,7 @@ class Indicator:
             self.trafficlight = TrafficLight(self.indicator_name, settings)
 
     def run(self):
-        schedule.run_pending()
+        schedule.run_pending()  # NB this runs pending jobs registered with all indicators
         state = self.get_state()
         self.show_change(state)
         if self.trafficlight:
@@ -95,7 +95,7 @@ class Indicator:
         test_failures = any(not listener.tests_ok() for listener in self.listeners)
         state = 1 if test_failures else 0
         state += 2 if comms_failures else 0
-        return o_conf().states[str(state)]
+        return o_conf().states[state]
 
     def signal_unhandled_exception(self, e):
         logger.error("Indicator {indicator}: internal exception occurred:\n{exception}".format(indicator=self.indicator_name,
@@ -103,10 +103,10 @@ class Indicator:
         self.unhandled_exception = True
 
     def show_change(self, state):
-        settings = o_conf().lights
-        errors = settings.lamperror
+        severities = o_conf().severities
+        errors = severities.errors
         is_error = state in errors
-        warnings = settings.lampwarn
+        warnings = severities.warnings
         is_warning = state in warnings
         change_to_from_error = is_error != (self.state in errors)
         change_to_from_warning = is_warning != (self.state in warnings)
