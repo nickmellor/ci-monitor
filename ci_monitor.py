@@ -64,6 +64,7 @@ while True:
 
 
 # TODO: py2exe is broken-- can't do dynamic imports
+# TODO: log level reconfigure is broken-- log level stays the same
 # TODO: unit tests(!)
 # TODO: test recovery from persistent error (e.g. build fixed)
 # TODO: exclusions list for merges(?)

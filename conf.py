@@ -39,8 +39,10 @@ def set_oconf():
     _ostruct_conf = ostruct.OpenStruct(configuration)
 
 
-def config_filename(filename=None):
-    if not filename:
+def config_filename(filename_override=None):
+    if filename_override:
+        filename = filename_override
+    else:
         env_filename = os.environ.get('CIMCONFIG')
         filename = env_filename if env_filename else 'default'
     return os.path.join(project_dir(), 'configs', '{0}.yaml'.format(filename))
