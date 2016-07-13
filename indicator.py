@@ -68,7 +68,6 @@ class Indicator:
             self.trafficlight = TrafficLight(self.indicator_name, settings)
 
     def run(self):
-        schedule.run_pending()  # NB this runs pending jobs registered with all indicators
         state = self.get_state()
         self.show_change(state)
         if self.trafficlight:
