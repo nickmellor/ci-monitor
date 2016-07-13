@@ -10,7 +10,7 @@ from utils.logger import logger, configure_logging
 
 
 def setup():
-    global first_time, last_day
+    global first_time, today_when_last_checked
     message = 'CI Monitor '
     message += 'starting for the first time' if first_time else 'restarted'
     if first_time:
@@ -21,14 +21,14 @@ def setup():
     schedule.clear()
     for name, settings in o_conf().indicators.items():
         indicators.append(Indicator(name, settings))
-    last_day = day_of_month()
+    today_when_last_checked = day_of_month()
 
 
 def day_of_month():
     return datetime.datetime.now().day
 
 
-def listen():
+def report_whats_going_on():
     global indicators
     for indicator in indicators:
         schedule.run_pending()
@@ -56,14 +56,13 @@ while True:
             logger.warning('Config changed!')
             break
         today = day_of_month()
-        if today != last_day:
+        if today != today_when_last_checked:
             logger.info('Date flip-- restarting!')
-            last_day = today
+            today_when_last_checked = today
             break
-        listen()
+        report_whats_going_on()
 
 
-# TODO: catch internal exception: KeyError('successfulTestCount',)
 # TODO: py2exe is broken-- can't do dynamic imports
 # TODO: unit tests(!)
 # TODO: test recovery from persistent error (e.g. build fixed)
