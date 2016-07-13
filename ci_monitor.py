@@ -4,7 +4,7 @@ import datetime
 
 import schedule
 
-from conf import o_conf, config_changed
+from conf import o_conf, config_changed, config_filename
 from indicator import Indicator
 from utils.logger import logger, configure_logging
 
@@ -15,9 +15,9 @@ def setup():
     message += 'starting for the first time' if first_time else 'restarted'
     if first_time:
         first_time = False
-    logger.warning(message)
     configure_logging()
-    logger.info("Using configuration file ''")
+    logger.warning(message)
+    logger.info("Using configuration file '{0}'".format(config_filename()))
     schedule.clear()
     for name, settings in o_conf().indicators.items():
         indicators.append(Indicator(name, settings))
