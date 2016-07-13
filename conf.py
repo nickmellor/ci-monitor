@@ -22,7 +22,7 @@ def config_changed():
 
 
 def get_config_source():
-    with open(config_filename('global')) as config_file:
+    with open(config_filename(filename_override='global')) as config_file:
         global_settings = config_file.read()
     with open(config_filename()) as config_file:
         local_settings = config_file.read()
