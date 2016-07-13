@@ -2,8 +2,6 @@ from functools import partial
 
 from devices.traffic import TrafficLight
 
-import schedule
-
 from utils import soundplayer
 from conf import configuration, o_conf
 from utils.logger import logger

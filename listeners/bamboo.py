@@ -15,7 +15,7 @@ class Bamboo(Listener):
         super().__init__(indicator_name, listener_class, settings)
         self.previous_connection = {}
         self.connection = {}
-        self.previously_failed = {}
+        self.previously_failed_test_count = {}
         self.all_tests_pass = {}
         self.previous_results = {}
 
@@ -88,16 +88,14 @@ class Bamboo(Listener):
         return parsed_json['successful']
 
     def handle_failure(self, name, result):
-        failed = result['failedTestCount']
-        this_task_changed = failed != self.previously_failed.get(name)
-        if this_task_changed:
-            if failed != 0:
+        failed_test_count = result['failedTestCount']
+        results_changed = failed_test_count != self.previously_failed_test_count.get(name)
+        if results_changed:
+            if failed_test_count != 0:
                 logger.warning(
                     "{job}: *** Tests failing: {failing} ***\n"
                     "This message from Bamboo might be useful: '{reason}'\n"
                     "No further warnings will be given until number of failed tests changes"
-                        .format(job=name, failing=failed, reason=result['buildReason']))
-            else:
-                logger.warning(" *** NEW!! Tests all passing! ({job}) ***\n".format(job=name))
-            self.previously_failed[name] = failed
-        self.changed = self.changed or this_task_changed
+                    .format(job=name, failing=failed_test_count, reason=result['buildReason']))
+            self.previously_failed_test_count[name] = failed_test_count
+        self.changed = self.changed or results_changed
