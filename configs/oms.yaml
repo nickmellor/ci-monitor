@@ -1,6 +1,6 @@
 indicators:
   OMS:
-    monitoring:
+    listeners:
       - bamboo:
           name: DEV01
           template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
@@ -16,16 +16,16 @@ indicators:
           name: Legacy
           file: http://dev-aem.medibank.local/sitemap-legacy.xml
           schedule:
-            - at 09:00
-            - at 12:00
-            - at 15:00
+            - daily at 09:00
+            - daily at 12:00
+            - daily at 15:00
       - sitemap:
           name: AEM
           file: http://dev-aem.medibank.local/sitemap-retail.xml
           schedule:
-            - at 10:00
-            - at 13:00
-            - at 16:00
+            - daily at 10:00
+            - daily at 13:00
+            - daily at 16:00
       - merge:
           name: API Gateway
           max_age_weeks: 12
@@ -37,7 +37,7 @@ indicators:
             - .*/release/.+
             - .*/hotfix/.+
           schedule:
-            - at 10:00
+            - daily at 10:00
       - merge:
           name: Integration Services
           max_age_weeks: 12
@@ -49,7 +49,7 @@ indicators:
             - .*/release/.+
             - .*/hotfix/.+
           schedule:
-            - at 10:05
+            - daily at 10:05
       - merge:
           name: Member Services AEM
           max_age_weeks: 12
@@ -73,7 +73,7 @@ indicators:
             - .*/release/.+
             - .*/hotfix/.+
           schedule:
-            - at 10:10
+            - daily at 10:10
     trafficlight:
       id: 901880
     sounds:
@@ -92,16 +92,14 @@ proxies:
     https: http://ausydisa02.au.imckesson.com:8080
 states:
   # numeric strings as keys because ostruct currently can't handle numerics in key position
-  '0': alltestspassed
-  '1': failures
-  '2': commserror
-  '3': commserrorandfailures
-  '4': internalexception
-
+  - alltestspassed
+  - failures
+  - commserror
+  - commserrorandfailures
+  - internalexception
 severities:
-  lampwarn: [commserrorandfailures, failures, commserror]
-  lamperror: [internalexception]
-  blinktime_secs: 0.1
+  warnings: [commserrorandfailures, failures, commserror]
+  errors: [internalexception]
 
 lights:
   lamppatterns:
@@ -112,6 +110,4 @@ lights:
     commserror: [yellow]
     commserrorandfailures: [red, yellow]
     changestate: [red, green]
-  lampwarn: [commserrorandfailures, failures, commserror]
-  lamperror: [internalexception]
   blinktime_secs: 0.1

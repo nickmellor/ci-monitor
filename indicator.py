@@ -1,9 +1,5 @@
-from time import sleep
 from devices.traffic import TrafficLight
 
-# from monitors.bamboo import Bamboo
-# from monitors.merge import Merge
-# from monitors.sitemap import Sitemap
 import schedule
 
 from utils import soundplayer
@@ -17,14 +13,14 @@ states = configuration['states']
 
 class Indicator:
     """
-    an indicator associates builds/status of services with signals (traffic lights, sounds etc)
-    an indicator might
+    an indicator associates builds/status of services with indicators (traffic lights, sounds etc)
+    an indicator might for example:
 
-    - read the API functional tests Bamboo build, play a sound if they have
-      failing test(s), and display the build status on a traffic light
-    - make a sound and write to a log if a service is down
+      - read the API functional tests Bamboo build, play a sound if they have
+        failing test(s), and display the build status on a traffic light
+      - make a sound and write to a log if a service is down
 
-    each signal has a 'state'-- that encompasses Bamboo responsiveness, test failures,
+    each indicator has a 'state'-- that encompasses Bamboo responsiveness, test failures,
     presence of configured traffic lights, internal exceptions
     states are divided into ERROR, WARNING and NONE that are configurable, and currently
     affect the logging level
@@ -36,32 +32,32 @@ class Indicator:
         self.state = None
         self.settings = settings
         self.unhandled_exception_raised = False
-        self.monitors = []
-        self.setup_monitors()
+        self.listeners = []
+        self.setup_listeners()
         self.setup_devices()
 
-    def setup_monitors(self):
-        for monitor_config in self.settings.monitoring:
-            for monitor_name, monitor_settings in monitor_config.items():
-                monitor = self.schedule_monitor(monitor_name, monitor_settings, self.find_schedule(monitor_settings))
-                self.monitors.append(monitor)
+    def setup_listeners(self):
+        for config in self.settings.listeners:
+            for name, settings in config.items():
+                listener = self.schedule_listener(name, settings, self.find_schedule(settings))
+                self.listeners.append(listener)
 
-    def schedule_monitor(self, monitor_name, monitor_settings, schedule_location):
+    def schedule_listener(self, name, settings, schedule_location):
         try:
-            monitor_class = 'monitors.{0}.{1}'.format(monitor_name, monitor_name.capitalize())
-            monitor = get_class(monitor_class)(self.indicator_name, monitor_name, monitor_settings)
-            ScheduleSetter(monitor, schedule_location)
-            return monitor
+            class_name = 'listeners.{0}.{1}'.format(name, name.capitalize())
+            listener = get_class(class_name)(self.indicator_name, name, settings)
+            ScheduleSetter(listener, schedule_location)
+            return listener
         except NameError as e:
-            message = "{indicator}: implementation for monitor type '{monitor}' " \
+            message = "{indicator}: implementation for listener type '{listener}' " \
                       "is not available or incomplete\n" \
                       "Exception: {exception}\n"
-            message = message.format(indicator=self.indicator_name, monitor=monitor_name, exception=e)
+            message = message.format(indicator=self.indicator_name, listener=name, exception=e)
             logger.error(message)
 
-    def find_schedule(self, monitor_settings):
-        if monitor_settings.get('schedule'):
-            return monitor_settings
+    def find_schedule(self, listener_settings):
+        if listener_settings.get('schedule'):
+            return listener_settings
         elif self.settings.get('schedule'):
             return self.settings
         else:
@@ -73,7 +69,7 @@ class Indicator:
             self.trafficlight = TrafficLight(self.indicator_name, settings)
 
     def run(self):
-        schedule.run_pending()
+        schedule.run_pending()  # NB this runs pending jobs registered with all indicators
         state = self.get_state()
         self.show_change(state)
         if self.trafficlight:
@@ -91,26 +87,26 @@ class Indicator:
             # sleep(configuration['errorheartbeat_secs'])
 
     def get_state(self):
-        # for monitor in self.monitors:
+        # for listener in self.listeners:
             # logger.info("{indicator}: polling '{name}' tests"
-            #             .format(indicator=self.indicator_name, name=monitor.name))
-            # logger.info("  {0}:{1}:{2}".format(monitor.tests_ok(), monitor.comms_ok(), monitor.has_changed()))
-        comms_failures = any(not monitor.comms_ok() for monitor in self.monitors)
-        test_failures = any(not monitor.tests_ok() for monitor in self.monitors)
+            #             .format(indicator=self.indicator_name, name=listener.name))
+            # logger.info("  {0}:{1}:{2}".format(listener.tests_ok(), listener.comms_ok(), listener.has_changed()))
+        comms_failures = any(not listener.comms_ok() for listener in self.listeners)
+        test_failures = any(not listener.tests_ok() for listener in self.listeners)
         state = 1 if test_failures else 0
         state += 2 if comms_failures else 0
-        return o_conf().states[str(state)]
+        return o_conf().states[state]
 
     def signal_unhandled_exception(self, e):
-        logger.error("Signal {signal}: internal exception occurred:\n{exception}".format(signal=self.indicator_name,
+        logger.error("Indicator {indicator}: internal exception occurred:\n{exception}".format(indicator=self.indicator_name,
                                                                                          exception=e))
         self.unhandled_exception = True
 
     def show_change(self, state):
-        settings = o_conf().lights
-        errors = settings.lamperror
+        severities = o_conf().severities
+        errors = severities.errors
         is_error = state in errors
-        warnings = settings.lampwarn
+        warnings = severities.warnings
         is_warning = state in warnings
         change_to_from_error = is_error != (self.state in errors)
         change_to_from_warning = is_warning != (self.state in warnings)

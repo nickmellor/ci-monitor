@@ -7,15 +7,15 @@ import requests
 from requests.exceptions import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
 
-from monitor import Monitor
+from listener import Listener
 from utils.logger import logger
 from utils.proxies import proxies
 
 
-class Sitemap(Monitor):
+class Sitemap(Listener):
 
-    def __init__(self, indicator, monitor_class, settings):
-        super().__init__(indicator, monitor_class, settings)
+    def __init__(self, indicator_name, listener_class, settings):
+        super().__init__(indicator_name, listener_class, settings)
         self.sitemap = settings.file
         self.all_good = True
 
@@ -77,7 +77,7 @@ class Sitemap(Monitor):
                 message += os.linesep.join(lines[:9])
                 message += '\n'
                 message += 'Exception raised:\n{exception}\n\n'
-                logger.error(message.format(indicator=self.indicator, sitemap=uri, lines=len(lines), exception=e))
+                logger.error(message.format(indicator=self.indicator_name, sitemap=uri, lines=len(lines), exception=e))
                 logger.info('Sitemap length: {0}'.format(len(sitemap_as_string)))
             else:
                 for url in sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
