@@ -38,10 +38,12 @@ def listen():
             logger.warning('Interrupted by Ctrl+C: exiting...')
             sys.exit()
         except Exception as e:
-            logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
+            logger.error("Unhandled exception running indicator '{name}':\n"
+                         "Exception as follows:\n"
+                         "{exception}".format(name=indicator.indicator_name, exception=repr(e)))
             sleep(o_conf().errorheartbeat_secs)
         else:
-            # heartbeat avoids busy wait in monitoring app
+            # avoids busy wait in main loop
             sleep(o_conf().heartbeat_secs)
 
 
