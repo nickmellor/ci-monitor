@@ -1,3 +1,5 @@
+from functools import partial
+
 from devices.traffic import TrafficLight
 
 import schedule
@@ -45,7 +47,8 @@ class Indicator:
         try:
             class_name = 'listeners.{0}.{1}'.format(name, name.capitalize())
             listener = get_class(class_name)(self.indicator_name, name, settings)
-            ScheduleSetter(listener, schedule_location)
+            wrapped_listener = partial(self.run_wrapper, listener)
+            ScheduleSetter(job=wrapped_listener, schedule_settings=schedule_location)
             return listener
         except NameError as e:
             message = "{indicator}: implementation for listener type '{listener}' " \
@@ -61,6 +64,11 @@ class Indicator:
             return self.settings
         else:
             return o_conf()
+
+    def run_wrapper(self, listener):
+        logger.info("Running indicator {indicator}, listener {listener} (class '{clazz}')...".format(indicator=listener.indicator_name,
+            listener=listener.name, clazz=listener.listener_class))
+        listener.poll()
 
     def setup_devices(self):
         settings = self.settings.trafficlight

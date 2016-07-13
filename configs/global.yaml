@@ -1,5 +1,5 @@
-heartbeat_secs: 60
-errorheartbeat_secs: 60
+heartbeat_secs: 10
+errorheartbeat_secs: 10
 schedule:
     - every heartbeat
 logging:
