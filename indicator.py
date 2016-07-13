@@ -28,7 +28,6 @@ class Indicator:
 
     def __init__(self, indicator_name, settings):
         self.indicator_name = indicator_name
-        # self.state = self.get_state()
         self.state = None
         self.settings = settings
         self.unhandled_exception_raised = False
@@ -61,7 +60,7 @@ class Indicator:
         elif self.settings.get('schedule'):
             return self.settings
         else:
-            return o_conf().defaults
+            return o_conf()
 
     def setup_devices(self):
         settings = self.settings.trafficlight

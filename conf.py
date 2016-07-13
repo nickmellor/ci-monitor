@@ -22,8 +22,12 @@ def config_changed():
 
 
 def get_config_source():
+    with open(config_filename('global')) as config_file:
+        global_settings = config_file.read()
     with open(config_filename()) as config_file:
-        return config_file.read()
+        local_settings = config_file.read()
+    return global_settings + os.linesep + local_settings
+
 
 
 def get_config(src):
@@ -35,9 +39,10 @@ def set_oconf():
     _ostruct_conf = ostruct.OpenStruct(configuration)
 
 
-def config_filename():
-    env_filename = os.environ.get('CIMCONFIG')
-    filename = env_filename if env_filename else 'default'
+def config_filename(filename=None):
+    if not filename:
+        env_filename = os.environ.get('CIMCONFIG')
+        filename = env_filename if env_filename else 'default'
     return os.path.join(project_dir(), 'configs', '{0}.yaml'.format(filename))
 
 

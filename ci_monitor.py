@@ -39,13 +39,14 @@ while True:
                 sys.exit()
             except Exception as e:
                 logger.error("Unhandled exception(s) in CI-Monitor:\n{0}".format(repr(e)))
-                sleep(o_conf().defaults.errorheartbeat_secs)
+                sleep(o_conf().errorheartbeat_secs)
             else:
                 # heartbeat avoids busy wait in monitoring app
-                sleep(o_conf().defaults.heartbeat_secs)
+                sleep(o_conf().heartbeat_secs)
 
 
 # TODO: catch internal exception: KeyError('successfulTestCount',)
+# TODO: py2exe is broken-- can't do dynamic imports
 # TODO: unit tests(!)
 # TODO: test recovery from persistent error (e.g. build fixed)
 # TODO: exclusions list for merges(?)

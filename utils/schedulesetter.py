@@ -15,7 +15,7 @@ class ScheduleSetter:
         for repeat_pattern in self.repeat_patterns:
             job = partial(self.runner, listener)
             if repeat_pattern in ['every heartbeat', 'always']:
-                schedule.every(o_conf().defaults.heartbeat_secs).seconds.do(job)
+                schedule.every(o_conf().heartbeat_secs).seconds.do(job)
             else:
                 tokens = deque(repeat_pattern.split())
                 type_token = tokens.popleft()
