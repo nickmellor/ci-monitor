@@ -26,8 +26,8 @@ def get_config_source():
         global_settings = config_file.read()
     with open(config_filename()) as config_file:
         local_settings = config_file.read()
+    # local settings, if present, override global settings
     return global_settings + os.linesep + local_settings
-
 
 
 def get_config(src):
