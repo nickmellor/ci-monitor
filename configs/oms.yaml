@@ -7,11 +7,11 @@ indicators:
           tasks:
             API tests: MDAL-AGAT
             Jasmine tests: MDO-MSA
-      - bamboo:
-          name: WSDLs
-          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-          tasks:
-            ESB API tests: MDAL-ESS
+#      - bamboo:
+#          name: WSDLs
+#          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+#          tasks:
+#            ESB API tests: MDAL-ESS
       - sitemap:
           name: Legacy
           file: http://dev-aem.medibank.local/sitemap-legacy.xml
@@ -61,7 +61,7 @@ indicators:
             - .*/release/.+
             - .*/hotfix/.+
           schedule:
-            - every heartbeat
+            - daily at 10:10
       - merge:
           name: AEM Core
           max_age_weeks: 12
@@ -80,8 +80,8 @@ indicators:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 defaults:
-  heartbeat_secs: 15
-  errorheartbeat_secs: 10
+  heartbeat_secs: 60
+  errorheartbeat_secs: 60
   schedule:
     - every heartbeat
 logging:

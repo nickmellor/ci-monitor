@@ -8,6 +8,7 @@ from conf import o_conf, config_changed
 from indicator import Indicator
 from utils.logger import logger, configure_logging
 
+
 def day_of_month():
     return datetime.datetime.now().day
 
@@ -16,6 +17,7 @@ last_day = day_of_month()
 while True:
     logger.warning('CI Monitor restarted')
     configure_logging()
+    logger.info("Using configuration file ''")
     schedule.clear()
     indicators = []
     for name, settings in o_conf().indicators.items():
