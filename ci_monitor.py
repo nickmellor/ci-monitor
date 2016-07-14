@@ -41,6 +41,7 @@ def report_whats_going_on():
             logger.error("Unhandled exception running indicator '{name}':\n"
                          "Exception as follows:\n"
                          "{exception}".format(name=indicator.indicator_name, exception=repr(e)))
+            indicator.signal_unhandled_exception(e)
             sleep(o_conf().errorheartbeat_secs)
         else:
             # avoids busy wait in main loop
@@ -65,6 +66,7 @@ while True:
 
 # TODO: py2exe is broken-- can't do dynamic imports
 # TODO: log level reconfigure is broken-- log level stays the same
+# TODO: overlogging of traffic light device at info level
 # TODO: unit tests(!)
 # TODO: test recovery from persistent error (e.g. build fixed)
 # TODO: exclusions list for merges(?)

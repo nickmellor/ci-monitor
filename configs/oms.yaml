@@ -79,6 +79,3 @@ indicators:
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav
-logging:
-    console: info
-    fileRotator: info

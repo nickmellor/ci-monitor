@@ -26,5 +26,5 @@ lights:
     internalexception: [red, yellow, green]
     commserror: [yellow]
     commserrorandfailures: [red, yellow]
-    changestate: [red, green]
+    statechange: [red, green]
   blinktime_secs: 0.1

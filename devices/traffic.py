@@ -26,6 +26,11 @@ class TrafficLight:
         sleep(o_conf().lights.blinktime_secs)
         self.set_lights(self.state, monitor=False)
 
+    def state_change(self):
+        for times in range(3):
+            self.set_lights('statechange', monitor=False)
+            self.set_lights('blank')
+
     def all_lamps_off(self):
         self.set_lights('blank', monitor=False)
 
