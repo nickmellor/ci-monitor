@@ -9,13 +9,12 @@ from utils.logger import logger
 
 
 class ScheduleSetter:
-    def __init__(self, listener, settings):
+    def __init__(self, job, schedule_settings):
         # parse schedule section
-        self.repeat_patterns = settings.schedule
+        self.repeat_patterns = schedule_settings.schedule
         for repeat_pattern in self.repeat_patterns:
-            job = partial(self.runner, listener)
             if repeat_pattern in ['every heartbeat', 'always']:
-                schedule.every(o_conf().defaults.heartbeat_secs).seconds.do(job)
+                schedule.every(o_conf().heartbeat_secs).seconds.do(job)
             else:
                 tokens = deque(repeat_pattern.split())
                 type_token = tokens.popleft()

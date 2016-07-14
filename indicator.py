@@ -1,6 +1,6 @@
-from devices.traffic import TrafficLight
+from functools import partial
 
-import schedule
+from devices.traffic import TrafficLight
 
 from utils import soundplayer
 from conf import configuration, o_conf
@@ -28,10 +28,9 @@ class Indicator:
 
     def __init__(self, indicator_name, settings):
         self.indicator_name = indicator_name
-        # self.state = self.get_state()
         self.state = None
         self.settings = settings
-        self.unhandled_exception_raised = False
+        self.unhandled_exception_raised_previously = False
         self.listeners = []
         self.setup_listeners()
         self.setup_devices()
@@ -46,7 +45,8 @@ class Indicator:
         try:
             class_name = 'listeners.{0}.{1}'.format(name, name.capitalize())
             listener = get_class(class_name)(self.indicator_name, name, settings)
-            ScheduleSetter(listener, schedule_location)
+            wrapped_listener = partial(self.run_wrapper, listener)
+            ScheduleSetter(job=wrapped_listener, schedule_settings=schedule_location)
             return listener
         except NameError as e:
             message = "{indicator}: implementation for listener type '{listener}' " \
@@ -61,7 +61,12 @@ class Indicator:
         elif self.settings.get('schedule'):
             return self.settings
         else:
-            return o_conf().defaults
+            return o_conf()
+
+    def run_wrapper(self, listener):
+        logger.info("Running indicator {indicator}, listener {listener} (class '{clazz}')...".format(indicator=listener.indicator_name,
+            listener=listener.name, clazz=listener.listener_class))
+        listener.poll()
 
     def setup_devices(self):
         settings = self.settings.trafficlight
@@ -69,7 +74,6 @@ class Indicator:
             self.trafficlight = TrafficLight(self.indicator_name, settings)
 
     def run(self):
-        schedule.run_pending()  # NB this runs pending jobs registered with all indicators
         state = self.get_state()
         self.show_change(state)
         if self.trafficlight:
@@ -98,9 +102,12 @@ class Indicator:
         return o_conf().states[state]
 
     def signal_unhandled_exception(self, e):
-        logger.error("Indicator {indicator}: internal exception occurred:\n{exception}".format(indicator=self.indicator_name,
-                                                                                         exception=e))
-        self.unhandled_exception = True
+        logger.error("Indicator {indicator}: "
+                     "internal exception occurred:\nException as follows:\n{exception}"
+                     .format(indicator=self.indicator_name, exception=e))
+        if not self.unhandled_exception_raised_previously:
+            self.show_change('internalexception')
+        self.unhandled_exception_raised_previously = True
 
     def show_change(self, state):
         severities = o_conf().severities
@@ -116,7 +123,11 @@ class Indicator:
         self.show_by_logging(change_to_from_error, change_to_from_warning, state)
 
     def show_by_traffic_light(self, state):
-        self.trafficlight.blink()
+        state_changed = state != self.state
+        if state_changed:
+            self.trafficlight.state_change()
+        else:
+            self.trafficlight.blink()
         self.trafficlight.set_lights(state)
 
     def show_by_sound(self, change_of_error_level, is_error, is_warning):
@@ -135,15 +146,10 @@ class Indicator:
             level = 'WARNING'
         else:
             level = 'NONE'
-        message = "State changing from '{previous}' to '{current}'" \
-            .format(previous=self.state, current=state)
-        logger_method = {'ERROR': logger.error,
-                         'WARNING': logger.warn,
-                         'NONE': logger.info}
-        logger_method[level](message)
-
-    def internal_exception(self, e):
-        if not self.unhandled_exception_raised:
-            self.signal_unhandled_exception(e)
-            self.show_change('internalexception')
-
+        if not self.state and state != self.state:
+            message = "State changing from '{previous}' to '{current}'" \
+                .format(previous=self.state, current=state)
+            logger_method = {'ERROR': logger.error,
+                             'WARNING': logger.warn,
+                             'NONE': logger.info}
+            logger_method[level](message)
