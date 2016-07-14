@@ -153,6 +153,3 @@ class Indicator:
                              'WARNING': logger.warn,
                              'NONE': logger.info}
             logger_method[level](message)
-
-    def internal_exception(self, e):
-        pass
