@@ -57,4 +57,8 @@ def o_conf():
     return _ostruct_conf
 
 
+def raw_conf():
+    global configuration
+    return configuration
+
 config_changed()

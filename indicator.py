@@ -3,12 +3,12 @@ from functools import partial
 from devices.traffic import TrafficLight
 
 from utils import soundplayer
-from conf import configuration, o_conf
+from conf import raw_conf, o_conf
 from utils.logger import logger
 from utils.getclass import get_class
 from utils.schedulesetter import ScheduleSetter
 
-states = configuration['states']
+states = raw_conf()['states']
 
 
 class Indicator:
@@ -64,7 +64,7 @@ class Indicator:
             return o_conf()
 
     def run_wrapper(self, listener):
-        logger.info("Running indicator {indicator}, listener {listener} (class '{clazz}')...".format(indicator=listener.indicator_name,
+        logger.info("Running indicator {indicator}, listener {clazz}:{listener} ...".format(indicator=listener.indicator_name,
             listener=listener.name, clazz=listener.listener_class))
         try:
             listener.poll()

@@ -12,13 +12,13 @@ from utils.logger import logger, configure_logging
 def setup():
     global cold_start, today_when_last_checked, indicators
     indicators = []
-    message = 'CI Monitor '
-    message += 'starting from cold' if cold_start else 'restarted'
+    message = ['CI Monitor']
+    message.append('starting from cold' if cold_start else 'restarted')
     if cold_start:
         cold_start = False
     configure_logging()
-    logger.warning(message)
-    logger.info("Using configuration file '{0}'".format(config_filename()))
+    message.append("using configuration file '{0}'".format(config_filename()))
+    logger.warning(' '.join(message))
     schedule.clear()
     for name, settings in o_conf().indicators.items():
         indicators.append(Indicator(name, settings))
