@@ -66,7 +66,11 @@ class Indicator:
     def run_wrapper(self, listener):
         logger.info("Running indicator {indicator}, listener {listener} (class '{clazz}')...".format(indicator=listener.indicator_name,
             listener=listener.name, clazz=listener.listener_class))
-        listener.poll()
+        try:
+            listener.poll()
+        except Exception as e:
+            logger.error('{indicator}: {listener}: unhandled exception as follows:\n{exception}'
+                .format(indicator=listener.indicator_name, listener=listener.name, exception=repr(e)))
 
     def setup_devices(self):
         settings = self.settings.trafficlight

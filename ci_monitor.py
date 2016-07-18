@@ -10,11 +10,12 @@ from utils.logger import logger, configure_logging
 
 
 def setup():
-    global first_time, today_when_last_checked
+    global cold_start, today_when_last_checked, indicators
+    indicators = []
     message = 'CI Monitor '
-    message += 'starting for the first time' if first_time else 'restarted'
-    if first_time:
-        first_time = False
+    message += 'starting from cold' if cold_start else 'restarted'
+    if cold_start:
+        cold_start = False
     configure_logging()
     logger.warning(message)
     logger.info("Using configuration file '{0}'".format(config_filename()))
@@ -48,8 +49,7 @@ def report_whats_going_on():
             sleep(o_conf().heartbeat_secs)
 
 
-first_time = True
-indicators = []
+cold_start = True
 while True:
     setup()
     while True:

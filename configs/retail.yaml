@@ -1,21 +1,24 @@
 indicators:
-  OMS:
+  RetailCorp:
     monitoring:
-      - bamboo:
-          name: DEV01
-          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-          tasks:
-            API tests: MDAL-AGAT
-            Jasmine unit tests: MDO-MSA
-      - bamboo:
-          name: WSDLs
-          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
-          tasks:
-            ESB API tests: MDAL-ESS
-    schedule:
-      - always
+      - sitemap:
+          name: Legacy
+          file: http://dev-aem.medibank.local/sitemap-legacy.xml
+          schedule:
+            - daily at 09:00
+            - daily at 12:00
+            - daily at 15:00
+      - sitemap:
+          name: AEM
+          file: http://dev-aem.medibank.local/sitemap-retail.xml
+          schedule:
+            - daily at 10:00
+            - daily at 13:00
+            - daily at 16:00
     trafficlight:
       id: 901880
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav
+schedule:
+  - always
