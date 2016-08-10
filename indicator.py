@@ -36,9 +36,9 @@ class Indicator:
         self.setup_devices()
 
     def setup_listeners(self):
-        for config in self.settings.listeners:
-            for name, settings in config.items():
-                listener = self.schedule_listener(name, settings, self.find_schedule(settings))
+        for listener_config in self.settings['listeners']:
+            for listener_type, settings in listener_config.items():
+                listener = self.schedule_listener(listener_type, settings, self.find_schedule(settings))
                 self.listeners.append(listener)
 
     def schedule_listener(self, name, settings, schedule_location):
@@ -73,7 +73,7 @@ class Indicator:
                 .format(indicator=listener.indicator_name, listener=listener.name, exception=repr(e)))
 
     def setup_devices(self):
-        settings = self.settings.trafficlight
+        settings = self.settings['trafficlight']
         if settings:
             self.trafficlight = TrafficLight(self.indicator_name, settings)
 
@@ -115,9 +115,9 @@ class Indicator:
 
     def show_change(self, state):
         severities = o_conf().severities
-        errors = severities.errors
+        errors = severities['errors']
         is_error = state in errors
-        warnings = severities.warnings
+        warnings = severities['warnings']
         is_warning = state in warnings
         change_to_from_error = is_error != (self.state in errors)
         change_to_from_warning = is_warning != (self.state in warnings)
@@ -136,7 +136,7 @@ class Indicator:
 
     def show_by_sound(self, change_of_error_level, is_error, is_warning):
         if change_of_error_level:
-            sound = self.settings.sounds
+            sound = self.settings['sounds']
             if is_error or is_warning:
                 wav = sound['failures']
             else:

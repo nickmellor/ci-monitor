@@ -16,7 +16,7 @@ class Merge(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
-        self.project = gitclient.GitClient(os.path.join(os.path.normpath(settings.location), self.project_dirname(settings.repo)))
+        self.project = gitclient.GitClient(os.path.join(os.path.normpath(settings['location']), self.project_dirname(settings['repo'])))
         self.errors = set()
         self.old_errors = set()
 

@@ -11,7 +11,7 @@ from utils.logger import logger
 class ScheduleSetter:
     def __init__(self, job, schedule_settings):
         # parse schedule section
-        self.repeat_patterns = schedule_settings.schedule
+        self.repeat_patterns = schedule_settings['schedule']
         for repeat_pattern in self.repeat_patterns:
             if repeat_pattern in ['every heartbeat', 'always']:
                 schedule.every(o_conf().heartbeat_secs).seconds.do(job)

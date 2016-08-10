@@ -8,9 +8,11 @@ from conf import o_conf, config_changed, config_filename
 from indicator import Indicator
 from utils.logger import logger, configure_logging
 
+cold_start = True
+
 
 def setup():
-    global cold_start, today_when_last_checked, indicators
+    global cold_start, day_stamp, indicators
     indicators = []
     message = ['CI Monitor']
     message.append('starting from cold' if cold_start else 'restarted')
@@ -20,36 +22,37 @@ def setup():
     message.append("using configuration file '{0}'".format(config_filename()))
     logger.warning(' '.join(message))
     schedule.clear()
-    for name, settings in o_conf().indicators.items():
-        indicators.append(Indicator(name, settings))
-    today_when_last_checked = day_of_month()
+    for indicator_id, settings in o_conf().indicators.items():
+        indicators.append(Indicator(indicator_id, settings))
+    day_stamp = day_of_month()
 
 
 def day_of_month():
     return datetime.datetime.now().day
 
 
-def report_whats_going_on():
+def monitor():
     global indicators
     for indicator in indicators:
         schedule.run_pending()
-        try:
-            indicator.run()
-        except KeyboardInterrupt as e:
-            logger.warning('Interrupted by Ctrl+C: exiting...')
-            sys.exit()
-        except Exception as e:
-            logger.error("Unhandled exception running indicator '{name}':\n"
-                         "Exception as follows:\n"
-                         "{exception}".format(name=indicator.indicator_name, exception=repr(e)))
-            indicator.signal_unhandled_exception(e)
-            sleep(o_conf().errorheartbeat_secs)
-        else:
-            # avoids busy wait in main loop
-            sleep(o_conf().heartbeat_secs)
+        # try:
+        indicator.run()
+        # except KeyboardInterrupt as e:
+        #     logger.warning('Interrupted by Ctrl+C: exiting...')
+        #     sys.exit()
+        # except Exception as e:
+        #     logger.error("Unhandled exception running indicator '{name}':\n"
+        #                  "Exception as follows:\n"
+        #                  "{exception}\n"
+        #                  "Stacktrace:\n"
+        #                  "{stacktrace}\n".format(name=indicator.indicator_name, exception=repr(e)), stacktrace="can't show stacktrace")
+        #     indicator.signal_unhandled_exception(e)
+        #     sleep(o_conf().errorheartbeat_secs)
+        # else:
+        # avoids busy wait
+        sleep(o_conf().heartbeat_secs)
 
 
-cold_start = True
 while True:
     setup()
     while True:
@@ -57,14 +60,15 @@ while True:
             logger.warning('Config changed!')
             break
         today = day_of_month()
-        if today != today_when_last_checked:
+        if today != day_stamp:
             logger.info('Date flip-- restarting!')
-            today_when_last_checked = today
+            day_stamp = today
             break
-        report_whats_going_on()
+        monitor()
 
 
 # TODO: py2exe is broken-- can't do dynamic imports
+# TODO: doubling up of traffic light log messages
 # TODO: log level reconfigure is broken-- log level stays the same
 # TODO: overlogging of traffic light device at info level
 # TODO: unit tests(!)

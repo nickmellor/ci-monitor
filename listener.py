@@ -4,7 +4,7 @@ class Listener:
         self.listener_class = listener_class
         self.indicator_name = indicator_name
         self.settings = settings
-        self.name = self.settings.name
+        self.name = self.settings['name']
 
         self.old_state = None
         self.set_state('allTestsPassed')
