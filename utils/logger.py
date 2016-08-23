@@ -22,7 +22,6 @@ file_handler = None
 def configure_logging():
     global logger, cons_handler, file_handler
     logconf = raw_conf()['logging']
-    print("full second time: {0}".format(logger.handlers))
     formatter = logging.Formatter('%(asctime)s:%(levelname)s: %(message)s')
     if logger.hasHandlers():
         logger.removeHandler(cons_handler)

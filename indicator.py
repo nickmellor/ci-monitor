@@ -56,6 +56,7 @@ class Indicator:
             logger.error(message)
 
     def find_schedule(self, listener_settings):
+
         if listener_settings.get('schedule'):
             return listener_settings
         elif self.settings.get('schedule'):

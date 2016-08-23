@@ -28,7 +28,7 @@ class Merge(Listener):
         # self.refresh_projects()
         self.old_errors = self.errors
         self.errors = set()
-        master_branch_name = self.settings.master
+        master_branch_name = self.settings['master']
         project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         logger.info("{indicator}: reconciling master branch merges in project '{project}'"
                     .format(indicator=self.indicator_name, project=project_name))
@@ -94,11 +94,11 @@ class Merge(Listener):
 
     def fits_criteria(self, project, branch):
         commit_date = self.last_commit_date(project, branch)
-        too_old = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings.max_age_weeks)
-        is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings.stale_days)
+        too_old = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings['max_age_weeks'])
+        is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
         branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
-                                  in self.settings['branches'])
+                                  in self.settings['name_patterns'])
         return is_stale and branch_name_matches and not too_old
 
     def last_commit_date(self, project, branch):

@@ -1,6 +1,15 @@
 indicators:
   RetailCorp:
-    monitoring:
+    listeners:
+      - bamboo:
+          name: Retail DEV
+          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          tasks:
+#            dev-corporate: MDCW-RCWAT38
+#            dev-elevate:  MDCW-RCWAT39
+#            dev-inc: MDCW-RCWAT40
+#            dev-retail: MDCW-RCWAT41
+            redBuildSmoke: MDCW-RCWAT88
       - sitemap:
           name: Legacy
           file: http://dev-aem.medibank.local/sitemap-legacy.xml
@@ -8,13 +17,35 @@ indicators:
             - daily at 09:00
             - daily at 12:00
             - daily at 15:00
+#      - sitemap:
+#          name: DEV-AEM
+#          file: http://dev-aem.medibank.local/sitemap-retail.xml
+#          schedule:
+#            - daily at 09:05
+#            - daily at 14:00
+#            - daily at 16:00
       - sitemap:
-          name: AEM
-          file: http://dev-aem.medibank.local/sitemap-retail.xml
+          name: Production Retail
+          file: http://www.medibank.com.au/sitemap-retail.xml
           schedule:
-            - daily at 10:00
-            - daily at 13:00
-            - daily at 16:00
+            - daily at 9:16
+#      - sitemap:
+#          name: Production Legacy
+#          file: http://www.medibank.com.au/sitemap-legacy.xml
+#          schedule:
+#            - every heartbeat
+      - merge:
+          name: corporate-cms
+          max_age_weeks: 12
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/corporate-cms.git
+          master: origin/develop
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+          schedule:
+            - daily at 14:15
     trafficlight:
       id: 901880
     sounds:

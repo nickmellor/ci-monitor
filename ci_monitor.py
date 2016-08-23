@@ -35,22 +35,22 @@ def monitor():
     global indicators
     for indicator in indicators:
         schedule.run_pending()
-        # try:
-        indicator.run()
-        # except KeyboardInterrupt as e:
-        #     logger.warning('Interrupted by Ctrl+C: exiting...')
-        #     sys.exit()
-        # except Exception as e:
-        #     logger.error("Unhandled exception running indicator '{name}':\n"
-        #                  "Exception as follows:\n"
-        #                  "{exception}\n"
-        #                  "Stacktrace:\n"
-        #                  "{stacktrace}\n".format(name=indicator.indicator_name, exception=repr(e)), stacktrace="can't show stacktrace")
-        #     indicator.signal_unhandled_exception(e)
-        #     sleep(o_conf().errorheartbeat_secs)
-        # else:
-        # avoids busy wait
-        sleep(o_conf().heartbeat_secs)
+        try:
+            indicator.run()
+        except KeyboardInterrupt as e:
+            logger.warning('Interrupted by Ctrl+C: exiting...')
+            sys.exit()
+        except Exception as e:
+            logger.error("Unhandled exception running indicator '{name}':\n"
+                         "Exception as follows:\n"
+                         "{exception}\n"
+                         "Stacktrace:\n"
+                         "{stacktrace}\n".format(name=indicator.indicator_name, exception=repr(e)), stacktrace="can't show stacktrace")
+            indicator.signal_unhandled_exception(e)
+            sleep(o_conf().errorheartbeat_secs)
+        else:
+            # avoid busy wait
+            sleep(o_conf().heartbeat_secs)
 
 
 while True:

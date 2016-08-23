@@ -16,7 +16,7 @@ class Sitemap(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
-        self.sitemap = settings.file
+        self.sitemap = settings['file']
         self.all_good = True
 
     def poll(self):
@@ -46,7 +46,8 @@ class Sitemap(Listener):
             logger.error("Sitemap '{name}' ({sitemap}) not available".format(name=self.name, sitemap=self.sitemap))
             errors.append((self.name, self.sitemap, 'sitemap file not available'))
         if errors:
-            message = ['Sitemap errors as follows:', '*' * 125]
+            message = ["Sitemap errors for '{name}' ({sitemap}) as follows:".format(name=self.name, sitemap=self.sitemap),
+                       '*' * 125]
             message.extend('* {no}. {fault}'.format(no=n + 1, fault=reportable_fault)
                            for n, reportable_fault
                            in enumerate(repr(error) for error in errors))
@@ -54,7 +55,7 @@ class Sitemap(Listener):
             message.append('*' * 125)
             logger.error('\n'.join(message))
         else:
-            logger.info("All {count} sitemap URLs ok".format(count=url_count))
+            logger.info("All {count} sitemap URLs ok for '{name}' ({sitemap})".format(count=url_count, name=self.name, sitemap=self.sitemap))
         self.all_good = not errors
 
     def tests_ok(self):
@@ -114,9 +115,11 @@ def page_error(response):
 def text_error(response):
     text = easy_match(response.text)
     messages = [
-        'could not process request',
-        've encountered a problem.',
-        'Sorry, but it looks like the page you are looking for could not be found.'
+        # 'could not process request',
+        # 've encountered a problem.',
+        # 'Sorry, but it looks like the page you are looking for could not be found.'
+        '5222',
+        '132 331'
     ]
     for message in messages:
         if message in text:
