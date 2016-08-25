@@ -16,7 +16,10 @@ class Merge(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
-        self.project = gitclient.GitClient(os.path.join(os.path.normpath(settings['location']), self.project_dirname(settings['repo'])))
+        self.project = gitclient.GitClient(
+            os.path.join(os.path.normpath(settings['location']),
+            self.project_dirname(settings['repo']))
+        )
         self.errors = set()
         self.old_errors = set()
 
@@ -29,6 +32,7 @@ class Merge(Listener):
         self.old_errors = self.errors
         self.errors = set()
         master_branch_name = self.settings['master']
+        # TODO (Nick Mellor 26/08/2016): os.path.sep may be the wrong choice for project names
         project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         logger.info("{indicator}: reconciling master branch merges in project '{project}'"
                     .format(indicator=self.indicator_name, project=project_name))
@@ -73,7 +77,7 @@ class Merge(Listener):
         return os.path.normpath(self.settings['location'])
 
     def clear_repos(self, top_level_dir):
-        # TODO: maybe this will fix the problem of git repos not being completely removed
+        # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
         # from subprocess import Popen, PIPE, STDOUT
         #
         # cmd = 'rm -frv /path/to/dir'

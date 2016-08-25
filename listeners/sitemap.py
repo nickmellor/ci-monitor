@@ -10,6 +10,7 @@ from requests.packages.urllib3.exceptions import MaxRetryError
 from listener import Listener
 from utils.logger import logger
 from utils.proxies import proxies
+from utils.message import summarise_text
 
 
 class Sitemap(Listener):
@@ -35,7 +36,7 @@ class Sitemap(Listener):
                         errors.append((self.name, url, pe))
                         logger.info("{name} -> '{url}' ...OOPS!".format(name=self.name, url=url))
                     else:
-                        logger.info("{name} -> '{url}' passed".format(name=self.name, url=url))
+                        logger.info("{name} -> '{url}' ok".format(name=self.name, url=url))
                 if response.history:
                     logger.info("Request was redirected")
                     for resp_history_item in response.history:
@@ -73,12 +74,15 @@ class Sitemap(Listener):
             except ET.ParseError as e:
                 message = "{indicator}: Error parsing sitemap '{sitemap}'\n" \
                           "{lines} lines in sitemap XML file\n" \
-                          "First 10 lines of the sitemap read as follows:\n\n"
-                lines = sitemap_as_string.splitlines()
-                message += os.linesep.join(lines[:9])
-                message += '\n'
+                          "Sitemap reads as follows:\n\n"
+                message += summarise_text(sitemap_as_string)
                 message += 'Exception raised:\n{exception}\n\n'
-                logger.error(message.format(indicator=self.indicator_name, sitemap=uri, lines=len(lines), exception=e))
+                logger.error(message.format(
+                    indicator=self.indicator_name,
+                    sitemap=uri,
+                    lines=len(sitemap_as_string.splitlines()),
+                    exception=e)
+                )
                 logger.info('Sitemap length: {0}'.format(len(sitemap_as_string)))
             else:
                 for url in sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
@@ -154,11 +158,3 @@ class MarkupStripper(HTMLParser):
         markup replaced by space mainly to interpret <br/> as word boundary
         """
         return ' '.join(self.text)
-
-if __name__ == '__main__':
-    # with open('conf.yaml') as config_file:
-    #     settings = yaml.load(config_file)['signals']['RetailDEV']['sitemap']
-    # s = Sitemap(settings)
-    # s.urls_ok()
-    import datetime
-    datetime.datetime.now()
