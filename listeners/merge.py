@@ -1,12 +1,13 @@
 import datetime
 import os
 import re
-
 import yaml
-
 from mcmaster_utils import gitclient
 from listener import Listener
 from utils.logger import logger
+import sys
+import errno
+from subprocess import Popen, PIPE, STDOUT
 
 
 class Merge(Listener):
@@ -16,19 +17,24 @@ class Merge(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
-        self.project = gitclient.GitClient(
-            os.path.join(os.path.normpath(settings['location']),
-            self.project_dirname(settings['repo']))
-        )
+        repo_path = os.path.join(os.path.normpath(settings['location']), self.project_dirname(settings['repo']))
+        # self.project = gitclient.GitClient(repo_path)
         self.errors = set()
         self.old_errors = set()
 
     def project_dirname(self, git_url):
         return os.path.splitext(os.path.basename(git_url))[0]
 
+    @staticmethod
+    def make_sure_dir_exists(path):
+        try:
+            os.makedirs(path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
 
     def poll(self):
-        # self.refresh_projects()
+        self.refresh_projects()
         self.old_errors = self.errors
         self.errors = set()
         master_branch_name = self.settings['master']
@@ -41,10 +47,11 @@ class Merge(Listener):
         for branch in self.branches(self.project):
             release_rev = latest_commit(self.project, branch).hexsha
             if not self.project.repo.is_ancestor(release_rev, deploy_rev):
-                error = "{indicator} ({listener}): unmerged branch in repo '{project}': {branch} -> {destination} last revision dated {date}" \
-                        .format(indicator=self.indicator_name, listener=self.name, project=project_name,
-                                branch=branch, destination=master_branch_name,
-                                date=self.last_commit_date(self.project, branch))
+                error = "{indicator} ({listener}): unmerged branch in repo" \
+                        "'{project}': {branch} -> {destination} last revision dated {date}" \
+                    .format(indicator=self.indicator_name, listener=self.name, project=project_name,
+                            branch=branch, destination=master_branch_name,
+                            date=self.last_commit_date(self.project, branch))
                 if error not in self.old_errors:
                     logger.error(error)
                 self.errors.add(error)
@@ -65,12 +72,16 @@ class Merge(Listener):
                     if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
 
     def refresh_projects(self):
-        # self.clear_repos(self.repo_dir())
-        for name, url in self.settings['repos'].items():
+        self.clear_repos(self.repo_dir())
+        for name, url in self.settings['repo'].items():
             logger.info("cloning project '{0}'".format(name))
             old_cwd = os.getcwd()
             os.chdir(self.repo_dir())
-            os.system('git clone {0}'.format(url))
+            cmd = 'git clone {0}'.format(url)
+            p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
+            # os.system('git clone {0}'.format(url))
+            print(p.stdout)
+            print(p.stderr)
             os.chdir(old_cwd)
 
     def repo_dir(self):
@@ -78,23 +89,8 @@ class Merge(Listener):
 
     def clear_repos(self, top_level_dir):
         # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
-        # from subprocess import Popen, PIPE, STDOUT
-        #
-        # cmd = 'rm -frv /path/to/dir'
-        # p   = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-        # out = p.stdout.read()
-        # print(out)
-        for root, dirs, files in os.walk(top_level_dir, topdown=False):
-            for name in files:
-                try:
-                    os.remove(os.path.join(root, name))
-                except:
-                    pass
-            for name in dirs:
-                try:
-                    os.rmdir(os.path.join(root, name))
-                except:
-                    pass
+        cmd = 'rm -frv {dir}'.format(dir=top_level_dir)
+        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=not sys.platform.startswith("win"))
 
     def fits_criteria(self, project, branch):
         commit_date = self.last_commit_date(project, branch)
@@ -110,6 +106,7 @@ class Merge(Listener):
 
     def comms_error(self):
         return False
+
 
 def is_merge(branch):
     return '->' in branch

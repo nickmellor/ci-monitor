@@ -10,7 +10,7 @@ from requests.packages.urllib3.exceptions import MaxRetryError
 from listener import Listener
 from utils.logger import logger
 from utils.proxies import proxies
-from utils.message import summarise_text
+from utils.message import Message
 
 
 class Sitemap(Listener):
@@ -72,12 +72,16 @@ class Sitemap(Listener):
             try:
                 sitemap = ET.fromstring(sitemap_as_string)
             except ET.ParseError as e:
-                message = "{indicator}: Error parsing sitemap '{sitemap}'\n" \
-                          "{lines} lines in sitemap XML file\n" \
-                          "Sitemap reads as follows:\n\n"
-                message += summarise_text(sitemap_as_string)
-                message += 'Exception raised:\n{exception}\n\n'
-                logger.error(message.format(
+                message = Message("""
+{indicator}: Error parsing sitemap '{sitemap}'
+{lines} lines in sitemap XML file
+Sitemap reads as follows:""")
+                message.indent()
+                message.add_text_summary(sitemap_as_string)
+                message.outdent()
+                message.add('Exception raised:')
+                message.add_text('{exception}')
+                logger.error(message.out().format(
                     indicator=self.indicator_name,
                     sitemap=uri,
                     lines=len(sitemap_as_string.splitlines()),
@@ -99,6 +103,7 @@ class Sitemap(Listener):
 
     def has_changed(self):
         return False
+
 
 def get(address):
     response = requests.get(address, allow_redirects=True, proxies=proxies)

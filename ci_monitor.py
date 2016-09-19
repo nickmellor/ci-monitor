@@ -1,5 +1,6 @@
 from time import sleep
 import sys
+import os
 import datetime
 
 import schedule
@@ -41,15 +42,19 @@ def monitor():
             logger.warning('Interrupted by Ctrl+C: exiting...')
             sys.exit()
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_filename = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             logger.error("Unhandled exception running indicator '{name}':\n"
                          "Exception as follows:\n"
                          "{exception}\n"
+                         "Filename: {filename}"
+                         "Line number: {lineno}"
                          "Stacktrace:\n"
-                         "{stacktrace}\n".format(name=indicator.indicator_name, exception=repr(e)), stacktrace="can't show stacktrace")
+                         "{stacktrace}\n".format(name=indicator.indicator_name, exception=exc_type,
+                            stacktrace="can't show stacktrace", filename=exc_filename, lineno=exc_tb.tb_lineno))
             indicator.signal_unhandled_exception(e)
             sleep(o_conf().errorheartbeat_secs)
         else:
-            # avoid busy wait
             sleep(o_conf().heartbeat_secs)
 
 

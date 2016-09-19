@@ -1,0 +1,80 @@
+indicators:
+  RetailCorp:
+    listeners:
+      - merge:
+          name: CI-Monitor
+          max_age_weeks: 52
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/corporate-cms.git
+          master: origin/master
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+#      - merge:
+#          name: corporate-cms
+#          max_age_weeks: 12
+#          location: scratch/repos
+#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/corporate-cms.git
+#          master: origin/develop
+#          stale_days: 3
+#          name_patterns:
+#            - .*/release/.+
+#            - .*/hotfix/.+
+#      - merge:
+#          name: API Gateway
+#          max_age_weeks: 12
+#          location: scratch/repos
+#          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
+#          master: origin/master
+#          stale_days: 3
+#          name_patterns:
+#            - .*/release/.+
+#            - .*/hotfix/.+
+#      - merge:
+#          name: Integration Services
+#          max_age_weeks: 12
+#          location: scratch/repos
+#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
+#          master: origin/master
+#          stale_days: 3
+#          branches:
+#            - .*/release/.+
+#            - .*/hotfix/.+
+#      - merge:
+#          name: Member Services AEM
+#          max_age_weeks: 12
+#          location: scratch/repos
+#          repo: ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
+#          master: origin/master
+#          stale_days: 3
+#          branches:
+#            - .*/release/.+
+#            - .*/hotfix/.+
+#            - .*/feature/.+
+#      - merge:
+#          name: AEM Core
+#          max_age_weeks: 12
+#          location: scratch/repos
+#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
+#          master: origin/master
+#          stale_days: 3
+#          branches:
+#            - .*/release/.+
+#            - .*/hotfix/.+
+#      - merge:
+#          name: BDD UI Framework
+#          max_age_weeks: 12
+#          location: scratch/repos
+#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/bdd-features.git
+#          master: origin/develop
+#          stale_days: 3
+#          branches:
+#            - .*/release/.+
+#            - .*/hotfix/.+
+    sounds:
+      failures: alarm_beep.wav
+      greenbuild: applause.wav
+schedule:
+#  - daily at 10:10
+  - always

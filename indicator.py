@@ -6,7 +6,9 @@ from utils import soundplayer
 from conf import raw_conf, o_conf
 from utils.logger import logger
 from utils.getclass import get_class
+from utils.message import exception_summary
 from utils.schedulesetter import ScheduleSetter
+import sys
 
 states = raw_conf()['states']
 
@@ -71,12 +73,14 @@ class Indicator:
             listener.poll()
         except Exception as e:
             logger.error('{indicator}: {listener}: unhandled exception as follows:\n{exception}'
-                .format(indicator=listener.indicator_name, listener=listener.name, exception=repr(e)))
+                .format(indicator=listener.indicator_name, listener=listener.name, exception=exception_summary()))
 
     def setup_devices(self):
-        settings = self.settings['trafficlight']
+        settings = self.settings.get('trafficlight')
         if settings:
             self.trafficlight = TrafficLight(self.indicator_name, settings)
+        else:
+            self.trafficlight = None
 
     def run(self):
         state = self.get_state()
@@ -109,7 +113,7 @@ class Indicator:
     def signal_unhandled_exception(self, e):
         logger.error("Indicator {indicator}: "
                      "internal exception occurred:\nException as follows:\n{exception}"
-                     .format(indicator=self.indicator_name, exception=e))
+                     .format(indicator=self.indicator_name, exception=exception_summary()))
         if not self.unhandled_exception_raised_previously:
             self.show_change('internalexception')
         self.unhandled_exception_raised_previously = True
@@ -129,11 +133,12 @@ class Indicator:
 
     def show_by_traffic_light(self, state):
         state_changed = state != self.state
-        if state_changed:
-            self.trafficlight.state_change()
-        else:
-            self.trafficlight.blink()
-        self.trafficlight.set_lights(state)
+        if self.trafficlight:
+            if state_changed:
+                self.trafficlight.state_change()
+            else:
+                self.trafficlight.blink()
+            self.trafficlight.set_lights(state)
 
     def show_by_sound(self, change_of_error_level, is_error, is_warning):
         if change_of_error_level:
