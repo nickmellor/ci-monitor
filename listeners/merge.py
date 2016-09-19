@@ -21,6 +21,7 @@ class Merge(Listener):
         # self.project = gitclient.GitClient(repo_path)
         self.errors = set()
         self.old_errors = set()
+        self.settings = settings
 
     def project_dirname(self, git_url):
         return os.path.splitext(os.path.basename(git_url))[0]
@@ -34,7 +35,7 @@ class Merge(Listener):
                 raise
 
     def poll(self):
-        self.refresh_projects()
+        self.refresh_project()
         self.old_errors = self.errors
         self.errors = set()
         master_branch_name = self.settings['master']
@@ -47,7 +48,7 @@ class Merge(Listener):
         for branch in self.branches(self.project):
             release_rev = latest_commit(self.project, branch).hexsha
             if not self.project.repo.is_ancestor(release_rev, deploy_rev):
-                error = "{indicator} ({listener}): unmerged branch in repo" \
+                error = "{indicator} ({listener}): unmerged branch in repo " \
                         "'{project}': {branch} -> {destination} last revision dated {date}" \
                     .format(indicator=self.indicator_name, listener=self.name, project=project_name,
                             branch=branch, destination=master_branch_name,
@@ -71,18 +72,18 @@ class Merge(Listener):
         yield from (branch_or_merge for branch_or_merge in branches_and_merges
                     if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
 
-    def refresh_projects(self):
+    def refresh_project(self):
         self.clear_repos(self.repo_dir())
-        for name, url in self.settings['repo'].items():
-            logger.info("cloning project '{0}'".format(name))
-            old_cwd = os.getcwd()
-            os.chdir(self.repo_dir())
-            cmd = 'git clone {0}'.format(url)
-            p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
-            # os.system('git clone {0}'.format(url))
-            print(p.stdout)
-            print(p.stderr)
-            os.chdir(old_cwd)
+        name = self.settings['name']
+        url = self.settings['repo']
+        logger.info("cloning project '{0}'".format(name))
+        repo_path = os.path.join(os.path.normpath(self.settings['location']),
+                                 self.project_dirname(self.settings['repo']))
+        repo_root = os.path.join(repo_path, os.path.splitext(url.split('/')[-1])[0])
+        cmd = 'git clone {0} {1}'.format(url, repo_root)
+        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
+        # os.system('git clone {0}'.format(url))
+        self.project = gitclient.GitClient(repo_root)
 
     def repo_dir(self):
         return os.path.normpath(self.settings['location'])
