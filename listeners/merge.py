@@ -17,8 +17,8 @@ class Merge(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
-        repo_path = os.path.join(os.path.normpath(settings['location']), self.project_dirname(settings['repo']))
-        # self.project = gitclient.GitClient(repo_path)
+        self.project = None
+        self.refresh_project()
         self.errors = set()
         self.old_errors = set()
         self.settings = settings
@@ -73,22 +73,22 @@ class Merge(Listener):
                     if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
 
     def refresh_project(self):
-        self.clear_repos(self.repo_dir())
+        self.clear_repo(self.repo_dir())
         name = self.settings['name']
         url = self.settings['repo']
         logger.info("cloning project '{0}'".format(name))
         repo_path = os.path.join(os.path.normpath(self.settings['location']),
                                  self.project_dirname(self.settings['repo']))
         repo_root = os.path.join(repo_path, os.path.splitext(url.split('/')[-1])[0])
-        cmd = 'git clone {0} {1}'.format(url, repo_root)
+        cmd = 'git clone {0} {1}'.format(url, repo_path)
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
         # os.system('git clone {0}'.format(url))
-        self.project = gitclient.GitClient(repo_root)
+        self.project = gitclient.GitClient(repo_path)
 
     def repo_dir(self):
         return os.path.normpath(self.settings['location'])
 
-    def clear_repos(self, top_level_dir):
+    def clear_repo(self, top_level_dir):
         # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
         cmd = 'rm -frv {dir}'.format(dir=top_level_dir)
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=not sys.platform.startswith("win"))
@@ -99,7 +99,7 @@ class Merge(Listener):
         is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
         branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
-                                  in self.settings['name_patterns'])
+                                  in self.settings['ancestors'])
         return is_stale and branch_name_matches and not too_old
 
     def last_commit_date(self, project, branch):
