@@ -1,13 +1,15 @@
 import datetime
+import errno
 import os
 import re
-import yaml
-from mcmaster_utils import gitclient
-from listener import Listener
-from utils.logger import logger
+import shutil
 import sys
-import errno
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE
+
+from listener import Listener
+from mcmaster_utils import gitclient
+from utils.filehandling import clear_dir
+from utils.logger import logger
 
 
 class Merge(Listener):
@@ -17,8 +19,8 @@ class Merge(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
-        repo_path = os.path.join(os.path.normpath(settings['location']), self.project_dirname(settings['repo']))
-        # self.project = gitclient.GitClient(repo_path)
+        self.project = None
+        self.refresh_project()
         self.errors = set()
         self.old_errors = set()
         self.settings = settings
@@ -35,12 +37,12 @@ class Merge(Listener):
                 raise
 
     def poll(self):
+        project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         self.refresh_project()
         self.old_errors = self.errors
         self.errors = set()
         master_branch_name = self.settings['master']
         # TODO (Nick Mellor 26/08/2016): os.path.sep may be the wrong choice for project names
-        project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         logger.info("{indicator}: reconciling master branch merges in project '{project}'"
                     .format(indicator=self.indicator_name, project=project_name))
         # project.repo.remotes.origin.fetch() -- times out at present
@@ -73,25 +75,27 @@ class Merge(Listener):
                     if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
 
     def refresh_project(self):
-        self.clear_repos(self.repo_dir())
+        self.clear_repo(self.repo_dir())
         name = self.settings['name']
         url = self.settings['repo']
         logger.info("cloning project '{0}'".format(name))
         repo_path = os.path.join(os.path.normpath(self.settings['location']),
                                  self.project_dirname(self.settings['repo']))
         repo_root = os.path.join(repo_path, os.path.splitext(url.split('/')[-1])[0])
-        cmd = 'git clone {0} {1}'.format(url, repo_root)
+        cmd = 'git clone {0} {1}'.format(url, repo_path)
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
         # os.system('git clone {0}'.format(url))
-        self.project = gitclient.GitClient(repo_root)
+        self.project = gitclient.GitClient(repo_path)
 
     def repo_dir(self):
         return os.path.normpath(self.settings['location'])
 
-    def clear_repos(self, top_level_dir):
-        # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
-        cmd = 'rm -frv {dir}'.format(dir=top_level_dir)
-        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=not sys.platform.startswith("win"))
+    def clear_repo(self, root_dir):
+        clear_dir(root_dir)
+        # shutil.rmtree(root_dir)
+        # # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
+        # cmd = 'rm -frv {dir}'.format(dir=top_level_dir)
+        # p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=not sys.platform.startswith("win")).communicate()
 
     def fits_criteria(self, project, branch):
         commit_date = self.last_commit_date(project, branch)
@@ -99,7 +103,7 @@ class Merge(Listener):
         is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
         branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
-                                  in self.settings['name_patterns'])
+                                  in self.settings['ancestors'])
         return is_stale and branch_name_matches and not too_old
 
     def last_commit_date(self, project, branch):
