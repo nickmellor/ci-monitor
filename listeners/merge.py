@@ -1,13 +1,15 @@
 import datetime
+import errno
 import os
 import re
-import yaml
-from mcmaster_utils import gitclient
-from listener import Listener
-from utils.logger import logger
+import shutil
 import sys
-import errno
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE
+
+from listener import Listener
+from mcmaster_utils import gitclient
+from utils.filehandling import clear_dir
+from utils.logger import logger
 
 
 class Merge(Listener):
@@ -35,12 +37,12 @@ class Merge(Listener):
                 raise
 
     def poll(self):
+        project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         self.refresh_project()
         self.old_errors = self.errors
         self.errors = set()
         master_branch_name = self.settings['master']
         # TODO (Nick Mellor 26/08/2016): os.path.sep may be the wrong choice for project names
-        project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         logger.info("{indicator}: reconciling master branch merges in project '{project}'"
                     .format(indicator=self.indicator_name, project=project_name))
         # project.repo.remotes.origin.fetch() -- times out at present
@@ -88,10 +90,12 @@ class Merge(Listener):
     def repo_dir(self):
         return os.path.normpath(self.settings['location'])
 
-    def clear_repo(self, top_level_dir):
-        # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
-        cmd = 'rm -frv {dir}'.format(dir=top_level_dir)
-        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=not sys.platform.startswith("win"))
+    def clear_repo(self, root_dir):
+        clear_dir(root_dir)
+        # shutil.rmtree(root_dir)
+        # # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
+        # cmd = 'rm -frv {dir}'.format(dir=top_level_dir)
+        # p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=not sys.platform.startswith("win")).communicate()
 
     def fits_criteria(self, project, branch):
         commit_date = self.last_commit_date(project, branch)

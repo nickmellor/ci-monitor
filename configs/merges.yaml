@@ -1,17 +1,17 @@
 indicators:
   RetailCorp:
     listeners:
-#      - merge:
-#          name: CI-Monitor
-#          max_age_weeks: 52
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/ci-monitor.git
-#          master: origin/master
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#            - .*/feature/.+
+      - merge:
+          name: CI-Monitor
+          max_age_weeks: 52
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/ci-monitor.git
+          master: origin/master
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+            - .*/feature/.+
 #      - merge:
 #          name: corporate-cms
 #          max_age_weeks: 12
@@ -32,16 +32,16 @@ indicators:
 #          name_patterns:
 #            - .*/release/.+
 #            - .*/hotfix/.+
-      - merge:
-          name: Integration Services
-          max_age_weeks: 12
-          location: scratch/repos
-          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
-          master: origin/master
-          stale_days: 3
-          ancestors:
-            - .*/release/.+
-            - .*/hotfix/.+
+#      - merge:
+#          name: Integration Services
+#          max_age_weeks: 12
+#          location: scratch/repos
+#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
+#          master: origin/master
+#          stale_days: 3
+#          ancestors:
+#            - .*/release/.+
+#            - .*/hotfix/.+
 #      - merge:
 #          name: Member Services AEM
 #          max_age_weeks: 12
@@ -77,5 +77,5 @@ indicators:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 schedule:
-#  - daily at 13:09
+#  - daily at 16:10
   - always
