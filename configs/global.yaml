@@ -1,5 +1,5 @@
 heartbeat_secs: 10
-errorheartbeat_secs: 10
+errorheartbeat_secs: 60
 schedule:
     - every heartbeat
 logging:
@@ -22,7 +22,7 @@ lights:
   lamppatterns:
     failures: [red]
     alltestspassed: [green]
-    blank: [alloff]
+    blank: []
     internalexception: [red, yellow, green]
     commserror: [yellow]
     commserrorandfailures: [red, yellow]

@@ -1,12 +1,13 @@
 import datetime
 import os
 import re
-
 import yaml
-
 from mcmaster_utils import gitclient
 from listener import Listener
 from utils.logger import logger
+import sys
+import errno
+from subprocess import Popen, PIPE, STDOUT
 
 
 class Merge(Listener):
@@ -16,19 +17,29 @@ class Merge(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
-        self.project = gitclient.GitClient(os.path.join(os.path.normpath(settings.location), self.project_dirname(settings.repo)))
+        repo_path = os.path.join(os.path.normpath(settings['location']), self.project_dirname(settings['repo']))
+        # self.project = gitclient.GitClient(repo_path)
         self.errors = set()
         self.old_errors = set()
+        self.settings = settings
 
     def project_dirname(self, git_url):
         return os.path.splitext(os.path.basename(git_url))[0]
 
+    @staticmethod
+    def make_sure_dir_exists(path):
+        try:
+            os.makedirs(path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
 
     def poll(self):
-        # self.refresh_projects()
+        self.refresh_project()
         self.old_errors = self.errors
         self.errors = set()
-        master_branch_name = self.settings.master
+        master_branch_name = self.settings['master']
+        # TODO (Nick Mellor 26/08/2016): os.path.sep may be the wrong choice for project names
         project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         logger.info("{indicator}: reconciling master branch merges in project '{project}'"
                     .format(indicator=self.indicator_name, project=project_name))
@@ -37,10 +48,11 @@ class Merge(Listener):
         for branch in self.branches(self.project):
             release_rev = latest_commit(self.project, branch).hexsha
             if not self.project.repo.is_ancestor(release_rev, deploy_rev):
-                error = "{indicator} ({listener}): unmerged branch in repo '{project}': {branch} -> {destination} last revision dated {date}" \
-                        .format(indicator=self.indicator_name, listener=self.name, project=project_name,
-                                branch=branch, destination=master_branch_name,
-                                date=self.last_commit_date(self.project, branch))
+                error = "{indicator} ({listener}): unmerged branch in repo " \
+                        "'{project}': {branch} -> {destination} last revision dated {date}" \
+                    .format(indicator=self.indicator_name, listener=self.name, project=project_name,
+                            branch=branch, destination=master_branch_name,
+                            date=self.last_commit_date(self.project, branch))
                 if error not in self.old_errors:
                     logger.error(error)
                 self.errors.add(error)
@@ -60,45 +72,34 @@ class Merge(Listener):
         yield from (branch_or_merge for branch_or_merge in branches_and_merges
                     if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
 
-    def refresh_projects(self):
-        # self.clear_repos(self.repo_dir())
-        for name, url in self.settings['repos'].items():
-            logger.info("cloning project '{0}'".format(name))
-            old_cwd = os.getcwd()
-            os.chdir(self.repo_dir())
-            os.system('git clone {0}'.format(url))
-            os.chdir(old_cwd)
+    def refresh_project(self):
+        self.clear_repos(self.repo_dir())
+        name = self.settings['name']
+        url = self.settings['repo']
+        logger.info("cloning project '{0}'".format(name))
+        repo_path = os.path.join(os.path.normpath(self.settings['location']),
+                                 self.project_dirname(self.settings['repo']))
+        repo_root = os.path.join(repo_path, os.path.splitext(url.split('/')[-1])[0])
+        cmd = 'git clone {0} {1}'.format(url, repo_root)
+        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
+        # os.system('git clone {0}'.format(url))
+        self.project = gitclient.GitClient(repo_root)
 
     def repo_dir(self):
         return os.path.normpath(self.settings['location'])
 
     def clear_repos(self, top_level_dir):
-        # TODO: maybe this will fix the problem of git repos not being completely removed
-        # from subprocess import Popen, PIPE, STDOUT
-        #
-        # cmd = 'rm -frv /path/to/dir'
-        # p   = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-        # out = p.stdout.read()
-        # print(out)
-        for root, dirs, files in os.walk(top_level_dir, topdown=False):
-            for name in files:
-                try:
-                    os.remove(os.path.join(root, name))
-                except:
-                    pass
-            for name in dirs:
-                try:
-                    os.rmdir(os.path.join(root, name))
-                except:
-                    pass
+        # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
+        cmd = 'rm -frv {dir}'.format(dir=top_level_dir)
+        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=not sys.platform.startswith("win"))
 
     def fits_criteria(self, project, branch):
         commit_date = self.last_commit_date(project, branch)
-        too_old = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings.max_age_weeks)
-        is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings.stale_days)
+        too_old = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings['max_age_weeks'])
+        is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
         branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
-                                  in self.settings['branches'])
+                                  in self.settings['name_patterns'])
         return is_stale and branch_name_matches and not too_old
 
     def last_commit_date(self, project, branch):
@@ -106,6 +107,7 @@ class Merge(Listener):
 
     def comms_error(self):
         return False
+
 
 def is_merge(branch):
     return '->' in branch

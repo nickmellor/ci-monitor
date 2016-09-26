@@ -23,8 +23,8 @@ class Bamboo(Listener):
         self.previous_results = self.all_tests_pass
         # self.previous_connection = self.connection
         self.previous_results = self.all_tests_pass
-        template = self.settings.template
-        for name, tag in self.settings.tasks.items():
+        template = self.settings['template']
+        for name, tag in self.settings['tasks'].items():
             uri = template.format(tag=tag)
             self.all_tests_pass[name] = self.poll_bamboo_task(name, uri)
             logger.debug("uri: '{0}'".format(uri))

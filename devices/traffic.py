@@ -2,10 +2,10 @@ import os
 import subprocess
 from time import sleep
 
-from conf import configuration, o_conf
+from conf import raw_conf, o_conf
 from utils.logger import logger
 
-settings = configuration['states']
+settings = raw_conf()['states']
 
 
 class TrafficLight:
@@ -23,7 +23,7 @@ class TrafficLight:
 
     def blink(self):
         self.all_lamps_off()
-        sleep(o_conf().lights.blinktime_secs)
+        sleep(o_conf().lights['blinktime_secs'])
         self.set_lights(self.state, monitor=False)
 
     def state_change(self):
@@ -35,7 +35,11 @@ class TrafficLight:
         self.set_lights('blank', monitor=False)
 
     def set_lights(self, state, monitor=True):
-        shell_command = self._shell_command(state)
+        if state:
+           lamps = o_conf().lights['lamppatterns'][state]
+        else:
+            lamps = []
+        shell_command = self._shell_command(lamps)
         if monitor and self.connected:
             logger.info("Executing shell command for traffic light: '{0}'".format(shell_command))
         stdout, error = subprocess.Popen(shell_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -52,15 +56,13 @@ class TrafficLight:
                 logger.warning(message)
         self.connected = device_detected
 
-    def _shell_command(self, state):
-        lamp_pattern = o_conf().lights.lamppatterns[state]
-        colour_to_switch = {'red': 'R', 'yellow': 'Y', 'green': 'G', 'alloff': 'O'}
-        # spaces between lamp switches on command line
-        lamp_switches = ' '.join(colour_to_switch[lamp] for lamp in lamp_pattern)
-        if not lamp_switches:
-            lamp_switches = 'O'
-        lamps = "{lamps}".format(lamps=lamp_switches)
+    def _shell_command(self, lit_lamps):
+        lamp_switches = 'O'
+        if lit_lamps:
+            colour_to_switch = {'red': 'R', 'yellow': 'Y', 'green': 'G', 'alloff': 'O'}
+            # spaces between lamp switches on command line
+            lamp_switches = ' '.join(colour_to_switch[lit_lamp] for lit_lamp in lit_lamps)
         verb = os.path.join(".", "usbswitchcmd")
         device = "-n {device}".format(device=str(self.device_id))
-        command = "{verb} {device} {lamps}".format(verb=verb, device=device, lamps=lamps)
+        command = "{verb} {device} {lamps}".format(verb=verb, device=device, lamps=lamp_switches)
         return command

@@ -3,12 +3,14 @@ from functools import partial
 from devices.traffic import TrafficLight
 
 from utils import soundplayer
-from conf import configuration, o_conf
+from conf import raw_conf, o_conf
 from utils.logger import logger
 from utils.getclass import get_class
+from utils.message import exception_summary
 from utils.schedulesetter import ScheduleSetter
+import sys
 
-states = configuration['states']
+states = raw_conf()['states']
 
 
 class Indicator:
@@ -36,9 +38,9 @@ class Indicator:
         self.setup_devices()
 
     def setup_listeners(self):
-        for config in self.settings.listeners:
-            for name, settings in config.items():
-                listener = self.schedule_listener(name, settings, self.find_schedule(settings))
+        for listener_config in self.settings['listeners']:
+            for listener_type, settings in listener_config.items():
+                listener = self.schedule_listener(listener_type, settings, self.find_schedule(settings))
                 self.listeners.append(listener)
 
     def schedule_listener(self, name, settings, schedule_location):
@@ -56,6 +58,7 @@ class Indicator:
             logger.error(message)
 
     def find_schedule(self, listener_settings):
+
         if listener_settings.get('schedule'):
             return listener_settings
         elif self.settings.get('schedule'):
@@ -64,14 +67,20 @@ class Indicator:
             return o_conf()
 
     def run_wrapper(self, listener):
-        logger.info("Running indicator {indicator}, listener {listener} (class '{clazz}')...".format(indicator=listener.indicator_name,
+        logger.info("Running indicator {indicator}, listener {clazz}:{listener} ...".format(indicator=listener.indicator_name,
             listener=listener.name, clazz=listener.listener_class))
-        listener.poll()
+        try:
+            listener.poll()
+        except Exception as e:
+            logger.error('{indicator}: {listener}: unhandled exception as follows:\n{exception}'
+                .format(indicator=listener.indicator_name, listener=listener.name, exception=exception_summary()))
 
     def setup_devices(self):
-        settings = self.settings.trafficlight
+        settings = self.settings.get('trafficlight')
         if settings:
             self.trafficlight = TrafficLight(self.indicator_name, settings)
+        else:
+            self.trafficlight = None
 
     def run(self):
         state = self.get_state()
@@ -104,16 +113,16 @@ class Indicator:
     def signal_unhandled_exception(self, e):
         logger.error("Indicator {indicator}: "
                      "internal exception occurred:\nException as follows:\n{exception}"
-                     .format(indicator=self.indicator_name, exception=e))
+                     .format(indicator=self.indicator_name, exception=exception_summary()))
         if not self.unhandled_exception_raised_previously:
             self.show_change('internalexception')
         self.unhandled_exception_raised_previously = True
 
     def show_change(self, state):
         severities = o_conf().severities
-        errors = severities.errors
+        errors = severities['errors']
         is_error = state in errors
-        warnings = severities.warnings
+        warnings = severities['warnings']
         is_warning = state in warnings
         change_to_from_error = is_error != (self.state in errors)
         change_to_from_warning = is_warning != (self.state in warnings)
@@ -124,15 +133,16 @@ class Indicator:
 
     def show_by_traffic_light(self, state):
         state_changed = state != self.state
-        if state_changed:
-            self.trafficlight.state_change()
-        else:
-            self.trafficlight.blink()
-        self.trafficlight.set_lights(state)
+        if self.trafficlight:
+            if state_changed:
+                self.trafficlight.state_change()
+            else:
+                self.trafficlight.blink()
+            self.trafficlight.set_lights(state)
 
     def show_by_sound(self, change_of_error_level, is_error, is_warning):
         if change_of_error_level:
-            sound = self.settings.sounds
+            sound = self.settings['sounds']
             if is_error or is_warning:
                 wav = sound['failures']
             else:

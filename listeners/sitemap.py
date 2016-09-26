@@ -10,13 +10,14 @@ from requests.packages.urllib3.exceptions import MaxRetryError
 from listener import Listener
 from utils.logger import logger
 from utils.proxies import proxies
+from utils.message import Message
 
 
 class Sitemap(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
-        self.sitemap = settings.file
+        self.sitemap = settings['file']
         self.all_good = True
 
     def poll(self):
@@ -35,7 +36,7 @@ class Sitemap(Listener):
                         errors.append((self.name, url, pe))
                         logger.info("{name} -> '{url}' ...OOPS!".format(name=self.name, url=url))
                     else:
-                        logger.info("{name} -> '{url}' passed".format(name=self.name, url=url))
+                        logger.info("{name} -> '{url}' ok".format(name=self.name, url=url))
                 if response.history:
                     logger.info("Request was redirected")
                     for resp_history_item in response.history:
@@ -46,7 +47,8 @@ class Sitemap(Listener):
             logger.error("Sitemap '{name}' ({sitemap}) not available".format(name=self.name, sitemap=self.sitemap))
             errors.append((self.name, self.sitemap, 'sitemap file not available'))
         if errors:
-            message = ['Sitemap errors as follows:', '*' * 125]
+            message = ["Sitemap errors for '{name}' ({sitemap}) as follows:".format(name=self.name, sitemap=self.sitemap),
+                       '*' * 125]
             message.extend('* {no}. {fault}'.format(no=n + 1, fault=reportable_fault)
                            for n, reportable_fault
                            in enumerate(repr(error) for error in errors))
@@ -54,7 +56,7 @@ class Sitemap(Listener):
             message.append('*' * 125)
             logger.error('\n'.join(message))
         else:
-            logger.info("All {count} sitemap URLs ok".format(count=url_count))
+            logger.info("All {count} sitemap URLs ok for '{name}' ({sitemap})".format(count=url_count, name=self.name, sitemap=self.sitemap))
         self.all_good = not errors
 
     def tests_ok(self):
@@ -70,14 +72,21 @@ class Sitemap(Listener):
             try:
                 sitemap = ET.fromstring(sitemap_as_string)
             except ET.ParseError as e:
-                message = "{indicator}: Error parsing sitemap '{sitemap}'\n" \
-                          "{lines} lines in sitemap XML file\n" \
-                          "First 10 lines of the sitemap read as follows:\n\n"
-                lines = sitemap_as_string.splitlines()
-                message += os.linesep.join(lines[:9])
-                message += '\n'
-                message += 'Exception raised:\n{exception}\n\n'
-                logger.error(message.format(indicator=self.indicator_name, sitemap=uri, lines=len(lines), exception=e))
+                message = Message("""
+{indicator}: Error parsing sitemap '{sitemap}'
+{lines} lines in sitemap XML file
+Sitemap reads as follows:""")
+                message.indent()
+                message.add_text_summary(sitemap_as_string)
+                message.outdent()
+                message.add('Exception raised:')
+                message.add_text('{exception}')
+                logger.error(message.out().format(
+                    indicator=self.indicator_name,
+                    sitemap=uri,
+                    lines=len(sitemap_as_string.splitlines()),
+                    exception=e)
+                )
                 logger.info('Sitemap length: {0}'.format(len(sitemap_as_string)))
             else:
                 for url in sitemap.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
@@ -94,6 +103,7 @@ class Sitemap(Listener):
 
     def has_changed(self):
         return False
+
 
 def get(address):
     response = requests.get(address, allow_redirects=True, proxies=proxies)
@@ -114,9 +124,11 @@ def page_error(response):
 def text_error(response):
     text = easy_match(response.text)
     messages = [
-        'could not process request',
-        've encountered a problem.',
-        'Sorry, but it looks like the page you are looking for could not be found.'
+        # 'could not process request',
+        # 've encountered a problem.',
+        # 'Sorry, but it looks like the page you are looking for could not be found.'
+        '5222',
+        '132 331'
     ]
     for message in messages:
         if message in text:
@@ -151,11 +163,3 @@ class MarkupStripper(HTMLParser):
         markup replaced by space mainly to interpret <br/> as word boundary
         """
         return ' '.join(self.text)
-
-if __name__ == '__main__':
-    # with open('conf.yaml') as config_file:
-    #     settings = yaml.load(config_file)['signals']['RetailDEV']['sitemap']
-    # s = Sitemap(settings)
-    # s.urls_ok()
-    import datetime
-    datetime.datetime.now()

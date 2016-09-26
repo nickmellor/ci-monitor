@@ -2,7 +2,7 @@ import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
 
-from conf import configuration
+from conf import raw_conf
 
 loglevel_lookup = {
     'error': logging.ERROR,
@@ -21,13 +21,14 @@ file_handler = None
 
 def configure_logging():
     global logger, cons_handler, file_handler
-    logconf = configuration['logging']
+    logconf = raw_conf()['logging']
     formatter = logging.Formatter('%(asctime)s:%(levelname)s: %(message)s')
     if logger.hasHandlers():
         logger.removeHandler(cons_handler)
         cons_handler = None
         logger.removeHandler(file_handler)
         file_handler = None
+        print("should be empty: {0}".format(logger.handlers))
     file_loglevel = logconf['fileRotator']
     if file_loglevel:
         file_handler = TimedRotatingFileHandler(when='H', interval=24,

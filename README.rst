@@ -22,24 +22,33 @@ Casual user
 
 Easiest way is to run as a a py2exe project. From project directory:
 
+*** NO LONGER WORKING-- not compatible with dynamic importing of libraries
+
 Set up a shortcut to run ci_monitor.exe in the dist directory (working directory set to *project root* so it can find
 configs etc.)
 
 Developer
 ---------
 
-python setup.py py2exe updates the ci_monitor.exe. This is best pushed with code changes so ci-monitor works out of the
-box without needing to know the mechanics of installing Python libraries (which can be non-trival under Windows)
-
 Note on pip install:
 
-For some libraries (especially XML libraries on Windows):
+For some libraries (e.g. XML libraries on Windows):
 
 python -m pip install -r requirements.txt
 
-from the command line works better than
+if installing under Windows and you get errors like "can't find VCVARSALL.BAT" you probably need to install Visual Studio or Visual C++ build tools
 
-pip install -r requirements.txt
+http://download.microsoft.com/download/5/f/7/5f7acaeb-8363-451f-9425-68a90f98b238/visualcppbuildtools_full.exe
+
+before pip can install some of the requirements.
+
+For an explanation, see:
+
+https://blogs.msdn.microsoft.com/pythonengineering/2016/04/11/unable-to-find-vcvarsall-bat/
+
+If upgrading from within PyCharm doesn't work, try this on the command line, from the project root:
+
+python -m pip install -r requirements.txt
 
 
 External libraries used
@@ -52,7 +61,7 @@ ostruct (library): used mainly to simplify reading config
 
 schedule (library): used to schedule monitoring tasks
 
-see requirements.txt
+see also requirements.txt
 
 
 IMPLEMENTATION NOTES

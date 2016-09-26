@@ -22,7 +22,7 @@ def config_changed():
 
 
 def get_config_source():
-    with open(config_filename(filename_override='global')) as config_file:
+    with open(config_filename(filename='global')) as config_file:
         global_settings = config_file.read()
     with open(config_filename()) as config_file:
         local_settings = config_file.read()
@@ -39,9 +39,9 @@ def set_oconf():
     _ostruct_conf = ostruct.OpenStruct(configuration)
 
 
-def config_filename(filename_override=None):
-    if filename_override:
-        filename = filename_override
+def config_filename(filename=None):
+    if filename:
+        filename = filename
     else:
         env_filename = os.environ.get('CIMCONFIG')
         filename = env_filename if env_filename else 'default'
@@ -56,5 +56,9 @@ def project_dir():
 def o_conf():
     return _ostruct_conf
 
+
+def raw_conf():
+    global configuration
+    return configuration
 
 config_changed()
