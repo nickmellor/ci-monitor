@@ -14,7 +14,10 @@ from utils.logger import logger
 
 class Merge(Listener):
     """
-    check stash/git repo for revisions not merged back into base branch
+    check stash/git repo for branches not merged back into base branch
+    e.g. ensure all hotfix branches are merged back into master
+    There is a cut-off age for time of last commit beyond which Merge will
+    no longer complain
     """
 
     def __init__(self, indicator_name, listener_class, settings):
@@ -75,17 +78,18 @@ class Merge(Listener):
                     if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
 
     def refresh_project(self):
-        self.clear_repo(self.repo_dir())
-        name = self.settings['name']
-        url = self.settings['repo']
-        logger.info("cloning project '{0}'".format(name))
-        repo_path = os.path.join(os.path.normpath(self.settings['location']),
-                                 self.project_dirname(self.settings['repo']))
-        repo_root = os.path.join(repo_path, os.path.splitext(url.split('/')[-1])[0])
-        cmd = 'git clone {0} {1}'.format(url, repo_path)
-        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
-        # os.system('git clone {0}'.format(url))
-        self.project = gitclient.GitClient(repo_path)
+        # self.clear_repo(self.repo_dir())
+        # name = self.settings['name']
+        # url = self.settings['repo']
+        # logger.info("cloning project '{0}'".format(name))
+        # repo_path = os.path.join(os.path.normpath(self.settings['location']),
+        #                          self.project_dirname(self.settings['repo']))
+        # repo_root = os.path.join(repo_path, os.path.splitext(url.split('/')[-1])[0])
+        # cmd = 'git clone {0} {1}'.format(url, repo_path)
+        # p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
+        # # os.system('git clone {0}'.format(url))
+        # self.project = gitclient.GitClient(repo_path)
+        pass
 
     def repo_dir(self):
         return os.path.normpath(self.settings['location'])

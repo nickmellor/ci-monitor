@@ -1,81 +1,111 @@
 indicators:
-  RetailCorp:
+  monitoring:
     listeners:
       - merge:
-          name: CI-Monitor
-          max_age_weeks: 52
+          name: CI-Monitor old feature files check
+          max_age_weeks: 200
           location: scratch/repos
           repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/ci-monitor.git
+          master: origin/master
+          stale_days: 30
+          name_patterns:
+            - .*/feature/.+
+      - merge:
+          name: old ESB API test feature files
+          max_age_weeks: 200
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/esb-api-tests.git
+          master: origin/master
+          stale_days: 30
+          name_patterns:
+            - .*/feature/.+
+  oms:
+    listeners:
+      - merge:
+          name: Member Services AEM
+          max_age_weeks: 12
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
           master: origin/master
           stale_days: 3
           name_patterns:
             - .*/release/.+
             - .*/hotfix/.+
             - .*/feature/.+
-#      - merge:
-#          name: corporate-cms
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/corporate-cms.git
-#          master: origin/develop
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#      - merge:
-#          name: API Gateway
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
-#          master: origin/master
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#      - merge:
-#          name: Integration Services
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
-#          master: origin/master
-#          stale_days: 3
-#          ancestors:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#      - merge:
-#          name: Member Services AEM
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
-#          master: origin/master
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#            - .*/feature/.+
-#      - merge:
-#          name: AEM Core
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
-#          master: origin/master
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#      - merge:
-#          name: BDD UI Framework
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/bdd-features.git
-#          master: origin/develop
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
+      - merge:
+          name: AEM Core
+          max_age_weeks: 12
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
+          master: origin/master
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+      - merge:
+          name: API Gateway
+          max_age_weeks: 12
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
+          master: origin/master
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+      - merge:
+          name: Integration Services
+          max_age_weeks: 12
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
+          master: origin/master
+          stale_days: 3
+          ancestors:
+            - .*/release/.+
+            - .*/hotfix/.+
+      - merge:
+          name: API Functional Tests
+          max_age_weeks: 12
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-functional-tests.git
+          master: origin/master
+          stale_days: 3
+          ancestors:
+            - .*/release/.+
+            - .*/hotfix/.+
+  RetailCorp:
+    listeners:
+      - merge:
+          name: corporate-cms
+          max_age_weeks: 12
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/corporate-cms.git
+          master: origin/develop
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+      - merge:
+          name: BDD UI Framework
+          max_age_weeks: 12
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/bdd-features.git
+          master: origin/develop
+          stale_days: 3
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+            - .*/feature/.+
+      - merge:
+          name: BDD UI Framework old feature files
+          max_age_weeks: 200
+          location: scratch/repos
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/bdd-features.git
+          master: origin/develop
+          stale_days: 30
+          name_patterns:
+            - .*/feature/.+
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 schedule:
-#  - daily at 16:10
-  - always
+  - daily at 10:10
