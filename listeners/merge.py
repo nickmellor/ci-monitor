@@ -22,8 +22,10 @@ class Merge(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
-        self.project = None
-        self.refresh_project()
+        self.project = gitclient.GitClient(
+            os.path.join(os.path.normpath(settings['location']),
+                         self.project_dirname(settings['repo']))
+        )
         self.errors = set()
         self.old_errors = set()
         self.settings = settings
@@ -107,7 +109,7 @@ class Merge(Listener):
         is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
         branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
-                                  in self.settings['ancestors'])
+                                  in self.settings['name_patterns'])
         return is_stale and branch_name_matches and not too_old
 
     def last_commit_date(self, project, branch):
