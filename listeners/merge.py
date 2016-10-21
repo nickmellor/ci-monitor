@@ -105,12 +105,12 @@ class Merge(Listener):
 
     def fits_criteria(self, project, branch):
         commit_date = self.last_commit_date(project, branch)
-        too_old = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings['max_age_weeks'])
-        is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
+        too_old_to_bother_with = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings['max_age_weeks'])
+        its_time_to_fix_this = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
         branch_name_matches = any(re.match(pattern, branch)
                                   for pattern
                                   in self.settings['name_patterns'])
-        return is_stale and branch_name_matches and not too_old
+        return its_time_to_fix_this and branch_name_matches and not too_old_to_bother_with
 
     def last_commit_date(self, project, branch):
         return datetime.datetime.fromtimestamp(latest_commit(project, branch).committed_date)

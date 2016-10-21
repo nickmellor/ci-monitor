@@ -1,8 +1,8 @@
 indicators:
-  monitoring:
+  MiscQA:
     listeners:
 #      - merge:
-#          name: CI-Monitor old feature files check
+#          name: CI-Monitor old feature branchea check
 #          max_age_weeks: 200
 #          location: scratch/repos
 #          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/ci-monitor.git
@@ -11,7 +11,7 @@ indicators:
 #          name_patterns:
 #            - .*/feature/.+
       - merge:
-          name: old ESB API test feature files
+          name: old ESB API test feature branches
           max_age_weeks: 200
           location: scratch/repos
           repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/esb-api-tests.git
@@ -19,6 +19,9 @@ indicators:
           stale_days: 30
           name_patterns:
             - .*/feature/.+
+    sounds:
+      failures: alarm_beep.wav
+      greenbuild: applause.wav
   OMS:
     listeners:
       - merge:
