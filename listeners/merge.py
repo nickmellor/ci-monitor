@@ -22,9 +22,9 @@ class Merge(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
+        self.clone_location = os.path.normpath(settings['location'])
         self.project = gitclient.GitClient(
-            os.path.join(os.path.normpath(settings['location']),
-                         self.project_dirname(settings['repo']))
+            os.path.join(self.clone_location, self.project_dirname(settings['repo']))
         )
         self.errors = set()
         self.old_errors = set()
@@ -94,7 +94,7 @@ class Merge(Listener):
         pass
 
     def repo_dir(self):
-        return os.path.normpath(self.settings['location'])
+        return os.path.normpath(self.clone_location)
 
     def clear_repo(self, root_dir):
         clear_dir(root_dir)
@@ -106,11 +106,11 @@ class Merge(Listener):
     def fits_criteria(self, project, branch):
         commit_date = self.last_commit_date(project, branch)
         too_old_to_bother_with = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings['max_age_weeks'])
-        its_time_to_fix_this = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
-        branch_name_matches = any(re.match(pattern, branch)
+        its_time_we_fixed_this = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
+        branch_name_fits_pattern = any(re.match(pattern, branch)
                                   for pattern
                                   in self.settings['name_patterns'])
-        return its_time_to_fix_this and branch_name_matches and not too_old_to_bother_with
+        return its_time_we_fixed_this and branch_name_fits_pattern and not too_old_to_bother_with
 
     def last_commit_date(self, project, branch):
         return datetime.datetime.fromtimestamp(latest_commit(project, branch).committed_date)
