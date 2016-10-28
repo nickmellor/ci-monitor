@@ -40,7 +40,7 @@ class Merge(Listener):
 
     def poll(self):
         self.clone_location = r'scratch\repos'
-        self.refresh_project()
+        self.clone_project()
         project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         self.old_errors = self.errors
         self.errors = set()
@@ -59,7 +59,7 @@ class Merge(Listener):
                 if error not in self.old_errors:
                     logger.error(error)
                 self.errors.add(error)
-        self.clear_repo()
+        self.delete_directory(self.clone_location)
 
     def tests_ok(self):
         return not self.errors
@@ -76,23 +76,21 @@ class Merge(Listener):
         yield from (branch_or_merge for branch_or_merge in branches_and_merges
                     if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
 
-    def refresh_project(self):
-        self.clear_repo(self.repo_dir())
+    def clone_project(self):
         name = self.settings['name']
         url = self.settings['repo']
         logger.info("cloning project '{0}'".format(name))
         repo_path = os.path.join(self.clone_location,
                                  self.project_dirname(self.settings['repo']))
         repo_root = os.path.join(repo_path, os.path.splitext(url.split('/')[-1])[0])
-        cmd = 'git clone {0} {1}'.format(url, repo_path)
+        cmd = 'git clone {url} {repo}'.format(url=url, repo=repo_path)
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
-        # os.system('git clone {0}'.format(url))
         self.project = gitclient.GitClient(repo_path)
 
     def repo_dir(self):
         return os.path.normpath(self.clone_location)
 
-    def clear_repo(self, root_dir):
+    def delete_directory(self, root_dir):
         # clear_dir(root_dir)
         # shutil.rmtree(root_dir)
         # # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
@@ -107,10 +105,15 @@ class Merge(Listener):
         commit_date = self.last_commit_date(project, branch)
         too_old_to_bother_with = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings['max_age_weeks'])
         branch_is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
-        branch_name_fits_pattern = any(re.match(pattern, branch)
-                                  for pattern
-                                  in self.settings['name_patterns'])
-        return branch_is_stale and branch_name_fits_pattern and not too_old_to_bother_with
+        branch_name_fits_pattern = any(re.match(pattern, branch) for pattern in self.settings['name_patterns'])
+        whitelist = self.settings.get('whitelist')
+        if whitelist:
+            regex_match = any(re.match(pattern, branch) for pattern in whitelist)
+            substring_match = any(substring in branch for substring in whitelist)
+            branch_name_whitelisted = regex_match or substring_match
+        else:
+            branch_name_whitelisted = False
+        return all([branch_is_stale, branch_name_fits_pattern, not too_old_to_bother_with, not branch_name_whitelisted])
 
     def last_commit_date(self, project, branch):
         return datetime.datetime.fromtimestamp(latest_commit(project, branch).committed_date)
