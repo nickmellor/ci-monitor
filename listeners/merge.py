@@ -23,9 +23,6 @@ class Merge(Listener):
 
     def __init__(self, indicator_name, listener_class, settings):
         super().__init__(indicator_name, listener_class, settings)
-        # self.project = gitclient.GitClient(
-        #     os.path.join(self.clone_location, self.project_dirname(settings['repo']))
-        # )
         self.errors = set()
         self.old_errors = set()
         self.settings = settings
@@ -42,20 +39,18 @@ class Merge(Listener):
                 raise
 
     def poll(self):
-        project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
-        self.clone_location = tempfile.mkdtemp()
+        self.clone_location = r'scratch\repos'
         self.refresh_project()
+        project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         self.old_errors = self.errors
         self.errors = set()
         master_branch_name = self.settings['master']
-        # TODO (Nick Mellor 26/08/2016): os.path.sep may be the wrong choice for project names
         logger.info("{indicator}: reconciling master branch merges in project '{project}'"
                     .format(indicator=self.indicator_name, project=project_name))
-        # project.repo.remotes.origin.fetch() -- times out at present
-        deploy_rev = latest_commit(self.project, master_branch_name).hexsha
+        master_rev = latest_commit(self.project, master_branch_name).hexsha
         for branch in self.branches(self.project):
             release_rev = latest_commit(self.project, branch).hexsha
-            if not self.project.repo.is_ancestor(release_rev, deploy_rev):
+            if not self.project.repo.is_ancestor(release_rev, master_rev):
                 error = "{indicator} ({listener}): unmerged branch in repo " \
                         "'{project}': {branch} -> {destination} last revision dated {date}" \
                     .format(indicator=self.indicator_name, listener=self.name, project=project_name,
@@ -64,6 +59,7 @@ class Merge(Listener):
                 if error not in self.old_errors:
                     logger.error(error)
                 self.errors.add(error)
+        self.clear_repo()
 
     def tests_ok(self):
         return not self.errors
@@ -97,20 +93,24 @@ class Merge(Listener):
         return os.path.normpath(self.clone_location)
 
     def clear_repo(self, root_dir):
-        clear_dir(root_dir)
+        # clear_dir(root_dir)
         # shutil.rmtree(root_dir)
         # # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
         # cmd = 'rm -frv {dir}'.format(dir=top_level_dir)
         # p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=not sys.platform.startswith("win")).communicate()
+        ##### currently not responsible for deleting clone #####
+        # NB present implementation does not clear the clone temporary directory due to script permissions
+        # temporary directories will need clearing manually or via an enabled script
+        pass
 
     def fits_criteria(self, project, branch):
         commit_date = self.last_commit_date(project, branch)
         too_old_to_bother_with = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings['max_age_weeks'])
-        its_time_we_fixed_this = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
+        branch_is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
         branch_name_fits_pattern = any(re.match(pattern, branch)
                                   for pattern
                                   in self.settings['name_patterns'])
-        return its_time_we_fixed_this and branch_name_fits_pattern and not too_old_to_bother_with
+        return branch_is_stale and branch_name_fits_pattern and not too_old_to_bother_with
 
     def last_commit_date(self, project, branch):
         return datetime.datetime.fromtimestamp(latest_commit(project, branch).committed_date)
