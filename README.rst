@@ -5,50 +5,44 @@ Monitors the latest CI builds and reflects the results on a traffic light
 and Geckoboard.
 
 
-On Raspberry Pi
-===============
+Installation on Linux
+=====================
 
-- Runs on a Raspberry Pi Linux box as a Python 3 script
-- ci_monitor.py auto-run from /etc/rc.local at bootup
+Install Python > 3.3
 
-On Windows
-==========
+In project root,
 
-This is useful for testers and developers tasked with tracking the status of the build. The monitor can run
-on any number of machines independently
+pip install -r requirements.txt
 
-Casual user
------------
 
-Easiest way is to run as a a py2exe project. From project directory:
+Installation On Windows
+=======================
 
-*** NO LONGER WORKING-- not compatible with dynamic importing of libraries
+This is useful for QAs and developers tasked with tracking the status of the build. The monitor can run
+on your own laptop, perhaps as a startup app.
 
-Set up a shortcut to run ci_monitor.exe in the dist directory (working directory set to *project root* so it can find
-configs etc.)
+Install Python 3.5 or greater
 
-Developer
----------
+After adding Python to PATH (environment variable),
 
-Note on pip install:
+pip install -r requirements.txt
 
-For some libraries (e.g. XML libraries on Windows):
+There are libraries that may require a C compiler in order for them to install correctly. In Python, this is a
+pain point when you're installing Python packages in Windows.
 
-python -m pip install -r requirements.txt
-
-if installing under Windows and you get errors like "can't find VCVARSALL.BAT" you probably need to install Visual Studio or Visual C++ build tools
-
-http://download.microsoft.com/download/5/f/7/5f7acaeb-8363-451f-9425-68a90f98b238/visualcppbuildtools_full.exe
-
-before pip can install some of the requirements.
-
-For an explanation, see:
+If there are errors, see this article:
 
 https://blogs.msdn.microsoft.com/pythonengineering/2016/04/11/unable-to-find-vcvarsall-bat/
 
-If upgrading from within PyCharm doesn't work, try this on the command line, from the project root:
+and be prepared to install Visual C++ Build Tools 2015 as detailed there.
 
-python -m pip install -r requirements.txt
+then rerun:
+
+pip install -r requirements.txt
+
+
+Developers
+==========
 
 
 External libraries used
@@ -82,5 +76,17 @@ indicator (class):
   - modularising this part of the app is in progress
   - logging needs attention-- dropped out of submodules
 
-monitor (class):
-  - each monitor instance checks one condition (defined in config) and returns results through exposed methods
+listener (class):
+  - each listener instance checks one condition (defined in config) and returns results through exposed methods
+
+
+Merge listener
+--------------
+
+The merge listener clones git repos in temporary directories and checks for unmerged branches (usually release and
+hotfix branches.)
+
+Due to some difficulties deleting temporary directories from Python apps under Windows at Medibank,
+the app currently *does not* delete cloned repos, and you should not that it clones afresh each time the repo is polled.
+This means temporary directories should be cleaned out regularly, and the merge check should not be run more often than
+once a day.

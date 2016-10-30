@@ -11,23 +11,28 @@ indicators:
 #          name_patterns:
 #            - .*/feature/.+
       - merge:
+          # name used in logging
           name: old ESB API test feature branches
-          max_age_weeks: 200
-          location: scratch/repos
+          # anything older than this is ignored
+          max_age_weeks: 104
+          # git clone URL
           repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/esb-api-tests.git
+          # 'master' branch to check merges against
           master: origin/master
+          # 'grace' period-- any matching branch younger than this is not checked
           stale_days: 30
           name_patterns:
             - .*/feature/.+
     sounds:
+      # sound emitted when there are unmerged branches
       failures: alarm_beep.wav
+      # sound emitted when there are now no unmerged branches
       greenbuild: applause.wav
   OMS:
     listeners:
       - merge:
           name: Member Services AEM
           max_age_weeks: 30
-          location: scratch/repos
           repo: ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
           master: origin/master
           stale_days: 14
@@ -39,7 +44,6 @@ indicators:
       - merge:
           name: AEM Core
           max_age_weeks: 30
-          location: scratch/repos
           repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
           master: origin/master
           stale_days: 14
@@ -49,7 +53,6 @@ indicators:
       - merge:
           name: API Gateway
           max_age_weeks: 30
-          location: scratch/repos
           repo: ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
           master: origin/master
           stale_days: 14
@@ -59,24 +62,24 @@ indicators:
       - merge:
           name: Integration Services
           max_age_weeks: 30
-          location: scratch/repos
           repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
           master: origin/master
           stale_days: 14
           name_patterns:
             - .*/release/.+
             - .*/hotfix/.+
+          # whitelist entries may be substrings or whole-line-matching regexes
+          # whitelist section is optional
           whitelist:
             - OMS-2173
-##      - merge:
-##          name: API Functional Tests
-##          max_age_weeks: 12
-##          location: scratch/repos
-##          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-functional-tests.git
-##          master: origin/master
-##          stale_days: 3
-##          name_patterns:
-##            - .*/feature/.+
+      - merge:
+          name: API Functional Tests
+          max_age_weeks: 12
+          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-functional-tests.git
+          master: origin/master
+          stale_days: 3
+          name_patterns:
+            - .*/feature/.+
     trafficlight:
       id: 901880
     sounds:
@@ -87,7 +90,6 @@ indicators:
       - merge:
           name: corporate-cms
           max_age_weeks: 12
-          location: scratch/repos
           repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/corporate-cms.git
           master: origin/develop
           stale_days: 3
@@ -97,7 +99,6 @@ indicators:
 #      - merge:
 #          name: BDD UI Framework old feature files
 #          max_age_weeks: 200
-#          location: scratch/repos
 #          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/bdd-features.git
 #          master: origin/develop
 #          stale_days: 30
@@ -107,4 +108,4 @@ indicators:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 schedule:
-  - always
+  - daily at 10:00

@@ -27,9 +27,6 @@ class Merge(Listener):
         self.old_errors = set()
         self.settings = settings
 
-    def project_dirname(self, git_url):
-        return os.path.splitext(os.path.basename(git_url))[0]
-
     @staticmethod
     def make_sure_dir_exists(path):
         try:
@@ -39,7 +36,6 @@ class Merge(Listener):
                 raise
 
     def poll(self):
-        self.clone_location = r'scratch\repos'
         self.clone_project()
         project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         self.old_errors = self.errors
@@ -48,7 +44,7 @@ class Merge(Listener):
         logger.info("{indicator}: reconciling master branch merges in project '{project}'"
                     .format(indicator=self.indicator_name, project=project_name))
         master_rev = latest_commit(self.project, master_branch_name).hexsha
-        for branch in self.branches(self.project):
+        for branch in self.branch_candidates(self.project):
             release_rev = latest_commit(self.project, branch).hexsha
             if not self.project.repo.is_ancestor(release_rev, master_rev):
                 error = "{indicator} ({listener}): unmerged branch in repo " \
@@ -71,21 +67,27 @@ class Merge(Listener):
     def has_changed(self):
         return self.old_errors != self.errors
 
-    def branches(self, project):
+    def branch_candidates(self, project):
         branches_and_merges = (tidy_branch(branch) for branch in project.remote_branches(project.repo))
-        yield from (branch_or_merge for branch_or_merge in branches_and_merges
-                    if not is_merge(branch_or_merge) and self.fits_criteria(project, branch_or_merge))
+        branches = (branch_or_merge for branch_or_merge in branches_and_merges
+                    if not is_merge(branch_or_merge))
+        yield from (branch for branch in branches if self.fits_criteria(project, branch))
 
     def clone_project(self):
+        # self.clone_location = r'scratch\repos'
+        self.clone_location = tempfile.mkdtemp(prefix='cim_merge_')
         name = self.settings['name']
         url = self.settings['repo']
-        logger.info("cloning project '{0}'".format(name))
+        logger.info("cloning project '{project}' in directory {location}".format(project=name, location=self.clone_location))
         repo_path = os.path.join(self.clone_location,
                                  self.project_dirname(self.settings['repo']))
         repo_root = os.path.join(repo_path, os.path.splitext(url.split('/')[-1])[0])
         cmd = 'git clone {url} {repo}'.format(url=url, repo=repo_path)
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
         self.project = gitclient.GitClient(repo_path)
+
+    def project_dirname(self, git_url):
+        return os.path.splitext(os.path.basename(git_url))[0]
 
     def repo_dir(self):
         return os.path.normpath(self.clone_location)
