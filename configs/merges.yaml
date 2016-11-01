@@ -109,4 +109,4 @@ indicators:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 schedule:
-  - daily at 10:00
+  - always

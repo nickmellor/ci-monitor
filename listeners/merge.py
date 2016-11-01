@@ -48,7 +48,7 @@ class Merge(Listener):
             release_rev = self.latest_commit(branch).hexsha
             if not self.project.repo.is_ancestor(release_rev, master_rev):
                 error = "{indicator} ({listener}): unmerged branch in repo " \
-                        "'{project}': {branch} -> {destination} last revision dated {date} ({age} days old)" \
+                        "'{project}': {branch} -> {destination} last revision {age} days old" \
                             .format(indicator=self.indicator_name, listener=self.name, project=project_name,
                                     branch=branch, destination=master_branch_name,
                                     date=self.last_commit_date(branch),
