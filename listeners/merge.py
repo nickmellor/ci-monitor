@@ -43,19 +43,24 @@ class Merge(Listener):
         master_branch_name = self.settings['master']
         logger.info("{indicator}: reconciling master branch merges in project '{project}'"
                     .format(indicator=self.indicator_name, project=project_name))
-        master_rev = latest_commit(self.project, master_branch_name).hexsha
-        for branch in self.branch_candidates(self.project):
-            release_rev = latest_commit(self.project, branch).hexsha
+        master_rev = self.latest_commit(master_branch_name).hexsha
+        for branch in self.branch_candidates():
+            release_rev = self.latest_commit(branch).hexsha
             if not self.project.repo.is_ancestor(release_rev, master_rev):
                 error = "{indicator} ({listener}): unmerged branch in repo " \
-                        "'{project}': {branch} -> {destination} last revision dated {date}" \
-                    .format(indicator=self.indicator_name, listener=self.name, project=project_name,
-                            branch=branch, destination=master_branch_name,
-                            date=self.last_commit_date(self.project, branch))
+                        "'{project}': {branch} -> {destination} last revision dated {date} ({age} days old)" \
+                            .format(indicator=self.indicator_name, listener=self.name, project=project_name,
+                                    branch=branch, destination=master_branch_name,
+                                    date=self.last_commit_date(branch),
+                                    age=self.age_of_latest_revision(branch))
                 if error not in self.old_errors:
                     logger.error(error)
                 self.errors.add(error)
         self.delete_directory(self.clone_location)
+
+    def latest_commit(self, branch):
+        revision = self.project.latest_changeset(tidy_branch(branch))
+        return self.project.repo.commit(revision)
 
     def tests_ok(self):
         return not self.errors
@@ -67,11 +72,11 @@ class Merge(Listener):
     def has_changed(self):
         return self.old_errors != self.errors
 
-    def branch_candidates(self, project):
-        branches_and_merges = (tidy_branch(branch) for branch in project.remote_branches(project.repo))
+    def branch_candidates(self):
+        branches_and_merges = (tidy_branch(branch) for branch in self.project.remote_branches(self.project.repo))
         branches = (branch_or_merge for branch_or_merge in branches_and_merges
                     if not is_merge(branch_or_merge))
-        yield from (branch for branch in branches if self.fits_criteria(project, branch))
+        yield from (branch for branch in branches if self.fits_criteria(branch))
 
     def clone_project(self):
         # self.clone_location = r'scratch\repos'
@@ -81,7 +86,6 @@ class Merge(Listener):
         logger.info("cloning project '{project}' in directory {location}".format(project=name, location=self.clone_location))
         repo_path = os.path.join(self.clone_location,
                                  self.project_dirname(self.settings['repo']))
-        repo_root = os.path.join(repo_path, os.path.splitext(url.split('/')[-1])[0])
         cmd = 'git clone {url} {repo}'.format(url=url, repo=repo_path)
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=not sys.platform.startswith("win")).communicate()
         self.project = gitclient.GitClient(repo_path)
@@ -93,20 +97,14 @@ class Merge(Listener):
         return os.path.normpath(self.clone_location)
 
     def delete_directory(self, root_dir):
-        # clear_dir(root_dir)
-        # shutil.rmtree(root_dir)
-        # # TODO: Nick Mellor 26/08/2016: maybe this will fix the problem of git repos not being completely removed
-        # cmd = 'rm -frv {dir}'.format(dir=top_level_dir)
-        # p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=not sys.platform.startswith("win")).communicate()
-        ##### currently not responsible for deleting clone #####
         # NB present implementation does not clear the clone temporary directory due to script permissions
         # temporary directories will need clearing manually or via an enabled script
         pass
 
-    def fits_criteria(self, project, branch):
-        commit_date = self.last_commit_date(project, branch)
-        too_old_to_bother_with = commit_date < datetime.datetime.now() - datetime.timedelta(weeks=self.settings['max_age_weeks'])
-        branch_is_stale = commit_date < datetime.datetime.now() - datetime.timedelta(days=self.settings['stale_days'])
+    def fits_criteria(self, branch):
+        age_days = self.age_of_latest_revision(branch)
+        too_old_to_bother_with = age_days > self.settings['max_age_weeks'] * 7
+        branch_is_stale = age_days > self.settings['stale_days']
         branch_name_fits_pattern = any(re.match(pattern, branch) for pattern in self.settings['name_patterns'])
         whitelist = self.settings.get('whitelist')
         if whitelist:
@@ -115,10 +113,14 @@ class Merge(Listener):
             branch_name_whitelisted = regex_match or substring_match
         else:
             branch_name_whitelisted = False
-        return all([branch_is_stale, branch_name_fits_pattern, not too_old_to_bother_with, not branch_name_whitelisted])
+        is_candidate_branch = branch_name_fits_pattern and not branch_name_whitelisted
+        return all([is_candidate_branch, branch_is_stale, not too_old_to_bother_with])
 
-    def last_commit_date(self, project, branch):
-        return datetime.datetime.fromtimestamp(latest_commit(project, branch).committed_date)
+    def age_of_latest_revision(self, branch):
+        return (datetime.datetime.now() - self.last_commit_date(branch)).days
+
+    def last_commit_date(self, branch):
+        return datetime.datetime.fromtimestamp(self.latest_commit(branch).committed_date)
 
     def comms_error(self):
         return False
@@ -130,8 +132,3 @@ def is_merge(branch):
 
 def tidy_branch(branch):
     return branch[2:] if branch.startswith('*') else branch
-
-
-def latest_commit(project, branch):
-    revision = project.latest_changeset(tidy_branch(branch))
-    return project.repo.commit(revision)
