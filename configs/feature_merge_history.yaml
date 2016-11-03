@@ -1,4 +1,7 @@
 indicators:
+  # this config file shows how the merge tool can be used to look at unmerged feature files
+  # it's not only useful for releases and hotfixes but can help you pick up previously parked
+  # features again
   QA:
     listeners:
       - merge:

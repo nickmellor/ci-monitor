@@ -1,3 +1,4 @@
+# this config file merge-checks all developer git repos (as at (04/11/2016) in Retail BAU and OMS
 indicators:
   OMS:
     listeners:
