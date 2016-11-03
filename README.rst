@@ -1,8 +1,18 @@
 CI Monitor
 ==========
 
-Monitors the latest CI builds and reflects the results on a traffic light
-and Geckoboard.
+Monitors aspects of the build pipeline and production.
+
+Open architecture for adding new 'listeners' which are expert at monitoring
+particular aspects of a system. Currently:
+  - CI builds (Bamboo)
+  - check git merges to master branches are complete
+  - sitemap URLs availability
+
+'Indicators' reflect the results returned by these 'listeners' on a traffic light, by emitting sounds
+and by logging.
+
+Historically, also showed results on a Geckoboard, and listened to the BSM monitoring service
 
 
 Installation on Linux
@@ -23,12 +33,12 @@ on your own laptop, perhaps as a startup app.
 
 Install Python 3.5 or greater
 
-After adding Python to PATH (environment variable),
+After adding Python to PATH (environment variable), in project root:
 
 pip install -r requirements.txt
 
-There are libraries that may require a C compiler in order for them to install correctly. In Python, this is a
-pain point when you're installing Python packages in Windows.
+There are libraries that may require a C compiler in order for them to install correctly. In Python, this is still
+sometimes a pain point when you're installing Python packages in Windows.
 
 If there are errors, see this article:
 
@@ -39,6 +49,7 @@ and be prepared to install Visual C++ Build Tools 2015 as detailed there.
 then rerun:
 
 pip install -r requirements.txt
+
 
 Configuration
 =============
@@ -68,6 +79,7 @@ CI Monitor is a python 3 app.
 
 ostruct (library): used mainly to simplify reading config
   - config.defaults.sounds.failure rather than config['defaults']['sounds']['failure']
+  - has been used less lately
 
 schedule (library): used to schedule monitoring tasks
 
@@ -84,12 +96,12 @@ configuration:
   - configuration needs love:
     * more cascading defaults needed (cf schedules)
     * more robust and informative when parts of config are missing
-    * listeners and indicators should use a method to retrieve a setting, not dict syntax (e.g. would enable
+    * listeners and indicators should use a method to retrieve a setting, not dict syntax (would enable
       better error-handling)
 
 indicator (class):
-  - loads "monitors" and schedules them based on YAML config file
-  - polls for results from monitors
+  - loads "listeners" and schedules them based on YAML config file
+  - polls results from listeners
   - communicates results on (logging, sounds, traffic light etc.)
   - modularising this part of the app is in progress
   - logging needs attention-- dropped out of submodules
@@ -98,13 +110,19 @@ listener (class):
   - each listener instance checks one condition (defined in config) and returns results through exposed methods
 
 
-Merge listener
+Listener Notes
+==============
+
+Merge Listener
 --------------
 
 The merge listener clones git repos in temporary directories and checks for unmerged branches (usually release and
 hotfix branches.)
 
 Due to some difficulties deleting temporary directories from Python apps under Windows at Medibank,
-the app currently *does not* delete cloned repos, and you should not that it clones afresh each time the repo is polled.
+the app currently *does not* delete cloned repos.
+
+You should note that it clones afresh each time the repo is polled.
+
 This means temporary directories should be cleaned out regularly, and the merge check should not be run more often than
-once a day.
+once every few days.
