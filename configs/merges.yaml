@@ -50,14 +50,6 @@ indicators:
           # whitelist section is optional
           whitelist:
             - OMS-2173
-      - merge:
-          name: API Functional Tests
-          max_age_weeks: 12
-          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-functional-tests.git
-          master: origin/master
-          stale_days: 3
-          name_patterns:
-            - .*/feature/.+
     trafficlight:
       id: 901880
     sounds:
@@ -80,4 +72,4 @@ indicators:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 schedule:
-  - daily at 12:15
+  - always

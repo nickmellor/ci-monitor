@@ -29,6 +29,14 @@ indicators:
           stale_days: 30
           name_patterns:
             - .*/feature/.+
+      - merge:
+          name: API Functional Tests
+          max_age_weeks: 12
+          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-functional-tests.git
+          master: origin/master
+          stale_days: 3
+          name_patterns:
+            - .*/feature/.+
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav

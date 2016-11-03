@@ -40,6 +40,15 @@ then rerun:
 
 pip install -r requirements.txt
 
+Configuration
+=============
+
+  - take a look at the examples
+  - looks for CIMCONFIG environment variable (filename without .yaml, e.g. "merge" for "merge.yaml"). If not present, assumes 'default.yaml'
+  - global configs (in global.yaml) are overridden by named config file
+  - configs directory contains examples
+
+
 
 Developers
 ==========
@@ -65,9 +74,11 @@ heartbeat (config): shortest unit of time used by CI-Monitor. If nothing's happe
     for a heartbeat
 
 configuration:
-  - looks for CIMCONFIG environment variable (filename without .yaml). If not present, assumes 'default'
-  - configs directory contains examples
-  - configuration needs love: more cascading defaults needed (cf schedules)
+  - configuration needs love:
+    * more cascading defaults needed (cf schedules)
+    * more robust and informative when parts of config are missing
+    * listeners and indicators should use a method to retrieve a setting, not dict syntax (e.g. would enable
+      better error-handling)
 
 indicator (class):
   - loads "monitors" and schedules them based on YAML config file
