@@ -40,23 +40,29 @@ class Merge(Listener):
         project_name = self.project.repo._working_tree_dir.split(os.path.sep)[-1]
         self.old_errors = self.errors
         self.errors = set()
-        master_branch_name = self.settings['master']
+        master_branch = self.settings['master']
         logger.info("{indicator}: reconciling master branch merges in project '{project}'"
                     .format(indicator=self.indicator_name, project=project_name))
-        master_rev = self.latest_commit(master_branch_name).hexsha
+        master_rev = self.latest_commit(master_branch).hexsha
         for branch in self.branch_candidates():
-            release_rev = self.latest_commit(branch).hexsha
-            if not self.project.repo.is_ancestor(release_rev, master_rev):
-                error = "{indicator} ({listener}): unmerged branch in repo " \
-                        "'{project}': {branch} -> {destination} last revision {age} days old" \
-                            .format(indicator=self.indicator_name, listener=self.name, project=project_name,
-                                    branch=branch, destination=master_branch_name,
-                                    date=self.last_commit_date(branch),
-                                    age=self.age_of_latest_revision(branch))
-                if error not in self.old_errors:
-                    logger.error(error)
-                self.errors.add(error)
+            self.check_merge_status(branch, master_branch, master_rev, project_name)
         self.delete_directory(self.clone_location)
+
+    def check_merge_status(self, branch, master_branch, master_rev, project_name):
+        release_rev = self.latest_commit(branch).hexsha
+        if not self.project.repo.is_ancestor(release_rev, master_rev):
+            self.record_unmerged_branch(branch, master_branch, project_name)
+
+    def record_unmerged_branch(self, branch, master_branch, project_name):
+        error = "{indicator} ({listener}): unmerged branch in repo " \
+                "'{project}': {branch} -> {destination} last revision {age} days old" \
+            .format(indicator=self.indicator_name, listener=self.name, project=project_name,
+                    branch=branch, destination=master_branch,
+                    date=self.last_commit_date(branch),
+                    age=self.days_since_last_revision(branch))
+        if error not in self.old_errors:
+            logger.error(error)
+        self.errors.add(error)
 
     def latest_commit(self, branch):
         revision = self.project.latest_changeset(tidy_branch(branch))
@@ -102,21 +108,26 @@ class Merge(Listener):
         pass
 
     def fits_criteria(self, branch):
-        age_days = self.age_of_latest_revision(branch)
-        too_old_to_bother_with = age_days > self.settings['max_age_weeks'] * 7
-        branch_is_stale = age_days > self.settings['stale_days']
-        branch_name_fits_pattern = any(re.match(pattern, branch) for pattern in self.settings['name_patterns'])
+        return self.fits_name_criteria(branch) and self.fits_age_criteria(branch)
+
+    def fits_name_criteria(self, branch):
+        name_selected = any(re.match(pattern, branch) for pattern in self.settings['name_patterns'])
         whitelist = self.settings.get('whitelist')
         if whitelist:
             regex_match = any(re.match(pattern, branch) for pattern in whitelist)
             substring_match = any(substring in branch for substring in whitelist)
-            branch_name_whitelisted = regex_match or substring_match
+            whitelisted = regex_match or substring_match
         else:
-            branch_name_whitelisted = False
-        is_candidate_branch = branch_name_fits_pattern and not branch_name_whitelisted
-        return all([is_candidate_branch, branch_is_stale, not too_old_to_bother_with])
+            whitelisted = False
+        return name_selected and not whitelisted
 
-    def age_of_latest_revision(self, branch):
+    def fits_age_criteria(self, branch):
+        age_days = self.days_since_last_revision(branch)
+        too_old = age_days > self.settings['max_age_weeks'] * 7
+        is_stale = age_days > self.settings['stale_days']
+        return is_stale and not too_old
+
+    def days_since_last_revision(self, branch):
         return (datetime.datetime.now() - self.last_commit_date(branch)).days
 
     def last_commit_date(self, branch):

@@ -1,46 +1,23 @@
 indicators:
-  MiscQA:
-    listeners:
-#      - merge:
-#          name: CI-Monitor old feature branches check
-#          max_age_weeks: 200
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/ci-monitor.git
-#          master: origin/master
-#          stale_days: 30
-#          name_patterns:
-#            - .*/feature/.+
-      - merge:
-          # name used in logging
-          name: old ESB API test feature branches
-          # anything older than this is ignored
-          max_age_weeks: 104
-          # git clone URL
-          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/esb-api-tests.git
-          # 'master' branch to check merges against
-          master: origin/master
-          # 'grace' period-- any matching branch younger than this is not checked
-          stale_days: 30
-          name_patterns:
-            - .*/feature/.+
-    sounds:
-      # sound emitted when there are unmerged branches
-      failures: alarm_beep.wav
-      # sound emitted when there are now no unmerged branches
-      greenbuild: applause.wav
   OMS:
     listeners:
       - merge:
+          # name used in logging
           name: Member Services AEM
+          # don't check anything older than this
           max_age_weeks: 30
+          # git clone URL
           repo: ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
+          # check branches are merged into this branch
           master: origin/master
+          # no error if unmerged branch revised more recently than this
           stale_days: 14
+          # check branches that match these names
           name_patterns:
             - .*/release/.+
             - .*/hotfix/.+
+          # whitelisted branches are allowed to be stale
           whitelist:
-           # whitelisted branches are allowed to be stale
             - OMS-2171
       - merge:
           name: AEM Core
@@ -84,7 +61,9 @@ indicators:
     trafficlight:
       id: 901880
     sounds:
+      # sound emitted when there are unmerged branches
       failures: alarm_beep.wav
+      # sound emitted when merged branches are cleared
       greenbuild: applause.wav
   RetailCorp:
     listeners:
@@ -97,16 +76,8 @@ indicators:
           name_patterns:
             - .*/release/.+
             - .*/hotfix/.+
-#      - merge:
-#          name: BDD UI Framework old feature files
-#          max_age_weeks: 200
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/bdd-features.git
-#          master: origin/develop
-#          stale_days: 30
-#          name_patterns:
-#            - .*/feature/.+
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 schedule:
-  - daily at 10:00
+  - daily at 12:15
