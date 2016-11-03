@@ -43,12 +43,12 @@ class Merge(Listener):
         master_branch = self.settings['master']
         logger.info("{indicator}: reconciling master branch merges in project '{project}'"
                     .format(indicator=self.indicator_name, project=project_name))
-        master_rev = self.latest_commit(master_branch).hexsha
         for branch in self.branch_candidates():
-            self.check_merge_status(branch, master_branch, master_rev, project_name)
+            self.check_merge_status(branch, master_branch, project_name)
         self.delete_directory(self.clone_location)
 
-    def check_merge_status(self, branch, master_branch, master_rev, project_name):
+    def check_merge_status(self, branch, master_branch, project_name):
+        master_rev = self.latest_commit(master_branch).hexsha
         release_rev = self.latest_commit(branch).hexsha
         if not self.project.repo.is_ancestor(release_rev, master_rev):
             self.record_unmerged_branch(branch, master_branch, project_name)

@@ -44,9 +44,16 @@ Configuration
 =============
 
   - take a look at the examples
-  - looks for CIMCONFIG environment variable (filename without .yaml, e.g. "merge" for "merge.yaml"). If not present, assumes 'default.yaml'
-  - global configs (in global.yaml) are overridden by named config file
+  - this app 'hot-configures'-- if you change the config, it will detect changes to settings and restart
+  - CIMCONFIG environment points to config file, e.g.
+      export CIMCONFIG=merge # Bash
+      set CIMCONFIG=merge # Windows
+    If not present, assumes 'default'
+  - global configs (in global.yaml) are loaded first, then overridden by config file above
   - configs directory contains examples
+  - when config changes or CI-Monitor first starts, CI-Monitor comes over all optimistic and the lights go green.
+    This is expected behaviour, and continues until the first configured listener returns a fail.
+    (Is this behaviour the right one?)
 
 
 

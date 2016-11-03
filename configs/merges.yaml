@@ -55,9 +55,9 @@ indicators:
     sounds:
       # sound emitted when there are unmerged branches
       failures: alarm_beep.wav
-      # sound emitted when merged branches are cleared
+      # sound emitted moving from red light to green light when unmerged branches are merged or deleted
       greenbuild: applause.wav
-  RetailCorp:
+  RetailBAU:
     listeners:
       - merge:
           name: corporate-cms
@@ -72,4 +72,4 @@ indicators:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 schedule:
-  - always
+  - daily at 12:15
