@@ -124,5 +124,4 @@ the app currently *does not* delete cloned repos.
 
 You should note that it clones afresh each time the repo is polled.
 
-This means temporary directories should be cleaned out regularly, and the merge check should not be run more often than
-once every few days.
+This means temporary directories should be cleaned out regularly, and the merge check should not be run too often.
