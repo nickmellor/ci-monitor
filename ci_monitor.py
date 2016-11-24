@@ -10,6 +10,7 @@ from indicator import Indicator
 from utils.logger import logger, configure_logging
 
 cold_start = True
+DEBUG = True
 
 
 def setup():

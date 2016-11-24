@@ -1,0 +1,32 @@
+indicators:
+  RetailCorp:
+    listeners:
+      - sitemap:
+          name: Production Legacy
+          file: http://www.medibank.com.au/sitemap-legacy.xml
+          schedule:
+            - every heartbeat
+#      - sitemap:
+#          name: DEV-AEM
+#          file: http://dev-aem.medibank.local/sitemap-retail.xml
+#          schedule:
+#            - daily at 09:05
+#            - daily at 14:00
+#            - daily at 16:00
+#      - sitemap:
+#          name: Production Retail
+#          file: http://www.medibank.com.au/sitemap-retail.xml
+#          schedule:
+#            - daily at 9:16
+#      - sitemap:
+#          name: Production Legacy
+#          file: http://www.medibank.com.au/sitemap-legacy.xml
+#          schedule:
+#            - every heartbeat
+    trafficlight:
+      id: 901880
+    sounds:
+      failures: alarm_beep.wav
+      greenbuild: applause.wav
+    schedule:
+      - always
