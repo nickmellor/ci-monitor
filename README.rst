@@ -1,54 +1,75 @@
 CI Monitor
 ==========
 
-Monitors the latest CI builds and reflects the results on a traffic light
-and Geckoboard.
+Monitors aspects of the build pipeline and production.
+
+Open architecture for adding new 'listeners' which are expert at monitoring
+particular aspects of a system. Currently:
+  - CI builds (Bamboo)
+  - check git merges to master branches are complete
+  - sitemap URLs availability
+
+'Indicators' reflect the results returned by these 'listeners' on a traffic light, by emitting sounds
+and by logging.
+
+Historically, also showed results on a Geckoboard, and listened to the BSM monitoring service
 
 
-On Raspberry Pi
-===============
+Installation on Linux
+=====================
 
-- Runs on a Raspberry Pi Linux box as a Python 3 script
-- ci_monitor.py auto-run from /etc/rc.local at bootup
+Install Python > 3.3
 
-On Windows
-==========
+In project root,
 
-This is useful for testers and developers tasked with tracking the status of the build. The monitor can run
-on any number of machines independently
+pip install -r requirements.txt
 
-Casual user
------------
 
-Easiest way is to run as a a py2exe project. From project directory:
+Installation On Windows
+=======================
 
-*** NO LONGER WORKING-- not compatible with dynamic importing of libraries
+This is useful for QAs and developers tasked with tracking the status of the build. The monitor can run
+on your own laptop, perhaps as a startup app.
 
-Set up a shortcut to run ci_monitor.exe in the dist directory (working directory set to *project root* so it can find
-configs etc.)
+Install Python 3.5 or greater
 
-Developer
----------
+After adding Python to PATH (environment variable), in project root:
 
-Note on pip install:
+pip install -r requirements.txt
 
-For some libraries (e.g. XML libraries on Windows):
+There are libraries that may require a C compiler in order for them to install correctly. In Python, this is still
+sometimes a pain point when you're installing Python packages in Windows.
 
-python -m pip install -r requirements.txt
-
-if installing under Windows and you get errors like "can't find VCVARSALL.BAT" you probably need to install Visual Studio or Visual C++ build tools
-
-http://download.microsoft.com/download/5/f/7/5f7acaeb-8363-451f-9425-68a90f98b238/visualcppbuildtools_full.exe
-
-before pip can install some of the requirements.
-
-For an explanation, see:
+If there are errors, see this article:
 
 https://blogs.msdn.microsoft.com/pythonengineering/2016/04/11/unable-to-find-vcvarsall-bat/
 
-If upgrading from within PyCharm doesn't work, try this on the command line, from the project root:
+and be prepared to install Visual C++ Build Tools 2015 as detailed there.
 
-python -m pip install -r requirements.txt
+then rerun:
+
+pip install -r requirements.txt
+
+
+Configuration
+=============
+
+  - take a look at the examples
+  - this app 'hot-configures'-- if you change the config, it will detect changes to settings and restart
+  - CIMCONFIG environment points to config file, e.g.
+      export CIMCONFIG=merge # Bash
+      set CIMCONFIG=merge # Windows
+    If not present, assumes 'default'
+  - global configs (in global.yaml) are loaded first, then overridden by config file above
+  - configs directory contains examples
+  - when config changes or CI-Monitor first starts, CI-Monitor comes over all optimistic and the lights go green.
+    This is expected behaviour, and continues until the first configured listener returns a fail.
+    (Is this behaviour the right one?)
+
+
+
+Developers
+==========
 
 
 External libraries used
@@ -58,6 +79,7 @@ CI Monitor is a python 3 app.
 
 ostruct (library): used mainly to simplify reading config
   - config.defaults.sounds.failure rather than config['defaults']['sounds']['failure']
+  - has been used less lately
 
 schedule (library): used to schedule monitoring tasks
 
@@ -71,16 +93,35 @@ heartbeat (config): shortest unit of time used by CI-Monitor. If nothing's happe
     for a heartbeat
 
 configuration:
-  - looks for CIMCONFIG environment variable (filename without .yaml). If not present, assumes 'default'
-  - configs directory contains examples
-  - configuration needs love: more cascading defaults needed (cf schedules)
+  - configuration needs love:
+    * more cascading defaults needed (cf schedules)
+    * more robust and informative when parts of config are missing
+    * listeners and indicators should use a method to retrieve a setting, not dict syntax (would enable
+      better error-handling)
 
 indicator (class):
-  - loads "monitors" and schedules them based on YAML config file
-  - polls for results from monitors
+  - loads "listeners" and schedules them based on YAML config file
+  - polls results from listeners
   - communicates results on (logging, sounds, traffic light etc.)
   - modularising this part of the app is in progress
   - logging needs attention-- dropped out of submodules
 
-monitor (class):
-  - each monitor instance checks one condition (defined in config) and returns results through exposed methods
+listener (class):
+  - each listener instance checks one condition (defined in config) and returns results through exposed methods
+
+
+Listener Notes
+==============
+
+Merge Listener
+--------------
+
+The merge listener clones git repos in temporary directories and checks for unmerged branches (usually release and
+hotfix branches.)
+
+Due to some difficulties deleting temporary directories from Python apps under Windows at Medibank,
+the app currently *does not* delete cloned repos.
+
+You should note that it clones afresh each time the repo is polled.
+
+This means temporary directories should be cleaned out regularly, and the merge check should not be run too often.

@@ -67,7 +67,7 @@ class Indicator:
             return o_conf()
 
     def run_wrapper(self, listener):
-        logger.info("Running indicator {indicator}, listener {clazz}:{listener} ...".format(indicator=listener.indicator_name,
+        logger.info("Running indicator '{indicator}', {clazz} listener '{listener}' ...".format(indicator=listener.indicator_name,
             listener=listener.name, clazz=listener.listener_class))
         try:
             listener.poll()

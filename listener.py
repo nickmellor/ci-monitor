@@ -20,13 +20,14 @@ class Listener:
         return True
 
     def has_changed(self):
+        # TODO: suggestion: default implementation could compare locals() now with locals() previous
         raise NotImplementedException("'has_changed()' method not implemented")
 
     def has_improved(self):
-        return False
+        return None
 
     def has_got_worse(self):
-        return False
+        return None
 
     def poll(self):
         raise NotImplementedException("'poll()' method not implemented")

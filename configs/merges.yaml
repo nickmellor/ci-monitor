@@ -1,81 +1,76 @@
+# this config file merge-checks all developer git repos (as at (04/11/2016) in Retail BAU and OMS
 indicators:
-  RetailCorp:
+  OMS:
     listeners:
       - merge:
-          name: CI-Monitor
-          max_age_weeks: 52
-          location: scratch/repos
-          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/ci-monitor.git
+          # name used in logging
+          name: Member Services AEM
+          # don't check anything older than this
+          max_age_weeks: 30
+          # git clone URL
+          repo: ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
+          # check branches are merged into this branch
           master: origin/master
+          # no error if unmerged branch revised more recently than this
+          stale_days: 14
+          # check branches that match these names
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+          # whitelisted branches are allowed to be stale
+          whitelist:
+            - OMS-2171
+      - merge:
+          name: AEM Core
+          max_age_weeks: 30
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
+          master: origin/master
+          stale_days: 14
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+      - merge:
+          name: API Gateway
+          max_age_weeks: 30
+          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
+          master: origin/master
+          stale_days: 14
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+      - merge:
+          name: Integration Services
+          max_age_weeks: 30
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
+          master: origin/master
+          stale_days: 14
+          name_patterns:
+            - .*/release/.+
+            - .*/hotfix/.+
+          # whitelist entries may be substrings or whole-line-matching regexes
+          # whitelist section is optional
+          whitelist:
+            - OMS-2173
+    trafficlight:
+      id: 901880
+    sounds:
+      # sound emitted when there are unmerged branches
+      failures: alarm_beep.wav
+      # sound emitted moving from red light to green light when unmerged branches are merged or deleted
+      greenbuild: applause.wav
+  RetailBAU:
+    listeners:
+      - merge:
+          name: corporate-cms
+          max_age_weeks: 12
+          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/corporate-cms.git
+          master: origin/develop
           stale_days: 3
           name_patterns:
             - .*/release/.+
             - .*/hotfix/.+
-            - .*/feature/.+
-#      - merge:
-#          name: corporate-cms
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/corporate-cms.git
-#          master: origin/develop
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#      - merge:
-#          name: API Gateway
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
-#          master: origin/master
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#      - merge:
-#          name: Integration Services
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
-#          master: origin/master
-#          stale_days: 3
-#          ancestors:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#      - merge:
-#          name: Member Services AEM
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
-#          master: origin/master
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#            - .*/feature/.+
-#      - merge:
-#          name: AEM Core
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
-#          master: origin/master
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
-#      - merge:
-#          name: BDD UI Framework
-#          max_age_weeks: 12
-#          location: scratch/repos
-#          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/bdd-features.git
-#          master: origin/develop
-#          stale_days: 3
-#          name_patterns:
-#            - .*/release/.+
-#            - .*/hotfix/.+
     sounds:
       failures: alarm_beep.wav
       greenbuild: applause.wav
 schedule:
-#  - daily at 16:10
-  - always
+  - daily at 12:15
