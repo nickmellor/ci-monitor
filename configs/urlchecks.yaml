@@ -1,0 +1,58 @@
+indicators:
+  LiftAndShift:
+    listeners:
+      - urlcheck:
+          name: Portal Check
+          urls:
+            - http://healthhub.ahm.com.au
+            - http://agl.medibank.com.au
+            - http://aaqld.medibank.com.au
+            - http://asggroup.medibank.com.au
+            - http://bhs.medibank.com.au
+            - http://boehringeringelheim.medibank.com.au
+            - http://boral.medibank.com.au
+            - http://cmoc.medibank.com.au
+            - http://goodforyou.medibank.com.au
+            - http://deloitte.medibank.com.au
+            - http://dentsuaegis.medibank.com.au
+            - http://diversitat.medibank.com.au
+            - http://empired.medibank.com.au
+            - http://ergonenergy.fitness2live.com.au
+            - http://ergon.medibank.com.au
+            - http://trial.medibankhealth.com.au
+            - http://frasersproperty.medibank.com.au
+            - http://ghd.medibank.com.au
+            - http://healthecare.medibank.com.au
+            - http://landmark.medibank.com.au
+            - http://mq.medibank.com.au
+            - http://bebetter.medibank.com.au
+            - http://newscorp.medibank.com.au
+            - http://petermac.medibank.com.au
+            - http://rac.medibank.com.au
+            - http://salmat.medibank.com.au
+            - http://sandvik.medibank.com.au
+            - http://stanwell.medibank.com.au
+            - http://srg.medibank.com.au
+            - http://sussangroup.medibank.com.au
+            - http://travelex.medibank.com.au
+            - http://usc.medibank.com.au
+            - http://wge.medibank.com.au
+            - http://healthhub.medibank.com.au
+            - http://trial.fitness2live.com.au
+            - http://ibm.fitness2live.com.au
+            - http://mckesson.fitness2live.com.au
+            - http://healthhub2.fitness2live.com.au
+            - http://healthhub.medibankhealth.com.au
+            - http://mhs.fitness2live.com.au
+            - http://mylife.fitness2live.com.au
+            - http://newcastlepermanent.fitness2live.com.au
+            - http://newcastlewpermanent.fitness2live.com.au
+            - http://sigma.medibank.com.au
+            - http://worksafe.fitness2live.com.au
+    trafficlight:
+      id: 901880
+    sounds:
+      failures: alarm_beep.wav
+      greenbuild: applause.wav
+    schedule:
+      - always

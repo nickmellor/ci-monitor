@@ -1,5 +1,4 @@
 import xml.etree.ElementTree as ET
-import os
 
 from requests import get
 from requests.exceptions import RequestException

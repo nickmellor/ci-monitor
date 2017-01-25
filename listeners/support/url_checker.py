@@ -1,5 +1,8 @@
 from listeners.support.markup_stripper import MarkupStripper
 import requests
+from requests import get
+from requests.exceptions import RequestException
+from requests.packages.urllib3.exceptions import MaxRetryError
 from utils.proxies import proxies
 import re
 from utils.logger import logger
