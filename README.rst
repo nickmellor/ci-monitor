@@ -13,6 +13,7 @@ Currently there are listeners for:
   - CI builds (via Bamboo REST interface)
   - check git merges to master branches are complete
   - sitemap URLs availability
+  - simple URL checker (make sure a list of specific URLs are available by polling them at intervals)
 
 'Indicators' reflect the results returned by groups of these 'listeners', on a
 [Cleware traffic light](http://www.cleware-shop.de/USB-MiniTrafficLight-EN), by emitting sounds
