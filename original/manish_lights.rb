@@ -4,20 +4,20 @@ require "uri"
 require 'json'
 
 tags = {
-	# "Dev Smoke" => "MEDIBANKCORP-RCWAT",
-	# "Dev Retail" => "MEDIBANKCORP-RCWAT3",
-	# "Dev Corp" => "MEDIBANKCORP-RCWAT0",
-	# "Dev Elevate" => "MEDIBANKCORP-RCWAT17",
-	# "Dev Inc" => "MEDIBANKCORP-RCWAT21",
-	"SIT Retail" => "MEDIBANKCORP-RCWAT4",
-	"SIT Corp" => "MEDIBANKCORP-RCWAT5",
-	"SIT Inc" => "MEDIBANKCORP-RCWAT23",
-	"SIT Elevate" => "MEDIBANKCORP-RCWAT19"
+	# "Dev Smoke" => "SOMEORG-RCWAT",
+	# "Dev Retail" => "SOMEORG-RCWAT3",
+	# "Dev Corp" => "SOMEORG-RCWAT0",
+	# "Dev Elevate" => "SOMEORG-RCWAT17",
+	# "Dev Inc" => "SOMEORG-RCWAT21",
+	"SIT Retail" => "SOMEORG-RCWAT4",
+	"SIT Corp" => "SOMEORG-RCWAT5",
+	"SIT Inc" => "SOMEORG-RCWAT23",
+	"SIT Elevate" => "SOMEORG-RCWAT19"
 	
-	#"Test Corporate" => "MEDIBANKCORP-RCWAT9"
-	#"Test Elevate" => "MEDIBANKCORP-RCWAT18"
-	#"Test Inc" => "MEDIBANKCORP-RCWAT22"
-	#"Test Retail" => "MEDIBANKCORP-RCWAT8"
+	#"Test Corporate" => "SOMEORG-RCWAT9"
+	#"Test Elevate" => "SOMEORG-RCWAT18"
+	#"Test Inc" => "SOMEORG-RCWAT22"
+	#"Test Retail" => "SOMEORG-RCWAT8"
 }
 
 
@@ -85,7 +85,7 @@ while true
 	all_jobs_success=true
 
 	tags.map do |env, tag|
-		uri = URI.parse "https://bamboo-corp.dev.medibank.com.au/rest/api/latest/result/#{tag}/latest.json?includeAllStates"
+		uri = URI.parse "https://bamboo-corp.dev.someorg.com.au/rest/api/latest/result/#{tag}/latest.json?includeAllStates"
 		job_success=get_bamboo_result(uri)
 		puts "#{Time.now} env: #{env} tag: #{tag} success: #{job_success}"
 		if job_success == nil 	 

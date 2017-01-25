@@ -1,7 +1,7 @@
 {
   "expand": "changes,metadata,plan,master,vcsRevisions,artifacts,comments,labels,jiraIssues,stages",
   "link": {
-    "href": "https://bamboo-corp.dev.medibank.com.au/rest/api/latest/result/MEDIBANKCORP-RCWAT4-242",
+    "href": "https://bamboo-corp.dev.someorg.com.au/rest/api/latest/result/SOMEORG-RCWAT4-242",
     "rel": "self"
   },
   "plan": {
@@ -11,13 +11,13 @@
       "type": "chain",
       "enabled": true,
       "link": {
-        "href": "https://bamboo-corp.dev.medibank.com.au/rest/api/latest/plan/MEDIBANKCORP-RCWAT",
+        "href": "https://bamboo-corp.dev.someorg.com.au/rest/api/latest/plan/SOMEORG-RCWAT",
         "rel": "self"
       },
-      "key": "MEDIBANKCORP-RCWAT",
+      "key": "SOMEORG-RCWAT",
       "name": "Medibank Corporate Web - Retail and Corporate Web Acceptance Tests",
       "planKey": {
-        "key": "MEDIBANKCORP-RCWAT"
+        "key": "SOMEORG-RCWAT"
       }
     },
     "shortName": "sit-retail",
@@ -25,13 +25,13 @@
     "type": "chain_branch",
     "enabled": true,
     "link": {
-      "href": "https://bamboo-corp.dev.medibank.com.au/rest/api/latest/plan/MEDIBANKCORP-RCWAT4",
+      "href": "https://bamboo-corp.dev.someorg.com.au/rest/api/latest/plan/SOMEORG-RCWAT4",
       "rel": "self"
     },
-    "key": "MEDIBANKCORP-RCWAT4",
+    "key": "SOMEORG-RCWAT4",
     "name": "Medibank Corporate Web - Retail and Corporate Web Acceptance Tests - sit-retail",
     "planKey": {
-      "key": "MEDIBANKCORP-RCWAT4"
+      "key": "SOMEORG-RCWAT4"
     }
   },
   "master": {
@@ -40,18 +40,18 @@
     "type": "chain",
     "enabled": true,
     "link": {
-      "href": "https://bamboo-corp.dev.medibank.com.au/rest/api/latest/plan/MEDIBANKCORP-RCWAT",
+      "href": "https://bamboo-corp.dev.someorg.com.au/rest/api/latest/plan/SOMEORG-RCWAT",
       "rel": "self"
     },
-    "key": "MEDIBANKCORP-RCWAT",
+    "key": "SOMEORG-RCWAT",
     "name": "Medibank Corporate Web - Retail and Corporate Web Acceptance Tests",
     "planKey": {
-      "key": "MEDIBANKCORP-RCWAT"
+      "key": "SOMEORG-RCWAT"
     }
   },
   "planName": "sit-retail",
   "projectName": "Medibank Corporate Web",
-  "buildResultKey": "MEDIBANKCORP-RCWAT4-242",
+  "buildResultKey": "SOMEORG-RCWAT4-242",
   "lifeCycleState": "Finished",
   "id": 21250584,
   "buildStartedTime": "2015-06-03T10:43:14.000+10:00",
@@ -79,8 +79,8 @@
   "notRunYet": false,
   "finished": true,
   "successful": true,
-  "buildReason": "Changes by <a href=\"https://bamboo-corp.dev.medibank.com.au/browse/author/Mila K <mila.koscialkowska@Medibank.com.au>\">Mila K &lt;mila.koscialkowska@Medibank.com.au&gt;</a>",
-  "reasonSummary": "Changes by <a href=\"https://bamboo-corp.dev.medibank.com.au/browse/author/Mila K <mila.koscialkowska@Medibank.com.au>\">Mila K &lt;mila.koscialkowska@Medibank.com.au&gt;</a>",
+  "buildReason": "Changes by <a href=\"https://bamboo-corp.dev.someorg.com.au/browse/author/Mila K <mila.koscialkowska@Medibank.com.au>\">Mila K &lt;mila.koscialkowska@Medibank.com.au&gt;</a>",
+  "reasonSummary": "Changes by <a href=\"https://bamboo-corp.dev.someorg.com.au/browse/author/Mila K <mila.koscialkowska@Medibank.com.au>\">Mila K &lt;mila.koscialkowska@Medibank.com.au&gt;</a>",
   "artifacts": {
     "size": 0,
     "start-index": 0,
@@ -116,11 +116,11 @@
     "start-index": 0,
     "max-result": 0
   },
-  "key": "MEDIBANKCORP-RCWAT4-242",
+  "key": "SOMEORG-RCWAT4-242",
   "planResultKey": {
-    "key": "MEDIBANKCORP-RCWAT4-242",
+    "key": "SOMEORG-RCWAT4-242",
     "entityKey": {
-      "key": "MEDIBANKCORP-RCWAT4"
+      "key": "SOMEORG-RCWAT4"
     },
     "resultNumber": 242
   },
