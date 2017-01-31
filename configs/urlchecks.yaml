@@ -5,49 +5,49 @@ indicators:
           name: Portal Check
           urls:
             - http://healthhub.ahm.com.au
-            - http://agl.medibank.com.au
-            - http://aaqld.medibank.com.au
-            - http://asggroup.medibank.com.au
-            - http://bhs.medibank.com.au
-            - http://boehringeringelheim.medibank.com.au
-            - http://boral.medibank.com.au
-            - http://cmoc.medibank.com.au
-            - http://goodforyou.medibank.com.au
-            - http://deloitte.medibank.com.au
-            - http://dentsuaegis.medibank.com.au
-            - http://diversitat.medibank.com.au
-            - http://empired.medibank.com.au
+            - http://agl.someorg.com.au
+            - http://aaqld.someorg.com.au
+            - http://asggroup.someorg.com.au
+            - http://bhs.someorg.com.au
+            - http://boehringeringelheim.someorg.com.au
+            - http://boral.someorg.com.au
+            - http://cmoc.someorg.com.au
+            - http://goodforyou.someorg.com.au
+            - http://deloitte.someorg.com.au
+            - http://dentsuaegis.someorg.com.au
+            - http://diversitat.someorg.com.au
+            - http://empired.someorg.com.au
             - http://ergonenergy.fitness2live.com.au
-            - http://ergon.medibank.com.au
-            - http://trial.medibankhealth.com.au
-            - http://frasersproperty.medibank.com.au
-            - http://ghd.medibank.com.au
-            - http://healthecare.medibank.com.au
-            - http://landmark.medibank.com.au
-            - http://mq.medibank.com.au
-            - http://bebetter.medibank.com.au
-            - http://newscorp.medibank.com.au
-            - http://petermac.medibank.com.au
-            - http://rac.medibank.com.au
-            - http://salmat.medibank.com.au
-            - http://sandvik.medibank.com.au
-            - http://stanwell.medibank.com.au
-            - http://srg.medibank.com.au
-            - http://sussangroup.medibank.com.au
-            - http://travelex.medibank.com.au
-            - http://usc.medibank.com.au
-            - http://wge.medibank.com.au
-            - http://healthhub.medibank.com.au
+            - http://ergon.someorg.com.au
+            - http://trial.someorghealth.com.au
+            - http://frasersproperty.someorg.com.au
+            - http://ghd.someorg.com.au
+            - http://healthecare.someorg.com.au
+            - http://landmark.someorg.com.au
+            - http://mq.someorg.com.au
+            - http://bebetter.someorg.com.au
+            - http://newscorp.someorg.com.au
+            - http://petermac.someorg.com.au
+            - http://rac.someorg.com.au
+            - http://salmat.someorg.com.au
+            - http://sandvik.someorg.com.au
+            - http://stanwell.someorg.com.au
+            - http://srg.someorg.com.au
+            - http://sussangroup.someorg.com.au
+            - http://travelex.someorg.com.au
+            - http://usc.someorg.com.au
+            - http://wge.someorg.com.au
+            - http://healthhub.someorg.com.au
             - http://trial.fitness2live.com.au
             - http://ibm.fitness2live.com.au
             - http://mckesson.fitness2live.com.au
             - http://healthhub2.fitness2live.com.au
-            - http://healthhub.medibankhealth.com.au
+            - http://healthhub.someorghealth.com.au
             - http://mhs.fitness2live.com.au
             - http://mylife.fitness2live.com.au
             - http://newcastlepermanent.fitness2live.com.au
             - http://newcastlewpermanent.fitness2live.com.au
-            - http://sigma.medibank.com.au
+            - http://sigma.someorg.com.au
             - http://worksafe.fitness2live.com.au
     trafficlight:
       id: 901880

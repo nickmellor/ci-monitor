@@ -1,18 +1,24 @@
 CI Monitor
 ==========
 
-Monitors aspects of the build pipeline and production.
+Open-source monitor for Continuous Integration build pipeline. Can also be used for monitoring production environments.
 
-Open architecture for adding new 'listeners' which are expert at monitoring
-particular aspects of a system. Currently:
-  - CI builds (Bamboo)
+YAML-configured, and can easily be extended, as it has an open architecture. New 'listeners' can be added which are expert
+at monitoring particular aspects of a system or pipeline. YAML configuration is polled regularly and will incorporate
+any new listeners without needing a restart.
+
+Monitor is designed to run continuously, hence the belt-and-braces exception-handling.
+
+Currently there are listeners for:
+  - CI builds (via Bamboo REST interface)
   - check git merges to master branches are complete
   - sitemap URLs availability
+  - simple URL checker (make sure a list of specific URLs are available by polling them at intervals)
 
-'Indicators' reflect the results returned by these 'listeners' on a traffic light, by emitting sounds
-and by logging.
-
-Historically, also showed results on a Geckoboard, and listened to the BSM monitoring service
+'Indicators' reflect the results returned by groups of these 'listeners', on a
+[Cleware traffic light](http://www.cleware-shop.de/USB-MiniTrafficLight-EN), by emitting sounds
+and by logging. Historically, has shown results on a [Geckoboard](http://www.geckoboard.com) via push notifications,
+ and listened to a BSM monitoring service via REST.
 
 
 Installation on Linux
@@ -28,12 +34,12 @@ pip install -r requirements.txt
 Installation On Windows
 =======================
 
-This is useful for QAs and developers tasked with tracking the status of the build. The monitor can run
-on your own laptop, perhaps as a startup app.
+This is useful for tracking the status of builds. The monitor can run
+on your own laptop, for example as a startup app. Useful for devs, devops, QAs and managers.
 
-Install Python 3.5 or greater
+Install Python 3.3 or greater or create a virtualenv (http://docs.python-guide.org/en/latest/dev/virtualenvs/)
 
-After adding Python to PATH (environment variable), in project root:
+In project root:
 
 pip install -r requirements.txt
 
@@ -56,7 +62,7 @@ Configuration
 
   - take a look at the examples
   - this app 'hot-configures'-- if you change the config, it will detect changes to settings and restart
-  - CIMCONFIG environment points to config file, e.g.
+  - CIMCONFIG environment var points to config file, e.g.
       export CIMCONFIG=merge # Bash
       set CIMCONFIG=merge # Windows
     If not present, assumes 'default'
@@ -75,11 +81,11 @@ Developers
 External libraries used
 -----------------------
 
-CI Monitor is a python 3 app.
+CI Monitor is a python >= 3.3 app.
 
 ostruct (library): used mainly to simplify reading config
   - config.defaults.sounds.failure rather than config['defaults']['sounds']['failure']
-  - has been used less lately
+  - has been used less lately, and is no longer consistently used (Jan 2017)
 
 schedule (library): used to schedule monitoring tasks
 
@@ -89,8 +95,8 @@ see also requirements.txt
 IMPLEMENTATION NOTES
 --------------------
 
-heartbeat (config): shortest unit of time used by CI-Monitor. If nothing's happening, CI monitor waits
-    for a heartbeat
+heartbeat (config): shortest unit of time used by CI-Monitor. CI monitor waits
+    for at least a heartbeat before the next poll
 
 configuration:
   - configuration needs love:

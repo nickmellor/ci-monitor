@@ -8,7 +8,7 @@ indicators:
           name: old ESB API test feature branches
           max_age_weeks: 104
           # git clone URL
-          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/esb-api-tests.git
+          repo: ssh://git@stash.aws.someorg.local:7999/medi_corp/esb-api-tests.git
           # 'master' branch to check merges against
           master: origin/master
           # 'grace' period-- any matching branch younger than this is not checked
@@ -19,7 +19,7 @@ indicators:
           name: CI-Monitor old feature branches check
           max_age_weeks: 200
           location: scratch/repos
-          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/ci-monitor.git
+          repo: ssh://git@stash.aws.someorg.local:7999/medi_corp/ci-monitor.git
           master: origin/master
           stale_days: 30
           name_patterns:
@@ -27,7 +27,7 @@ indicators:
       - merge:
           name: BDD UI Framework old feature files
           max_age_weeks: 200
-          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/bdd-features.git
+          repo: ssh://git@stash.aws.someorg.local:7999/medi_corp/bdd-features.git
           master: origin/develop
           stale_days: 30
           name_patterns:
@@ -35,7 +35,7 @@ indicators:
       - merge:
           name: API Functional Tests
           max_age_weeks: 12
-          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-functional-tests.git
+          repo: ssh://git@stash.aws.someorg.local:7999/oms/api-functional-tests.git
           master: origin/master
           stale_days: 3
           name_patterns:

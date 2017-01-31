@@ -2,14 +2,12 @@ import datetime
 import errno
 import os
 import re
-import shutil
 import sys
-from subprocess import Popen, PIPE
 import tempfile
+from subprocess import Popen, PIPE
 
 from listener import Listener
-from mcmaster_utils import gitclient
-from utils.filehandling import clear_dir
+from utils import gitclient
 from utils.logger import logger
 
 

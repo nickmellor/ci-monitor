@@ -3,7 +3,7 @@ indicators:
     monitoring:
       - bamboo:
           name: WSDLs
-          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          template: https://bamboo.digidev-aws.someorg.local/rest/api/latest/result/{tag}/latest.json
           tasks:
             ESB API tests: MDAL-ESS
     schedule:

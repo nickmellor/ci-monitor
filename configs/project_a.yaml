@@ -3,20 +3,20 @@ indicators:
     listeners:
       - bamboo:
           name: DEV01
-          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+          template: https://bamboo.digidev-aws.someorg.local/rest/api/latest/result/{tag}/latest.json
           tasks:
             API tests: MDAL-AGAT
             Jasmine tests: MDO-MSA
 #      - bamboo:
 #          name: WSDLs
-#          template: https://bamboo.digidev-aws.medibank.local/rest/api/latest/result/{tag}/latest.json
+#          template: https://bamboo.digidev-aws.someorg.local/rest/api/latest/result/{tag}/latest.json
 #          tasks:
 #            ESB API tests: MDAL-ESS
       - merge:
           name: API Gateway
           max_age_weeks: 12
           location: scratch/repos
-          repo: ssh://git@stash.aws.medibank.local:7999/oms/api-gateway.git
+          repo: ssh://git@stash.aws.someorg.local:7999/oms/api-gateway.git
           master: origin/master
           stale_days: 3
           name_patterns:
@@ -28,7 +28,7 @@ indicators:
           name: Integration Services
           max_age_weeks: 12
           location: scratch/repos
-          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/integration-services.git
+          repo: ssh://git@stash.aws.someorg.local:7999/medi_corp/integration-services.git
           master: origin/master
           stale_days: 3
           branches:
@@ -40,7 +40,7 @@ indicators:
           name: Member Services AEM
           max_age_weeks: 12
           location: scratch/repos
-          repo: ssh://git@stash.aws.medibank.local:7999/oms/member-services-aem.git
+          repo: ssh://git@stash.aws.someorg.local:7999/oms/member-services-aem.git
           master: origin/master
           stale_days: 3
           branches:
@@ -52,7 +52,7 @@ indicators:
           name: AEM Core
           max_age_weeks: 12
           location: scratch/repos
-          repo: ssh://git@stash.aws.medibank.local:7999/medi_corp/aem-core.git
+          repo: ssh://git@stash.aws.someorg.local:7999/medi_corp/aem-core.git
           master: origin/master
           stale_days: 3
           branches:
