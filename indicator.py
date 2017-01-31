@@ -15,16 +15,16 @@ states = raw_conf()['states']
 
 class Indicator:
     """
-    an indicator associates builds/status of services with indicators (traffic lights, sounds etc)
-    an indicator might for example:
+    an indicator associates listeners with some means of communicating their results. An indicator
+    might for example:
 
-      - read the API functional tests Bamboo build, play a sound if they have
-        failing test(s), and display the build status on a traffic light
-      - make a sound and write to a log if a service is down
+      - check API functional tests and Cucumber UI for a project (Bamboo listener)
+        play a sound and display red on a traffic light if there are failing tests
+      - if a release branch in Git has not been merged to the master branch of a project for 3 days
+        (merge listener) write a note to a log
 
-    each indicator has a 'state'-- that encompasses Bamboo responsiveness, test failures,
-    presence of configured traffic lights, internal exceptions
-    states are divided into ERROR, WARNING and NONE that are configurable, and currently
+    indicators store 'state'-- including comms health, internal exceptions, fail responses. States
+    are divided into ERROR, WARNING and NONE, and currently
     affect the logging level
     """
 
@@ -88,16 +88,6 @@ class Indicator:
         if self.trafficlight:
             self.trafficlight.set_lights(state)
         self.state = state
-
-
-        # except Exception as e:
-        #     logger.error('Signal {signal}: Unhandled internal exception. '
-        #                  'Could be configuration problem or bug.\n{exception}'
-        #                  .format(signal=self.indicator_name, exception=e.args))
-        #     self.internal_exception(e)
-            # NB traffic light update not shown until unhandled exception clear for one complete pass
-            # logger.error('Waiting {0} secs\n'.format(configuration['errorheartbeat_secs']))
-            # sleep(configuration['errorheartbeat_secs'])
 
     def get_state(self):
         # for listener in self.listeners:
