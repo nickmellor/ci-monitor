@@ -1,6 +1,8 @@
 *.pyc
+*.pyd
 __pycache__/
 logs/
 clewarecontrol-2.8/
 scratch/
 .idea/
+stash/
